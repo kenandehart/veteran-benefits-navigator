@@ -1,0 +1,200 @@
+/* ============================================================
+   Reset & base
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --navy:      #1b2a3b;
+  --navy-mid:  #2c3e52;
+  --gold:      #b8860b;
+  --gold-light:#e6c84a;
+  --bg:        #f5f3ef;
+  --surface:   #ffffff;
+  --text:      #2e2e2e;
+  --text-muted:#6b6b6b;
+  --border:    #ddd9d2;
+
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text);
+  background-color: var(--bg);
+}
+
+/* ============================================================
+   Layout
+   ============================================================ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ============================================================
+   Header
+   ============================================================ */
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 20px 40px;
+  background-color: var(--navy);
+  border-bottom: 3px solid var(--gold);
+}
+
+.wordmark {
+  font-family: 'Georgia', serif;
+  font-size: 1.1rem;
+  font-weight: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+/* ============================================================
+   Hero
+   ============================================================ */
+
+.hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 96px 24px 80px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.hero-headline {
+  font-size: clamp(2rem, 5vw, 2.75rem);
+  font-weight: normal;
+  line-height: 1.25;
+  color: var(--navy);
+  margin-bottom: 28px;
+}
+
+.hero-body {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  max-width: 560px;
+  margin-bottom: 40px;
+  line-height: 1.75;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.cta-button {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 14px 40px;
+  border: none;
+  border-radius: 3px;
+  background-color: var(--navy);
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.cta-button:hover {
+  background-color: var(--navy-mid);
+}
+
+.cta-button:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+/* ============================================================
+   Features
+   ============================================================ */
+
+.features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--border);
+  background-color: var(--surface);
+}
+
+.feature {
+  padding: 48px 40px;
+  border-right: 1px solid var(--border);
+}
+
+.feature:last-child {
+  border-right: none;
+}
+
+.feature h2 {
+  font-size: 1rem;
+  font-weight: normal;
+  font-family: system-ui, -apple-system, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+
+.feature p {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+
+.footer {
+  padding: 24px 40px;
+  background-color: var(--navy);
+  text-align: center;
+}
+
+.footer p {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.02em;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .header {
+    padding: 16px 24px;
+  }
+
+  .hero {
+    padding: 64px 24px 56px;
+  }
+
+  .features {
+    grid-template-columns: 1fr;
+  }
+
+  .feature {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 36px 24px;
+  }
+
+  .feature:last-child {
+    border-bottom: none;
+  }
+
+  .footer {
+    padding: 20px 24px;
+  }
+}
