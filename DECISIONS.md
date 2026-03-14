@@ -70,3 +70,11 @@ This document records key decisions made during planning and development, along 
 
 **Decision:** Self-hosted on a Virtual Private Server (VPS) via DigitalOcean.
 **Reason:** Chosen over managed platforms like Railway and Render for educational value. Configuring a Linux server manually — installing Nginx, setting up SSL, managing deployments, and administering a production PostgreSQL database — maps directly to software engineering fundamentals and provides depth of knowledge that managed platforms abstract away.
+
+---
+
+## Benefits Scope
+
+**Decision:** Limit benefits catalogue to benefits offered by VA.
+**Reason:** The application should be focused and comprehensive. This limitation allows catalogue to be exhaustive and complete. Future additions possible.
+
