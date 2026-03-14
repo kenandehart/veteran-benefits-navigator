@@ -68,5 +68,5 @@ This document records key decisions made during planning and development, along 
 
 ## Hosting
 
-**Decision:** Railway or Render for backend hosting.
-**Reason:** Both offer free tiers, browser-managed dashboards, and straightforward deployment from GitHub. No server management required. Final choice between the two to be made during setup.
+**Decision:** Self-hosted on a Virtual Private Server (VPS) via DigitalOcean.
+**Reason:** Chosen over managed platforms like Railway and Render for educational value. Configuring a Linux server manually — installing Nginx, setting up SSL, managing deployments, and administering a production PostgreSQL database — maps directly to software engineering fundamentals and provides depth of knowledge that managed platforms abstract away.
