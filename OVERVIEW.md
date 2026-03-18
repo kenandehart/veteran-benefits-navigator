@@ -8,6 +8,9 @@ This application is a user-friendly tool veterans can use to discover and utiliz
 
 ## Design Principles
 
+### Non-Profit Model
+The sole function of this application should be to most effectively connect veterans with benefits and resources. Profit cannot be a factor in any design or implentation decisions.
+
 ### Prioritized Clarity
 The application will not present veterans with an exhaustive list of benefits. Instead, it will surface the most relevant and impactful benefits for each individual's situation, sequenced in a way that creates a clear starting point and a logical path forward. Comprehensiveness is a feature of the system, not of the interface.
 
@@ -45,7 +48,6 @@ The app does not simply show veterans what they qualify for — it walks them th
   - Employment & career resources
   - Legal aid & VSOs
   - Family & caregiver support
-- State-level benefits to be layered in after initial launch
 - Each benefit presented with a plain English summary and a link to the official source
 - Benefits prioritized by relevance and impact — not presented as an exhaustive list
 
@@ -54,17 +56,13 @@ The app does not simply show veterans what they qualify for — it walks them th
 - Tells veterans exactly what to do next, not just what exists
 - Tracks where a veteran is in each process so they can pick up where they left off
 
-### 4. Appointment & Deadline Reminders
-- Manual user input only (VA system integration is a future goal)
-- Reminders for appointments, deadlines, and next steps
-- Personal notes system scoped entirely to what the veteran enters
-
 ---
 
 ## Account & Privacy Model
 - Username-based accounts — no personally identifiable information required
 - Service details collected (branch, years of service, disability rating, etc.) are not PII in isolation
-- Account recovery mechanism to be determined during research phase — must preserve anonymity
+- Offer sign-up before questionaire, but don't require it. User should be able to navigate to website, get started immediately, and see their results without ever creating an account.
+- At sign-up allow for username or email based account creation. Inform user account recovery is only possible with email registration. Allow email registration post account creation.
 - Minimal data collection philosophy — only collect what is genuinely needed
 
 ---
@@ -76,7 +74,7 @@ The app does not simply show veterans what they qualify for — it walks them th
 - **Frontend:** React + TypeScript
 - **Backend:** Node.js + Express + TypeScript
 - **Database:** PostgreSQL
-- **Hosting:** Railway or Render
+- **Hosting:** VPS
 - **Version Control:** Git + GitHub
 
 ---
@@ -90,6 +88,4 @@ The app does not simply show veterans what they qualify for — it walks them th
 
 ## Future Considerations
 - VA Lighthouse API integration (Patient Health FHIR API) for pulling actual appointment data
-- State-level benefits catalogue
-- Collaboration with veteran service organizations
 - Open source contributions or nonprofit handoff
