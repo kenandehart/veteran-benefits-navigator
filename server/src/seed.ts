@@ -30,7 +30,7 @@ const benefits = [
     url: 'https://www.prosthetics.va.gov/psas/AAE.asp',
     is_active: true,
   },
-    {
+  {
     type: 'benefit',
     category: 'disability compensation',
     name: 'Specially Adapted Housing (SAH) grant',
@@ -39,6 +39,39 @@ const benefits = [
     eligibility_summary:
       'Veterans with certain mobility or vision disabilities may be eligible.',
     url: 'https://www.va.gov/housing-assistance/disability-housing-grants/',
+    is_active: true,
+  },
+  {
+    type: 'benefit',
+    category: 'disability compensation',
+    name: 'Special Home Adaptation (SHA) grant',
+    description:
+      '1 of 3 types of adaptive housing grants for veterans with certain service-connected disabilities that allow them to buy or change a home to meet their needs and live more independently.',
+    eligibility_summary:
+      'Veterans with loss of use of their hands, severe burns, or certain respiratory injuries may be eligible.',
+    url: 'https://www.va.gov/housing-assistance/disability-housing-grants/',
+    is_active: true,
+  },
+  {
+    type: 'benefit',
+    category: 'disability compensation',
+    name: 'Temporary Residence Adaptation (TRA) grant',
+    description:
+      '1 of 3 types of adaptive housing grants for veterans with certain service-connected disabilities that allow them to buy or change a home to meet their needs and live more independently.',
+    eligibility_summary:
+      "Veterans who qualify for an SAH or SHA grant and are temporarily living in a family member's home that needs changes to meet their needs may be eligible.",
+    url: 'https://www.va.gov/housing-assistance/disability-housing-grants/',
+    is_active: true,
+  },
+  {
+    type: 'benefit',
+    category: 'disability compensation',
+    name: 'Agent Orange exposure and disability compensation',
+    description:
+      "Compensation for health conditions caused by exposure to the herbicide Agent Orange during a veteran's service.",
+    eligibility_summary:
+      "Veterans who served in a location that exposed them to Agent Orange and have a health condition caused by exposure to Agent Orange may be eligible.",
+    url: 'https://www.va.gov/disability/eligibility/hazardous-materials-exposure/agent-orange/',
     is_active: true,
   },
 ];
