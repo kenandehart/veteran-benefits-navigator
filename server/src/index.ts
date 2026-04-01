@@ -11,8 +11,13 @@ app.get('/health', (_req, res) => {
 });
 
 app.get('/benefits', async (_req, res) => {
-  const result = await pool.query('SELECT * FROM benefits');
-  res.json(result.rows);
+  try{
+    const result = await pool.query('SELECT * FROM benefits');
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch benefits' });
+  }
 });
 
 app.listen(PORT, () => {
