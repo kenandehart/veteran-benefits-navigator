@@ -168,6 +168,98 @@
 }
 
 /* ============================================================
+   Questionnaire
+   ============================================================ */
+
+.q-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+}
+
+.q-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 48px 48px 40px;
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.q-progress-text {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.q-label {
+  font-family: 'Georgia', serif;
+  font-size: clamp(1.2rem, 3vw, 1.5rem);
+  font-weight: normal;
+  line-height: 1.35;
+  color: var(--navy);
+}
+
+.q-input {
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 1rem;
+  color: var(--text);
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 12px 14px;
+  width: 100%;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.q-input:focus {
+  outline: none;
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(27, 42, 59, 0.12);
+}
+
+.q-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6b6b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+.q-next-btn {
+  align-self: flex-start;
+}
+
+.q-dots {
+  display: flex;
+  gap: 8px;
+  align-self: center;
+  padding-top: 4px;
+}
+
+.q-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--border);
+  transition: background-color 0.2s ease;
+}
+
+.q-dot--active {
+  background-color: var(--navy);
+}
+
+/* ============================================================
    Responsive
    ============================================================ */
 
@@ -177,7 +269,13 @@
   }
 
   .hero {
-    padding: 64px 24px 56px;
+    padding: 56px 20px 48px;
+  }
+
+  .cta-button {
+    width: 100%;
+    padding: 16px 24px;
+    text-align: center;
   }
 
   .features {
@@ -187,7 +285,7 @@
   .feature {
     border-right: none;
     border-bottom: 1px solid var(--border);
-    padding: 36px 24px;
+    padding: 36px 20px;
   }
 
   .feature:last-child {
@@ -196,5 +294,20 @@
 
   .footer {
     padding: 20px 24px;
+  }
+
+  .q-main {
+    align-items: flex-start;
+    padding: 32px 16px 48px;
+  }
+
+  .q-card {
+    padding: 32px 24px 28px;
+    gap: 20px;
+    border-radius: 4px;
+  }
+
+  .q-next-btn {
+    align-self: stretch;
   }
 }

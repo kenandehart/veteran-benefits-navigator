@@ -1,6 +1,12 @@
 import './App.css'
+import { useState } from 'react';
+import Questionnaire from './Questionnaire';
 
 function App() {
+  const [currentView, setCurrentView] = useState('landing');
+  if (currentView === 'questionnaire') {
+    return <Questionnaire />;
+  }
   return (
     <div className="page">
       <header className="header">
@@ -18,7 +24,7 @@ function App() {
             and walks them through the process of actually claiming them —
             step by step, at their own pace.
           </p>
-          <button className="cta-button">Get Started</button>
+          <button className="cta-button" onClick={() => setCurrentView('questionnaire')}>Get Started</button>
         </section>
 
         <section className="features">
