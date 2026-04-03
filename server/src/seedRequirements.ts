@@ -8,27 +8,35 @@ const pool = new Pool({
 });
 
 const requirements = [
+  /*
+  * Discharge Levels
+  * 1 - Honorable
+  * 2 - General (Under Honorable Conditions)
+  * 3 - Other Than Honorable
+  * 4 - Bad Conduct
+  * 5 - Dishonorable
+  */
   {
     benefit_id: 7, // Disability Compensation
     active_duty_service: true,
     service_connected_condition: true,
-    min_discharge_level: 4,
+    min_discharge_level: 2,
     min_disability_rating: 0,
     adaptive_housing_condition: false,
   },
   {
     benefit_id: 8, // Veteran Readiness and Employment (VR&E)
-    active_duty_service: false,
-    service_connected_condition: false,
-    min_discharge_level: 4,
+    active_duty_service: true,
+    service_connected_condition: true,
+    min_discharge_level: 2,
     min_disability_rating: 10,
     adaptive_housing_condition: false,
   },
   {
     benefit_id: 9, // Adaptive Housing Grants
-    active_duty_service: false,
+    active_duty_service: true,
     service_connected_condition: true,
-    min_discharge_level: 4,
+    min_discharge_level: 2,
     min_disability_rating: 0,
     adaptive_housing_condition: true,
   },
