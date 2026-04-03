@@ -6,6 +6,15 @@ const PORT = 3000;
 
 app.set('json spaces', 2)
 
+app.use(express.json());
+
+app.use((_req, res, next) => {
+res.header('Access-Control-Allow-Origin', '*');
+res.header('Access-Control-Allow-Headers', 'Content-Type');
+res.header('Access-Control-Allow-Methods', 'GET, POST');
+next();
+});
+
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
@@ -18,6 +27,20 @@ app.get('/benefits', async (_req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch benefits' });
   }
+});
+
+app.post('/questionnaire', (req, res) => {
+  const answers = req.body;
+
+  // Basic validation — does it have the shape we expect?
+  if (!answers || !Array.isArray(answers.servicePeriods)) {
+    res.status(400).json({ error: 'Invalid questionnaire data' });
+    return;
+  }
+
+  console.log('Received questionnaire:', JSON.stringify(answers, null, 2));
+
+  res.status(201).json({ status: 'received' });
 });
 
 app.listen(PORT, () => {

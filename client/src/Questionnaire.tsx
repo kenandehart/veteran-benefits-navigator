@@ -105,9 +105,24 @@ function Questionnaire() {
     setShowTooltip(false);
   }
 
-  function handleSubmit(finalAnswers: QuestionnaireAnswers) {
+  async function handleSubmit(finalAnswers: QuestionnaireAnswers) {
     setAnswers(finalAnswers);
-    setSubmitted(true);
+
+    try {
+      const response = await fetch('https://ideal-couscous-x5j95j49rrqwf6x56-3000.app.github.dev/questionnaire', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(finalAnswers),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
+      }
+
+      setSubmitted(true);
+    } catch (error) {
+      console.error('Failed to submit questionnaire:', error);
+    }
   }
 
   if (submitted) {

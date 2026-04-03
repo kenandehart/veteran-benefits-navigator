@@ -21,23 +21,23 @@ const requirements = [
     active_duty_service: true,
     service_connected_condition: true,
     min_discharge_level: 2,
-    min_disability_rating: 0,
-    adaptive_housing_condition: false,
+    min_disability_rating: -1, // must NOT have a rating
+    adaptive_housing_condition: null,
   },
   {
     benefit_id: 8, // Veteran Readiness and Employment (VR&E)
     active_duty_service: true,
     service_connected_condition: true,
     min_discharge_level: 2,
-    min_disability_rating: 10,
-    adaptive_housing_condition: false,
+    min_disability_rating: 10, // must have rating >= 10
+    adaptive_housing_condition: null,
   },
   {
     benefit_id: 9, // Adaptive Housing Grants
     active_duty_service: true,
     service_connected_condition: true,
     min_discharge_level: 2,
-    min_disability_rating: 0,
+    min_disability_rating: null, // no rating requirement
     adaptive_housing_condition: true,
   },
 ];
