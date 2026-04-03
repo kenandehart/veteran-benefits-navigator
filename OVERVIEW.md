@@ -9,10 +9,10 @@ This application is a user-friendly tool veterans can use to discover and utiliz
 ## Design Principles
 
 ### Non-Profit Model
-The sole function of this application should be to most effectively connect veterans with benefits and resources. Profit cannot be a factor in any design or implentation decisions.
+The sole function of this application should be to most effectively connect veterans with benefits and resources. Profit cannot be a factor in any design or implementation decisions.
 
 ### Prioritized Clarity
-The application will not present veterans with an exhaustive list of benefits. Instead, it will surface the most relevant and impactful benefits for each individual's situation, sequenced in a way that creates a clear starting point and a logical path forward. Comprehensiveness is a feature of the system, not of the interface.
+The application will not present veterans with an exhaustive list of benefits. Instead, it will surface the most relevant and impactful benefits for each individual's situation, sequenced in a way that creates a clear starting point and a logical path forward.
 
 ### Minimal and Approachable
 The design and language of the application should feel safe and comfortable without pandering or patronizing. It should treat veterans as capable adults navigating a genuinely complex system.
@@ -61,7 +61,7 @@ The app does not simply show veterans what they qualify for — it walks them th
 ## Account & Privacy Model
 - Username-based accounts — no personally identifiable information required
 - Service details collected (branch, years of service, disability rating, etc.) are not PII in isolation
-- Offer sign-up before questionaire, but don't require it. User should be able to navigate to website, get started immediately, and see their results without ever creating an account.
+- Offer sign-up before questionnaire, but don't require it. User should be able to navigate to website, get started immediately, and see their results without ever creating an account.
 - At sign-up allow for username or email based account creation. Inform user account recovery is only possible with email registration. Allow email registration post account creation.
 - Minimal data collection philosophy — only collect what is genuinely needed
 
