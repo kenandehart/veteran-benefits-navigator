@@ -11,7 +11,7 @@ const benefits = [
   {
     type: 'resource',
     category: 'disability compensation',
-    name: 'Accredited Representatives',
+    name: 'Accredited Representatives', // id:1
     description:
       '3 types VA-accredited representatives are available to provide responsible, qualified representation on VA claims.',
     eligibility_summary:
@@ -22,7 +22,7 @@ const benefits = [
   {
     type: 'benefit',
     category: 'disability compensation',
-    name: 'Automobile Adaptive Equipment (AAE)',
+    name: 'Automobile Adaptive Equipment (AAE)', // id:2
     description:
       "This program prescribes and pays for adaptive equipment to allow an elgible person to safely operate and enter/exit from their personal vehicle.",
     eligibility_summary:
@@ -32,8 +32,8 @@ const benefits = [
   },
   {
     type: 'benefit',
-    category: 'disability compensation',
-    name: 'Specially Adapted Housing (SAH) grant',
+    category: 'housing',
+    name: 'Specially Adapted Housing (SAH) grant', // id:3
     description:
       '1 of 3 types of adaptive housing grants for veterans with certain service-connected disabilities that allow them to buy or change a home to meet their needs and live more independently.',
     eligibility_summary:
@@ -43,8 +43,8 @@ const benefits = [
   },
   {
     type: 'benefit',
-    category: 'disability compensation',
-    name: 'Special Home Adaptation (SHA) grant',
+    category: 'housing',
+    name: 'Special Home Adaptation (SHA) grant', // id:4
     description:
       '1 of 3 types of adaptive housing grants for veterans with certain service-connected disabilities that allow them to buy or change a home to meet their needs and live more independently.',
     eligibility_summary:
@@ -54,8 +54,8 @@ const benefits = [
   },
   {
     type: 'benefit',
-    category: 'disability compensation',
-    name: 'Temporary Residence Adaptation (TRA) grant',
+    category: 'housing',
+    name: 'Temporary Residence Adaptation (TRA) grant', // id:5
     description:
       '1 of 3 types of adaptive housing grants for veterans with certain service-connected disabilities that allow them to buy or change a home to meet their needs and live more independently.',
     eligibility_summary:
@@ -66,12 +66,45 @@ const benefits = [
   {
     type: 'benefit',
     category: 'disability compensation',
-    name: 'Agent Orange exposure and disability compensation',
+    name: 'Agent Orange exposure and disability compensation', // id:6
     description:
       "Compensation for health conditions caused by exposure to the herbicide Agent Orange during a veteran's service.",
     eligibility_summary:
       "Veterans who served in a location that exposed them to Agent Orange and have a health condition caused by exposure to Agent Orange may be eligible.",
     url: 'https://www.va.gov/disability/eligibility/hazardous-materials-exposure/agent-orange/',
+    is_active: true,
+  },
+    {
+    type: 'benefit',
+    category: 'disability compensation',
+    name: 'Disability Compensation', // id:7
+    description:
+      'Monthly tax-free payment to veterans who got sick or injured while serving in the military, or whose service made a pre-existing condition worse.',
+    eligibility_summary:
+      'Veterans with a service-connected condition and an other than dishonorable discharge may be eligible.',
+    url: 'https://www.va.gov/disability/eligibility/',
+    is_active: true,
+  },
+  {
+    type: 'benefit',
+    category: 'employment',
+    name: 'Veteran Readiness and Employment (VR&E)', // id:8
+    description:
+      'Helps veterans with service-connected disabilities prepare for, find, and maintain suitable employment, or achieve independence in daily living.',
+    eligibility_summary:
+      'Veterans with a service-connected disability rating of at least 10% and an other than dishonorable discharge may be eligible.',
+    url: 'https://www.va.gov/careers-employment/vocational-rehabilitation/',
+    is_active: true,
+  },
+  {
+    type: 'benefit',
+    category: 'housing',
+    name: 'Adaptive Housing Grants', // id:9
+    description:
+      'Grants for veterans with certain service-connected disabilities to buy or modify a home to meet their needs and live more independently. Includes SAH, SHA, and TRA grants.',
+    eligibility_summary:
+      'Veterans with certain service-connected disabilities affecting mobility may be eligible.',
+    url: 'https://www.va.gov/housing-assistance/disability-housing-grants/',
     is_active: true,
   },
 ];
