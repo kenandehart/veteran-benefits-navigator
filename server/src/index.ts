@@ -1,5 +1,6 @@
 import express from 'express';
 import pool from './db.js';
+import { checkEligibility } from './eligibility.js';
 
 const app = express();
 const PORT = 3000;
@@ -29,7 +30,7 @@ app.get('/benefits', async (_req, res) => {
   }
 });
 
-app.post('/questionnaire', (req, res) => {
+app.post('/questionnaire', async (req, res) => {
   const answers = req.body;
 
   // Basic validation — does it have the shape we expect?
@@ -38,9 +39,14 @@ app.post('/questionnaire', (req, res) => {
     return;
   }
 
-  console.log('Received questionnaire:', JSON.stringify(answers, null, 2));
-
-  res.status(201).json({ status: 'received' });
+  try {
+    const result = await pool.query('SELECT * FROM eligibility_requirements');
+    const eligibleBenefitIds = checkEligibility(answers, result.rows);
+    res.status(201).json({ eligibleBenefitIds });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to process questionnaire' });
+  }
 });
 
 app.listen(PORT, () => {
