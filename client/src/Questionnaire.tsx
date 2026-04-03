@@ -32,7 +32,6 @@ interface Snapshot {
   step: Step;
   currentServicePeriod: Partial<ServicePeriod>;
   answers: QuestionnaireAnswers;
-  housingOwnershipSelection: boolean | null;
 }
 
 const STEP_SECTIONS: Record<Step, string> = {
@@ -72,7 +71,6 @@ function Questionnaire() {
   const [answers, setAnswers] = useState<QuestionnaireAnswers>(INITIAL_ANSWERS);
   const [history, setHistory] = useState<Snapshot[]>([]);
   const [showTooltip, setShowTooltip] = useState(false);
-  const [housingOwnershipSelection, setHousingOwnershipSelection] = useState<boolean | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
   const isFirstPeriod = answers.servicePeriods.length === 0;
@@ -82,7 +80,6 @@ function Questionnaire() {
       step: currentStep,
       currentServicePeriod: { ...currentServicePeriod },
       answers: { ...answers, servicePeriods: [...answers.servicePeriods] },
-      housingOwnershipSelection,
     };
   }
 
@@ -105,7 +102,6 @@ function Questionnaire() {
     setCurrentStep(prev.step);
     setCurrentServicePeriod(prev.currentServicePeriod);
     setAnswers(prev.answers);
-    setHousingOwnershipSelection(prev.housingOwnershipSelection);
     setShowTooltip(false);
   }
 
@@ -122,12 +118,10 @@ function Questionnaire() {
         </header>
         <main className="q-main">
           <div className="q-card">
-            <p className="q-label">Thank you — your answers have been submitted.</p>
+            <p className="q-label" style={{ textAlign: 'center' }}>Questionnaire Complete</p>
           </div>
         </main>
-        <footer className="footer">
-          <p>Built for veterans, by veterans.</p>
-        </footer>
+        <footer className="footer"></footer>
       </div>
     );
   }
@@ -152,13 +146,6 @@ function Questionnaire() {
     </button>
   );
 
-  // Inline style for a yes/no selection button
-  function selectionButtonStyle(selected: boolean): React.CSSProperties {
-    return selected
-      ? { outline: '3px solid var(--gold)', outlineOffset: '2px' }
-      : {};
-  }
-
   let stepContent: React.ReactNode;
 
   switch (currentStep) {
@@ -182,6 +169,7 @@ function Questionnaire() {
               className="cta-button q-next-btn"
               onClick={() => advance('separation-date')}
               disabled={!currentServicePeriod.entryDate}
+              style={{ marginLeft: 'auto' }}
             >
               Next
             </button>
@@ -210,6 +198,7 @@ function Questionnaire() {
               className="cta-button q-next-btn"
               onClick={() => advance('active-duty')}
               disabled={!currentServicePeriod.separationDate}
+              style={{ marginLeft: 'auto' }}
             >
               Next
             </button>
@@ -223,18 +212,18 @@ function Questionnaire() {
       stepContent = (
         <>
           <label className="q-label">Was this period of service active duty?</label>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button
-              className="cta-button"
-              onClick={() => advance('discharge', { ...currentServicePeriod, activeDuty: true })}
-            >
-              Yes
-            </button>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }}>
             <button
               className="cta-button"
               onClick={() => advance('discharge', { ...currentServicePeriod, activeDuty: false })}
             >
               No
+            </button>
+            <button
+              className="cta-button"
+              onClick={() => advance('discharge', { ...currentServicePeriod, activeDuty: true })}
+            >
+              Yes
             </button>
           </div>
           {backButton}
@@ -266,6 +255,7 @@ function Questionnaire() {
               className="cta-button q-next-btn"
               onClick={() => advance('add-another')}
               disabled={!currentServicePeriod.dischargeLevel}
+              style={{ marginLeft: 'auto' }}
             >
               Next
             </button>
@@ -280,7 +270,19 @@ function Questionnaire() {
       stepContent = (
         <>
           <label className="q-label">Would you like to add another period of service?</label>
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }}>
+            <button
+              className="cta-button"
+              onClick={() => {
+                const updatedAnswers = {
+                  ...answers,
+                  servicePeriods: [...answers.servicePeriods, completedPeriod],
+                };
+                advance('has-rating', {}, updatedAnswers);
+              }}
+            >
+              No
+            </button>
             <button
               className="cta-button"
               onClick={() => {
@@ -292,18 +294,6 @@ function Questionnaire() {
               }}
             >
               Yes
-            </button>
-            <button
-              className="cta-button"
-              onClick={() => {
-                const updatedAnswers = {
-                  ...answers,
-                  servicePeriods: [...answers.servicePeriods, completedPeriod],
-                };
-                advance('service-connected', {}, updatedAnswers);
-              }}
-            >
-              No
             </button>
           </div>
           {backButton}
@@ -362,9 +352,9 @@ function Questionnaire() {
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             <button
               className="cta-button"
-              onClick={() => advance('has-rating', undefined, { ...answers, serviceConnectedCondition: true })}
+              onClick={() => advance('housing-condition', undefined, { ...answers, serviceConnectedCondition: null })}
             >
-              Yes
+              I'm not sure
             </button>
             <button
               className="cta-button"
@@ -374,9 +364,9 @@ function Questionnaire() {
             </button>
             <button
               className="cta-button"
-              onClick={() => advance('has-rating', undefined, { ...answers, serviceConnectedCondition: null })}
+              onClick={() => advance('housing-condition', undefined, { ...answers, serviceConnectedCondition: true })}
             >
-              I'm not sure
+              Yes
             </button>
           </div>
           {backButton}
@@ -389,18 +379,18 @@ function Questionnaire() {
       stepContent = (
         <>
           <label className="q-label">Do you have a current VA disability rating?</label>
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }}>
+            <button
+              className="cta-button"
+              onClick={() => advance('service-connected', undefined, { ...answers, hasDisabilityRating: false })}
+            >
+              No
+            </button>
             <button
               className="cta-button"
               onClick={() => advance('rating-value', undefined, { ...answers, hasDisabilityRating: true })}
             >
               Yes
-            </button>
-            <button
-              className="cta-button"
-              onClick={() => advance('housing-condition', undefined, { ...answers, hasDisabilityRating: false })}
-            >
-              No
             </button>
           </div>
           {backButton}
@@ -428,8 +418,9 @@ function Questionnaire() {
             {backButton}
             <button
               className="cta-button q-next-btn"
-              onClick={() => advance('housing-condition')}
+              onClick={() => advance('housing-condition', undefined, { ...answers, serviceConnectedCondition: true })}
               disabled={answers.disabilityRating === null}
+              style={{ marginLeft: 'auto' }}
             >
               Next
             </button>
@@ -446,18 +437,18 @@ function Questionnaire() {
           <p style={{ fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
             [ list of qualifying conditions will be added ]
           </p>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button
-              className="cta-button"
-              onClick={() => advance('housing-ownership')}
-            >
-              Yes
-            </button>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }}>
             <button
               className="cta-button"
               onClick={() => handleSubmit({ ...answers, adaptiveHousingCondition: false })}
             >
               No
+            </button>
+            <button
+              className="cta-button"
+              onClick={() => advance('housing-ownership')}
+            >
+              Yes
             </button>
           </div>
           {backButton}
@@ -472,32 +463,21 @@ function Questionnaire() {
           <label className="q-label">
             Are you currently living in, or planning to live in, a home that you or a family member own or will own?
           </label>
-          <div style={{ display: 'flex', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }}>
             <button
               className="cta-button"
-              style={selectionButtonStyle(housingOwnershipSelection === true)}
-              onClick={() => setHousingOwnershipSelection(true)}
-            >
-              Yes
-            </button>
-            <button
-              className="cta-button"
-              style={selectionButtonStyle(housingOwnershipSelection === false)}
-              onClick={() => setHousingOwnershipSelection(false)}
+              onClick={() => handleSubmit({ ...answers, adaptiveHousingCondition: false })}
             >
               No
             </button>
-          </div>
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-            {backButton}
             <button
-              className="cta-button q-next-btn"
-              onClick={() => handleSubmit({ ...answers, adaptiveHousingCondition: housingOwnershipSelection === true })}
-              disabled={housingOwnershipSelection === null}
+              className="cta-button"
+              onClick={() => handleSubmit({ ...answers, adaptiveHousingCondition: true })}
             >
-              See My Benefits
+              Yes
             </button>
           </div>
+          {backButton}
         </>
       );
       break;
@@ -517,9 +497,7 @@ function Questionnaire() {
         </div>
       </main>
 
-      <footer className="footer">
-        <p>Built for veterans, by veterans.</p>
-      </footer>
+      <footer className="footer"></footer>
     </div>
   );
 }

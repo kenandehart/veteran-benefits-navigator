@@ -54,9 +54,7 @@ function App() {
         </section>
       </main>
 
-      <footer className="footer">
-        <p>Built for veterans, by veterans.</p>
-      </footer>
+      <footer className="footer"></footer>
     </div>
   )
 }
