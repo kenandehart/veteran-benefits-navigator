@@ -1,10 +1,16 @@
 import './App.css'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Questionnaire from './Questionnaire';
 
 function App() {
-  const [currentView, setCurrentView] = useState('landing');
+  const [currentView, setCurrentView] = useState<string>(() => {
+    try { return localStorage.getItem('vbn_currentView') ?? 'landing'; } catch { return 'landing'; }
+  });
   const [showMenu, setShowMenu] = useState(false);
+
+  useEffect(() => {
+    try { localStorage.setItem('vbn_currentView', currentView); } catch {}
+  }, [currentView]);
 
   if (currentView === 'questionnaire') {
     return <Questionnaire onGoHome={() => setCurrentView('landing')} />;

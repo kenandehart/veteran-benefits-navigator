@@ -1,5 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
+
+function getStored<T>(key: string, fallback: T): T {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw !== null ? (JSON.parse(raw) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+const STORAGE_KEYS = ['vbn_step', 'vbn_answers', 'vbn_history', 'vbn_eligibleBenefits', 'vbn_selectedBenefit'];
+
+function clearQuestionnaireStorage() {
+  STORAGE_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch {} });
+}
 
 interface Benefit {
   id: number;
@@ -76,17 +91,28 @@ const INITIAL_ANSWERS: QuestionnaireAnswers = {
 };
 
 function Questionnaire({ onGoHome }: { onGoHome: () => void }) {
-  const [currentStep, setCurrentStep] = useState<Step>('entry-date');
+  const [currentStep, setCurrentStep] = useState<Step>(() => getStored('vbn_step', 'entry-date'));
   const [currentServicePeriod, setCurrentServicePeriod] = useState<Partial<ServicePeriod>>({});
-  const [answers, setAnswers] = useState<QuestionnaireAnswers>(INITIAL_ANSWERS);
-  const [history, setHistory] = useState<Snapshot[]>([]);
+  const [answers, setAnswers] = useState<QuestionnaireAnswers>(() => getStored('vbn_answers', INITIAL_ANSWERS));
+  const [history, setHistory] = useState<Snapshot[]>(() => getStored('vbn_history', []));
   const [showTooltip, setShowTooltip] = useState(false);
-  const [eligibleBenefits, setEligibleBenefits] = useState<Benefit[] | null>(null);
-  const [selectedBenefit, setSelectedBenefit] = useState<Benefit | null>(null);
+  const [eligibleBenefits, setEligibleBenefits] = useState<Benefit[] | null>(() => getStored('vbn_eligibleBenefits', null));
+  const [selectedBenefit, setSelectedBenefit] = useState<Benefit | null>(() => getStored('vbn_selectedBenefit', null));
   const [showMenu, setShowMenu] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
+  useEffect(() => { try { localStorage.setItem('vbn_step', JSON.stringify(currentStep)); } catch {} }, [currentStep]);
+  useEffect(() => { try { localStorage.setItem('vbn_answers', JSON.stringify(answers)); } catch {} }, [answers]);
+  useEffect(() => { try { localStorage.setItem('vbn_history', JSON.stringify(history)); } catch {} }, [history]);
+  useEffect(() => { try { localStorage.setItem('vbn_eligibleBenefits', JSON.stringify(eligibleBenefits)); } catch {} }, [eligibleBenefits]);
+  useEffect(() => { try { localStorage.setItem('vbn_selectedBenefit', JSON.stringify(selectedBenefit)); } catch {} }, [selectedBenefit]);
+
   const isFirstPeriod = answers.servicePeriods.length === 0;
+
+  function goHome() {
+    clearQuestionnaireStorage();
+    onGoHome();
+  }
 
   function handleGoHome() {
     setShowMenu(false);
@@ -94,7 +120,7 @@ function Questionnaire({ onGoHome }: { onGoHome: () => void }) {
     if (hasProgress) {
       setShowConfirmDialog(true);
     } else {
-      onGoHome();
+      goHome();
     }
   }
 
@@ -190,7 +216,7 @@ function Questionnaire({ onGoHome }: { onGoHome: () => void }) {
           </button>
           <button
             className="cta-button"
-            onClick={() => { setShowConfirmDialog(false); onGoHome(); }}
+            onClick={() => { setShowConfirmDialog(false); goHome(); }}
           >
             Leave anyway
           </button>
@@ -242,7 +268,7 @@ function Questionnaire({ onGoHome }: { onGoHome: () => void }) {
             <div className="no-results">
               <p>We weren't able to find any matching benefits based on your answers.</p>
               <p>Your situation may still qualify you for benefits not yet covered by this tool. Consider reaching out to a VA-accredited representative for a full review.</p>
-              <button className="cta-button" onClick={onGoHome}>Return to home page</button>
+              <button className="cta-button" onClick={goHome}>Return to home page</button>
             </div>
           ) : (
             <>
