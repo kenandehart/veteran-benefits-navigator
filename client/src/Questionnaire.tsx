@@ -158,7 +158,7 @@ function Questionnaire({ onGoHome }: { onGoHome: () => void }) {
     setAnswers(finalAnswers);
 
     try {
-      const response = await fetch('https://ideal-couscous-x5j95j49rrqwf6x56-3000.app.github.dev/questionnaire', {
+      const response = await fetch('/api/questionnaire', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(finalAnswers),
