@@ -601,12 +601,26 @@ function Questionnaire({ onGoHome }: { onGoHome: () => void }) {
     }
 
     case 'housing-condition': {
+      const QUALIFYING_CONDITIONS = [
+        'The loss, or loss of use, of more than one limb',
+        'The loss or loss of use of both hands',
+        'The loss, or loss of use, of a lower leg along with the residuals (lasting effects) of an organic (natural) disease or injury',
+        'Blindness in both eyes (with 20/200 visual acuity or less)',
+        'Certain severe burns',
+        'Certain respiratory or breathing injuries',
+        'The loss, or loss of use, of one lower extremity (foot or leg) after September 11, 2001, which makes it so you can\'t balance or walk without the help of braces, crutches, canes, or a wheelchair',
+      ];
       stepContent = (
         <>
           <label className="q-label">Do you have any of the following conditions?</label>
-          <p style={{ fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-            [ list of qualifying conditions will be added ]
-          </p>
+          <div className="conditions-wrapper">
+            <ul className="conditions-list">
+              {QUALIFYING_CONDITIONS.map((condition, i) => (
+                <li key={i} className="conditions-list__item">{condition}</li>
+              ))}
+            </ul>
+            <div className="conditions-fade" aria-hidden="true" />
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }}>
             <button
               className="cta-button"

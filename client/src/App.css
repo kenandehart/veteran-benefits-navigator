@@ -454,6 +454,75 @@
 }
 
 /* ============================================================
+   Qualifying conditions scrollable list
+   ============================================================ */
+
+.conditions-wrapper {
+  position: relative;
+  border: 1.5px solid var(--border);
+  border-radius: 3px;
+  background-color: var(--bg);
+}
+
+.conditions-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  max-height: 188px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.conditions-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.conditions-list::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 2px;
+}
+
+.conditions-list__item {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 16px;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.5;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.conditions-list__item:last-child {
+  border-bottom: none;
+}
+
+.conditions-list__item::before {
+  content: '';
+  flex-shrink: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--gold);
+  margin-top: 1px;
+}
+
+/* Fade hint indicating more content below */
+.conditions-fade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 36px;
+  background: linear-gradient(to bottom, transparent, var(--bg));
+  border-radius: 0 0 3px 3px;
+  pointer-events: none;
+}
+
+/* ============================================================
    Header menu
    ============================================================ */
 
