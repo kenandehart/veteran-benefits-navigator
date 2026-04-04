@@ -382,7 +382,7 @@ function Questionnaire({ onGoHome }: { onGoHome: () => void }) {
       stepContent = (
         <>
           <label className="q-label">Was this period of service active duty?</label>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
               onClick={() => advance('discharge', { ...currentServicePeriod, activeDuty: false })}
@@ -440,7 +440,7 @@ function Questionnaire({ onGoHome }: { onGoHome: () => void }) {
       stepContent = (
         <>
           <label className="q-label">Would you like to add another period of service?</label>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
               onClick={() => {
@@ -549,7 +549,7 @@ function Questionnaire({ onGoHome }: { onGoHome: () => void }) {
       stepContent = (
         <>
           <label className="q-label">Do you have a current VA disability rating?</label>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
               onClick={() => advance('service-connected', undefined, { ...answers, hasDisabilityRating: false })}
@@ -621,7 +621,7 @@ function Questionnaire({ onGoHome }: { onGoHome: () => void }) {
             </ul>
             <div className="conditions-fade" aria-hidden="true" />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
               onClick={() => handleSubmit({ ...answers, adaptiveHousingCondition: false })}
@@ -647,7 +647,7 @@ function Questionnaire({ onGoHome }: { onGoHome: () => void }) {
           <label className="q-label">
             Are you currently living in, or planning to live in, a home that you or a family member own or will own?
           </label>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
               onClick={() => handleSubmit({ ...answers, adaptiveHousingCondition: false })}
