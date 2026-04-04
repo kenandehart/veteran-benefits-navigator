@@ -82,6 +82,107 @@ const DISCHARGE_OPTIONS = [
 
 const RATING_OPTIONS = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
 
+// Parses "MM/DD/YYYY" → { month, day, year } or null if invalid.
+function parseDateText(text: string): { month: number; day: number; year: number } | null {
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(text.trim());
+  if (!match) return null;
+  const month = parseInt(match[1], 10);
+  const day   = parseInt(match[2], 10);
+  const year  = parseInt(match[3], 10);
+  if (month < 1 || month > 12) return null;
+  if (day < 1 || day > 31) return null;
+  if (year < 1900 || year > 2100) return null;
+  // Let Date validate the exact day (e.g. Feb 30 is invalid)
+  const d = new Date(year, month - 1, day);
+  if (d.getFullYear() !== year || d.getMonth() !== month - 1 || d.getDate() !== day) return null;
+  return { month, day, year };
+}
+
+function toISO(month: number, day: number, year: number): string {
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+function isoToDisplay(iso: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  return m ? `${m[2]}/${m[3]}/${m[1]}` : '';
+}
+
+// Accepts value/onChange in ISO format (YYYY-MM-DD or '').
+function DateInput({ id, value, onChange }: { id: string; value: string; onChange: (v: string) => void }) {
+  const [mode, setMode] = useState<'picker' | 'text'>('picker');
+  const [textValue, setTextValue] = useState('');
+  const [touched, setTouched] = useState(false);
+
+  function switchToText() {
+    setTextValue(value ? isoToDisplay(value) : '');
+    setTouched(false);
+    setMode('text');
+  }
+
+  function switchToPicker() {
+    setMode('picker');
+  }
+
+  function handleTextChange(raw: string) {
+    // Strip non-digits, cap at 8, then re-insert slashes
+    const digits = raw.replace(/\D/g, '').slice(0, 8);
+    let formatted = digits;
+    if (digits.length > 4) {
+      formatted = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+    } else if (digits.length > 2) {
+      formatted = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+    }
+    setTextValue(formatted);
+    const parsed = parseDateText(formatted);
+    onChange(parsed ? toISO(parsed.month, parsed.day, parsed.year) : '');
+  }
+
+  const isInvalid = touched && textValue.length > 0 && !parseDateText(textValue);
+
+  if (mode === 'picker') {
+    return (
+      <div className="date-input-wrapper">
+        <input
+          id={id}
+          type="date"
+          className="q-input"
+          value={value}
+          onChange={e => onChange(e.target.value)}
+        />
+        <button type="button" className="date-mode-toggle" onClick={switchToText}>
+          Type date manually
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="date-input-wrapper">
+      <input
+        id={id}
+        type="text"
+        inputMode="numeric"
+        className={`q-input${isInvalid ? ' q-input--error' : ''}`}
+        value={textValue}
+        placeholder="MM/DD/YYYY"
+        maxLength={10}
+        onChange={e => handleTextChange(e.target.value)}
+        onBlur={() => setTouched(true)}
+        aria-invalid={isInvalid}
+        aria-describedby={isInvalid ? `${id}-error` : undefined}
+      />
+      {isInvalid && (
+        <p id={`${id}-error`} className="date-input-error" role="alert">
+          Please enter a valid date (MM/DD/YYYY).
+        </p>
+      )}
+      <button type="button" className="date-mode-toggle" onClick={switchToPicker}>
+        Use date picker instead
+      </button>
+    </div>
+  );
+}
+
 const INITIAL_ANSWERS: QuestionnaireAnswers = {
   servicePeriods: [],
   serviceConnectedCondition: null,
@@ -326,12 +427,10 @@ function Questionnaire({ onGoHome }: { onGoHome: () => void }) {
       stepContent = (
         <>
           <label className="q-label" htmlFor="q-input">{label}</label>
-          <input
+          <DateInput
             id="q-input"
-            type="date"
-            className="q-input"
             value={currentServicePeriod.entryDate ?? ''}
-            onChange={e => setCurrentServicePeriod(p => ({ ...p, entryDate: e.target.value }))}
+            onChange={v => setCurrentServicePeriod(p => ({ ...p, entryDate: v }))}
           />
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
             {showBack && backButton}
@@ -355,12 +454,10 @@ function Questionnaire({ onGoHome }: { onGoHome: () => void }) {
           <label className="q-label" htmlFor="q-input">
             What is the date of separation for this period of service?
           </label>
-          <input
+          <DateInput
             id="q-input"
-            type="date"
-            className="q-input"
             value={currentServicePeriod.separationDate ?? ''}
-            onChange={e => setCurrentServicePeriod(p => ({ ...p, separationDate: e.target.value }))}
+            onChange={v => setCurrentServicePeriod(p => ({ ...p, separationDate: v }))}
           />
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
             {backButton}
