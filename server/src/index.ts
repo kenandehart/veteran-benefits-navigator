@@ -42,7 +42,11 @@ app.post('/questionnaire', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM eligibility_requirements');
     const eligibleBenefitIds = checkEligibility(answers, result.rows);
-    res.status(201).json({ eligibleBenefitIds });
+    const benefitsResult = await pool.query(
+      'SELECT id, name, category, short_description, description, eligibility_summary, url FROM benefits WHERE id = ANY($1)',
+      [eligibleBenefitIds]
+    );
+    res.status(201).json({ eligibleBenefits: benefitsResult.rows });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to process questionnaire' });

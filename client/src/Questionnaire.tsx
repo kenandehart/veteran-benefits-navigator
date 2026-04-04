@@ -1,6 +1,16 @@
 import { useState } from 'react';
 import './App.css';
 
+interface Benefit {
+  id: number;
+  name: string;
+  category: string;
+  short_description: string;
+  description: string;
+  eligibility_summary: string;
+  url: string;
+}
+
 interface ServicePeriod {
   entryDate: string;
   separationDate: string;
@@ -65,15 +75,28 @@ const INITIAL_ANSWERS: QuestionnaireAnswers = {
   adaptiveHousingCondition: false,
 };
 
-function Questionnaire() {
+function Questionnaire({ onGoHome }: { onGoHome: () => void }) {
   const [currentStep, setCurrentStep] = useState<Step>('entry-date');
   const [currentServicePeriod, setCurrentServicePeriod] = useState<Partial<ServicePeriod>>({});
   const [answers, setAnswers] = useState<QuestionnaireAnswers>(INITIAL_ANSWERS);
   const [history, setHistory] = useState<Snapshot[]>([]);
   const [showTooltip, setShowTooltip] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [eligibleBenefits, setEligibleBenefits] = useState<Benefit[] | null>(null);
+  const [selectedBenefit, setSelectedBenefit] = useState<Benefit | null>(null);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const isFirstPeriod = answers.servicePeriods.length === 0;
+
+  function handleGoHome() {
+    setShowMenu(false);
+    const hasProgress = history.length > 0 || eligibleBenefits !== null || selectedBenefit !== null;
+    if (hasProgress) {
+      setShowConfirmDialog(true);
+    } else {
+      onGoHome();
+    }
+  }
 
   function takeSnapshot(): Snapshot {
     return {
@@ -119,23 +142,129 @@ function Questionnaire() {
         throw new Error(`Server responded with ${response.status}`);
       }
 
-      setSubmitted(true);
+      const data = await response.json();
+      setEligibleBenefits(data.eligibleBenefits);
     } catch (error) {
       console.error('Failed to submit questionnaire:', error);
     }
   }
 
-  if (submitted) {
+  const siteHeader = (
+    <>
+      {showMenu && <div className="menu-backdrop" onClick={() => setShowMenu(false)} />}
+      <header className="header">
+        <div className="header-menu">
+          <button
+            className="menu-btn"
+            onClick={() => setShowMenu(v => !v)}
+            aria-label="Open navigation menu"
+            aria-expanded={showMenu}
+          >
+            <span className="menu-btn__bar" />
+            <span className="menu-btn__bar" />
+            <span className="menu-btn__bar" />
+          </button>
+          {showMenu && (
+            <div className="nav-dropdown" role="menu">
+              <button className="nav-dropdown__item" role="menuitem" onClick={handleGoHome}>
+                Home
+              </button>
+            </div>
+          )}
+        </div>
+        <span className="wordmark">Benefits Navigator</span>
+      </header>
+    </>
+  );
+
+  const confirmDialog = showConfirmDialog && (
+    <div className="dialog-overlay" onClick={() => setShowConfirmDialog(false)}>
+      <div className="dialog" onClick={e => e.stopPropagation()}>
+        <h2 className="dialog__title">Leave questionnaire?</h2>
+        <p className="dialog__body">
+          Your answers have not been saved and will be lost if you leave. Are you sure you want to return to the home page?
+        </p>
+        <div className="dialog__actions">
+          <button className="dialog__cancel" onClick={() => setShowConfirmDialog(false)}>
+            Cancel
+          </button>
+          <button
+            className="cta-button"
+            onClick={() => { setShowConfirmDialog(false); onGoHome(); }}
+          >
+            Leave anyway
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (selectedBenefit !== null) {
     return (
       <div className="page">
-        <header className="header">
-          <span className="wordmark">Benefits Navigator</span>
-        </header>
-        <main className="q-main">
-          <div className="q-card">
-            <p className="q-label" style={{ textAlign: 'center' }}>Questionnaire Complete</p>
+        {siteHeader}
+        <main className="detail-main">
+          <div className="benefit-detail">
+            <button className="benefit-detail__back" onClick={() => setSelectedBenefit(null)}>
+              ← Back
+            </button>
+            <h1 className="benefit-detail__name">{selectedBenefit.name}</h1>
+            <div className="benefit-detail__section">
+              <h2 className="benefit-detail__section-label">About this benefit</h2>
+              <p className="benefit-detail__section-text">{selectedBenefit.description}</p>
+            </div>
+            <div className="benefit-detail__section">
+              <h2 className="benefit-detail__section-label">Who may be eligible</h2>
+              <p className="benefit-detail__section-text">{selectedBenefit.eligibility_summary}</p>
+            </div>
+            <a
+              href={selectedBenefit.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cta-button benefit-detail__link"
+            >
+              Visit official resource →
+            </a>
           </div>
         </main>
+        {confirmDialog}
+        <footer className="footer"></footer>
+      </div>
+    );
+  }
+
+  if (eligibleBenefits !== null) {
+    return (
+      <div className="page">
+        {siteHeader}
+        <main className="results-main">
+          {eligibleBenefits.length === 0 ? (
+            <div className="no-results">
+              <p>We weren't able to find any matching benefits based on your answers.</p>
+              <p>Your situation may still qualify you for benefits not yet covered by this tool. Consider reaching out to a VA-accredited representative for a full review.</p>
+              <button className="cta-button" onClick={onGoHome}>Return to home page</button>
+            </div>
+          ) : (
+            <>
+              <h1 className="results-heading">Benefits you may be eligible for</h1>
+              <div className="benefits-grid">
+                {eligibleBenefits.map(benefit => (
+                  <button
+                    key={benefit.id}
+                    className="benefit-tile"
+                    onClick={() => setSelectedBenefit(benefit)}
+                  >
+                    <span className="benefit-tile__name">{benefit.name}</span>
+                    {benefit.short_description && (
+                      <span className="benefit-tile__desc">{benefit.short_description}</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </main>
+        {confirmDialog}
         <footer className="footer"></footer>
       </div>
     );
@@ -501,9 +630,7 @@ function Questionnaire() {
 
   return (
     <div className="page">
-      <header className="header">
-        <span className="wordmark">Benefits Navigator</span>
-      </header>
+      {siteHeader}
 
       <main className="q-main">
         <div className="q-card">
@@ -512,6 +639,7 @@ function Questionnaire() {
         </div>
       </main>
 
+      {confirmDialog}
       <footer className="footer"></footer>
     </div>
   );

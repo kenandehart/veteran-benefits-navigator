@@ -4,12 +4,34 @@ import Questionnaire from './Questionnaire';
 
 function App() {
   const [currentView, setCurrentView] = useState('landing');
+  const [showMenu, setShowMenu] = useState(false);
+
   if (currentView === 'questionnaire') {
-    return <Questionnaire />;
+    return <Questionnaire onGoHome={() => setCurrentView('landing')} />;
   }
   return (
     <div className="page">
+      {showMenu && <div className="menu-backdrop" onClick={() => setShowMenu(false)} />}
       <header className="header">
+        <div className="header-menu">
+          <button
+            className="menu-btn"
+            onClick={() => setShowMenu(v => !v)}
+            aria-label="Open navigation menu"
+            aria-expanded={showMenu}
+          >
+            <span className="menu-btn__bar" />
+            <span className="menu-btn__bar" />
+            <span className="menu-btn__bar" />
+          </button>
+          {showMenu && (
+            <div className="nav-dropdown" role="menu">
+              <button className="nav-dropdown__item" role="menuitem" onClick={() => setShowMenu(false)}>
+                Home
+              </button>
+            </div>
+          )}
+        </div>
         <span className="wordmark">Benefits Navigator</span>
       </header>
 
