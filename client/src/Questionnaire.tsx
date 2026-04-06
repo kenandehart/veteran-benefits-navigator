@@ -30,6 +30,7 @@ interface QuestionnaireAnswers {
   hasDisabilityRating: boolean | null;
   disabilityRating: number | null;
   adaptiveHousingCondition: boolean;
+  purpleHeartPost911: boolean;
 }
 
 type Step =
@@ -42,7 +43,8 @@ type Step =
   | 'has-rating'
   | 'rating-value'
   | 'housing-condition'
-  | 'housing-ownership';
+  | 'housing-ownership'
+  | 'purple-heart';
 
 interface Snapshot {
   step: Step;
@@ -61,6 +63,7 @@ const STEP_SECTIONS: Record<Step, string> = {
   'rating-value':      'Health & Disability',
   'housing-condition': 'Housing',
   'housing-ownership': 'Housing',
+  'purple-heart':      'Health & Disability',
 };
 
 const DISCHARGE_OPTIONS = [
@@ -205,6 +208,7 @@ const INITIAL_ANSWERS: QuestionnaireAnswers = {
   hasDisabilityRating: null,
   disabilityRating: null,
   adaptiveHousingCondition: false,
+  purpleHeartPost911: false,
 };
 
 function Questionnaire() {
@@ -679,13 +683,37 @@ function Questionnaire() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
-              onClick={() => handleSubmit({ ...answers, adaptiveHousingCondition: false })}
+              onClick={() => advance('purple-heart', undefined, { ...answers, adaptiveHousingCondition: false })}
             >
               No
             </button>
             <button
               className="cta-button"
               onClick={() => advance('housing-ownership')}
+            >
+              Yes
+            </button>
+          </div>
+          {backButton}
+        </>
+      );
+      break;
+    }
+
+    case 'purple-heart': {
+      stepContent = (
+        <>
+          <label className="q-label">Were you awarded a Purple Heart on or after September 11, 2001?</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
+            <button
+              className="cta-button"
+              onClick={() => handleSubmit({ ...answers, purpleHeartPost911: false })}
+            >
+              No
+            </button>
+            <button
+              className="cta-button"
+              onClick={() => handleSubmit({ ...answers, purpleHeartPost911: true })}
             >
               Yes
             </button>
@@ -705,13 +733,13 @@ function Questionnaire() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
-              onClick={() => handleSubmit({ ...answers, adaptiveHousingCondition: false })}
+              onClick={() => advance('purple-heart', undefined, { ...answers, adaptiveHousingCondition: false })}
             >
               No
             </button>
             <button
               className="cta-button"
-              onClick={() => handleSubmit({ ...answers, adaptiveHousingCondition: true })}
+              onClick={() => advance('purple-heart', undefined, { ...answers, adaptiveHousingCondition: true })}
             >
               Yes
             </button>

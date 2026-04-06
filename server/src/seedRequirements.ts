@@ -94,8 +94,10 @@ async function seed() {
     await client.query("SELECT setval('eligibility_requirements_id_seq', 1, false)");
     for (const requirement of requirements) {
       await client.query(
-        `INSERT INTO eligibility_requirements (benefit_id, active_duty_service, service_connected_condition, min_discharge_level, min_disability_rating, adaptive_housing_condition)
-         VALUES ($1, $2, $3, $4, $5, $6)`,
+        `INSERT INTO eligibility_requirements (benefit_id, active_duty_service, service_connected_condition,
+                                              min_discharge_level, min_disability_rating, adaptive_housing_condition,
+                                              post_911_90_days, purple_heart, post_911_30_days)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
         [
           requirement.benefit_id,
           requirement.active_duty_service,
@@ -103,6 +105,9 @@ async function seed() {
           requirement.min_discharge_level,
           requirement.min_disability_rating,
           requirement.adaptive_housing_condition,
+          requirement.post_911_90_days,
+          requirement.purple_heart,
+          requirement.post_911_30_days,
         ]
       );
     }
