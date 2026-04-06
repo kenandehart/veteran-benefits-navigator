@@ -63,7 +63,7 @@ function overlapsWartime(period: ServicePeriod): boolean {
   const sep   = new Date(period.separationDate);
   return WARTIME_PERIODS.some(wt => {
     if (sep < wt.start) return false;
-    if (wt.end !== null && entry >= wt.end) return false;
+    if (wt.end !== null && entry > wt.end) return false;
     return true;
   });
 }
