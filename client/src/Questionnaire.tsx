@@ -98,6 +98,31 @@ function parseDateText(text: string): { month: number; day: number; year: number
   return { month, day, year };
 }
 
+function validateEntryDate(iso: string): string {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (date > today) return 'Entry date cannot be in the future.';
+  return '';
+}
+
+function validateSeparationDate(iso: string, entryIso: string): string {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (date > today) return 'Separation date cannot be in the future.';
+  if (entryIso) {
+    const [ey, em, ed] = entryIso.split('-').map(Number);
+    const entryDate = new Date(ey, em - 1, ed);
+    if (date < entryDate) return 'Separation date cannot be before the entry date.';
+  }
+  return '';
+}
+
 function toISO(month: number, day: number, year: number): string {
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
@@ -424,6 +449,7 @@ function Questionnaire({ onGoHome }: { onGoHome: () => void }) {
       const label = isFirstPeriod
         ? 'What is the date of entry for your first period of service?'
         : 'What is the date of entry for this period of service?';
+      const entryDateError = validateEntryDate(currentServicePeriod.entryDate ?? '');
       stepContent = (
         <>
           <label className="q-label" htmlFor="q-input">{label}</label>
@@ -432,12 +458,17 @@ function Questionnaire({ onGoHome }: { onGoHome: () => void }) {
             value={currentServicePeriod.entryDate ?? ''}
             onChange={v => setCurrentServicePeriod(p => ({ ...p, entryDate: v }))}
           />
+          {entryDateError && (
+            <p role="alert" style={{ color: '#b91c1c', fontSize: '0.85rem', margin: '4px 0 0', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+              {entryDateError}
+            </p>
+          )}
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
             {showBack && backButton}
             <button
               className="cta-button q-next-btn"
               onClick={() => advance('separation-date')}
-              disabled={!currentServicePeriod.entryDate}
+              disabled={!currentServicePeriod.entryDate || !!entryDateError}
               style={{ marginLeft: 'auto' }}
             >
               Next
@@ -449,6 +480,10 @@ function Questionnaire({ onGoHome }: { onGoHome: () => void }) {
     }
 
     case 'separation-date': {
+      const sepDateError = validateSeparationDate(
+        currentServicePeriod.separationDate ?? '',
+        currentServicePeriod.entryDate ?? '',
+      );
       stepContent = (
         <>
           <label className="q-label" htmlFor="q-input">
@@ -459,12 +494,17 @@ function Questionnaire({ onGoHome }: { onGoHome: () => void }) {
             value={currentServicePeriod.separationDate ?? ''}
             onChange={v => setCurrentServicePeriod(p => ({ ...p, separationDate: v }))}
           />
+          {sepDateError && (
+            <p role="alert" style={{ color: '#b91c1c', fontSize: '0.85rem', margin: '4px 0 0', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+              {sepDateError}
+            </p>
+          )}
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
             {backButton}
             <button
               className="cta-button q-next-btn"
               onClick={() => advance('active-duty')}
-              disabled={!currentServicePeriod.separationDate}
+              disabled={!currentServicePeriod.separationDate || !!sepDateError}
               style={{ marginLeft: 'auto' }}
             >
               Next
