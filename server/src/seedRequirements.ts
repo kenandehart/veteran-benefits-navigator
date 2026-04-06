@@ -23,6 +23,9 @@ const requirements = [
     min_discharge_level: 2,
     min_disability_rating: -1, // must NOT have a rating
     adaptive_housing_condition: null,
+    post_911_90_days: null,
+    post_911_30_days: null,
+    purple_heart: null,
   },
   {
     benefit_id: 8, // Veteran Readiness and Employment (VR&E)
@@ -31,6 +34,9 @@ const requirements = [
     min_discharge_level: 2,
     min_disability_rating: 10, // must have rating >= 10
     adaptive_housing_condition: null,
+    post_911_90_days: null,
+    post_911_30_days: null,
+    purple_heart: null,
   },
   {
     benefit_id: 9, // Adaptive Housing Grants
@@ -39,6 +45,45 @@ const requirements = [
     min_discharge_level: 2,
     min_disability_rating: null, // no rating requirement
     adaptive_housing_condition: true,
+    post_911_90_days: null,
+    post_911_30_days: null,
+    purple_heart: null,
+  },
+  {
+    benefit_id: 28, //Post 9-11 GI Bill
+                    //Path 1, 90 days aggregate service
+    active_duty_service: null,
+    service_connected_condition: null,
+    min_discharge_level: null,
+    min_disability_rating: null,
+    adaptive_housing_condition: null,
+    post_911_90_days: true, //Compound calculation performed by eligibility checker
+    post_911_30_days: null,
+    purple_heart: null,
+  },
+  {
+    benefit_id: 28, //Post 9-11 GI Bill
+                    //Path 2, Purple Heart
+    active_duty_service: null,
+    service_connected_condition: null,
+    min_discharge_level: 1,
+    min_disability_rating: null,
+    adaptive_housing_condition: null,
+    post_911_90_days: null,
+    post_911_30_days: null,
+    purple_heart: true,
+  },
+  {
+    benefit_id: 28, //Post 9-11 GI Bill
+                    //Path 3, 30 days continuous service
+    active_duty_service: null,
+    service_connected_condition: true,
+    min_discharge_level: null,
+    min_disability_rating: null,
+    adaptive_housing_condition: null,
+    post_911_90_days: null, //Compound calculation performed by eligibility checker
+    post_911_30_days: true,
+    purple_heart: null,
   },
 ];
 

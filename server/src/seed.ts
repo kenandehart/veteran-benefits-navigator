@@ -8,78 +8,6 @@ const pool = new Pool({
 });
 
 const benefits = [
-  {
-    type: 'resource',
-    category: 'disability compensation',
-    name: 'Accredited Representatives', // id:1
-    short_description: '',
-    description:
-      '3 types VA-accredited representatives are available to provide responsible, qualified representation on VA claims.',
-    eligibility_summary:
-      'Veterans with an other than dishonorable seperation may be eligible',
-    url: 'https://www.va.gov/resources/va-accredited-representative-faqs/',
-    is_active: false,
-  },
-  {
-    type: 'benefit',
-    category: 'disability compensation',
-    name: 'Automobile Adaptive Equipment (AAE)', // id:2
-    short_description: '',
-    description:
-      "This program prescribes and pays for adaptive equipment to allow an elgible person to safely operate and enter/exit from their personal vehicle.",
-    eligibility_summary:
-      'Veterans with certain mobility or vision disabilities may be eligible.',
-    url: 'https://www.prosthetics.va.gov/psas/AAE.asp',
-    is_active: false,
-  },
-  {
-    type: 'benefit',
-    category: 'housing',
-    name: 'Specially Adapted Housing (SAH) grant', // id:3
-    short_description: '',
-    description:
-      '1 of 3 types of adaptive housing grants for veterans with certain service-connected disabilities that allow them to buy or change a home to meet their needs and live more independently.',
-    eligibility_summary:
-      'Veterans with certain mobility or vision disabilities may be eligible.',
-    url: 'https://www.va.gov/housing-assistance/disability-housing-grants/',
-    is_active: false,
-  },
-  {
-    type: 'benefit',
-    category: 'housing',
-    name: 'Special Home Adaptation (SHA) grant', // id:4
-    short_description: '',
-    description:
-      '1 of 3 types of adaptive housing grants for veterans with certain service-connected disabilities that allow them to buy or change a home to meet their needs and live more independently.',
-    eligibility_summary:
-      'Veterans with loss of use of their hands, severe burns, or certain respiratory injuries may be eligible.',
-    url: 'https://www.va.gov/housing-assistance/disability-housing-grants/',
-    is_active: false,
-  },
-  {
-    type: 'benefit',
-    category: 'housing',
-    name: 'Temporary Residence Adaptation (TRA) grant', // id:5
-    short_description: '',
-    description:
-      '1 of 3 types of adaptive housing grants for veterans with certain service-connected disabilities that allow them to buy or change a home to meet their needs and live more independently.',
-    eligibility_summary:
-      "Veterans who qualify for an SAH or SHA grant and are temporarily living in a family member's home that needs changes to meet their needs may be eligible.",
-    url: 'https://www.va.gov/housing-assistance/disability-housing-grants/',
-    is_active: false,
-  },
-  {
-    type: 'benefit',
-    category: 'disability compensation',
-    name: 'Agent Orange exposure and disability compensation', // id:6
-    short_description: '',
-    description:
-      "Compensation for health conditions caused by exposure to the herbicide Agent Orange during a veteran's service.",
-    eligibility_summary:
-      "Veterans who served in a location that exposed them to Agent Orange and have a health condition caused by exposure to Agent Orange may be eligible.",
-    url: 'https://www.va.gov/disability/eligibility/hazardous-materials-exposure/agent-orange/',
-    is_active: false,
-  },
     {
     type: 'benefit',
     category: 'disability compensation',
@@ -113,6 +41,18 @@ const benefits = [
       'Grants for veterans with certain service-connected disabilities to buy or modify a home to meet their needs and live more independently. Includes SAH, SHA, and TRA grants.',
     eligibility_summary:
       'Veterans with certain service-connected disabilities affecting mobility may be eligible.',
+    url: 'https://www.va.gov/housing-assistance/disability-housing-grants/',
+    is_active: true,
+  },
+  {
+    type: 'benefit',
+    category: 'education',
+    name: 'Post 9/11 GI Bill', // id:28
+    short_description: 'Education and training benefits for post-9/11 veterans',
+    description:
+      'Helps pay for college, graduate school, and training programs for veterans who served on active duty after September 10, 2001. Benefits include tuition and fees, a monthly housing allowance, and a books and supplies stipend. The amount of benefit depends on length of active duty service.',
+    eligibility_summary:
+      'Veterans with an honorable discharge who served at least 90 days of active duty after September 10, 2001, may be eligible. Veterans with fewer days of service may also qualify with a Purple Heart or a service-connected disability.',
     url: 'https://www.va.gov/housing-assistance/disability-housing-grants/',
     is_active: true,
   },
