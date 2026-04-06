@@ -30,7 +30,7 @@ app.get('/benefits', async (_req, res) => {
   }
 });
 
-app.post('/questionnaire', async (req, res) => {
+app.post('/api/questionnaire', async (req, res) => {
   const answers = req.body;
 
   // Basic validation — does it have the shape we expect?
