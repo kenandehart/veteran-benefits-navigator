@@ -9,9 +9,10 @@ const pool = new Pool({
 
 const benefits = [
     {
+    id: 1,
     type: 'benefit',
     category: 'disability compensation',
-    name: 'Disability Compensation', // id:7
+    name: 'Disability Compensation',
     short_description: 'Monthly tax-free payment for service-connected conditions',
     description:
       'Monthly tax free monetary benefit paid to Veterans with disabilities that are the result of a disease or injury incurred or aggravated during active military service.',
@@ -21,9 +22,10 @@ const benefits = [
     is_active: true,
   },
   {
+    id: 2,
     type: 'benefit',
     category: 'employment',
-    name: 'Veteran Readiness and Employment (VR&E)', // id:8
+    name: 'Veteran Readiness and Employment (VR&E)',
     short_description: 'Career support for service-connected disabilites',
     description:
       'Helps veterans with service-connected disabilities prepare for, find, and maintain suitable employment, or achieve independence in daily living.',
@@ -33,9 +35,10 @@ const benefits = [
     is_active: true,
   },
   {
+    id: 3,
     type: 'benefit',
     category: 'housing',
-    name: 'Adaptive Housing Grants', // id:9
+    name: 'Adaptive Housing Grants',
     short_description: 'Funding to adapt a home for service-connected disabilites',
     description:
       'Grants for veterans with certain service-connected disabilities to buy or modify a home to meet their needs and live more independently. Includes SAH, SHA, and TRA grants.',
@@ -45,9 +48,10 @@ const benefits = [
     is_active: true,
   },
   {
+    id: 4,
     type: 'benefit',
     category: 'education',
-    name: 'Post 9/11 GI Bill', // id:28
+    name: 'Post 9/11 GI Bill',
     short_description: 'Education and training benefits for post-9/11 veterans',
     description:
       'Helps pay for college, graduate school, and training programs for veterans who served on active duty after September 10, 2001. Benefits include tuition and fees, a monthly housing allowance, and a books and supplies stipend. The amount of benefit depends on length of active duty service.',
@@ -63,9 +67,10 @@ async function seed() {
   try {
     for (const benefit of benefits) {
       await client.query(
-        `INSERT INTO benefits (type, category, name, short_description, description, eligibility_summary, url, is_active)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        `INSERT INTO benefits (id, type, category, name, short_description, description, eligibility_summary, url, is_active)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
          ON CONFLICT (name) DO UPDATE SET
+           id = EXCLUDED.id,
            type = EXCLUDED.type,
            category = EXCLUDED.category,
            short_description = EXCLUDED.short_description,
@@ -74,6 +79,7 @@ async function seed() {
            url = EXCLUDED.url,
            is_active = EXCLUDED.is_active`,
         [
+          benefit.id,
           benefit.type,
           benefit.category,
           benefit.name,
@@ -85,6 +91,7 @@ async function seed() {
         ]
       );
     }
+    await client.query("SELECT setval('benefits_id_seq', (SELECT MAX(id) FROM benefits))");
     console.log(`Seeded ${benefits.length} benefits successfully.`);
   } catch (err) {
     console.error('Error seeding benefits:', err);

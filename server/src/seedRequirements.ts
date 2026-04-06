@@ -17,7 +17,7 @@ const requirements = [
   * 5 - Dishonorable
   */
   {
-    benefit_id: 7, // Disability Compensation
+    benefit_id: 1, // Disability Compensation
     active_duty_service: true,
     service_connected_condition: true,
     min_discharge_level: 2,
@@ -28,7 +28,7 @@ const requirements = [
     purple_heart: null,
   },
   {
-    benefit_id: 8, // Veteran Readiness and Employment (VR&E)
+    benefit_id: 2, // Veteran Readiness and Employment (VR&E)
     active_duty_service: true,
     service_connected_condition: true,
     min_discharge_level: 2,
@@ -39,7 +39,7 @@ const requirements = [
     purple_heart: null,
   },
   {
-    benefit_id: 9, // Adaptive Housing Grants
+    benefit_id: 3, // Adaptive Housing Grants
     active_duty_service: true,
     service_connected_condition: true,
     min_discharge_level: 2,
@@ -50,7 +50,7 @@ const requirements = [
     purple_heart: null,
   },
   {
-    benefit_id: 28, //Post 9-11 GI Bill
+    benefit_id: 4, //Post 9-11 GI Bill
                     //Path 1, 90 days aggregate service
     active_duty_service: null,
     service_connected_condition: null,
@@ -62,7 +62,7 @@ const requirements = [
     purple_heart: null,
   },
   {
-    benefit_id: 28, //Post 9-11 GI Bill
+    benefit_id: 4, //Post 9-11 GI Bill
                     //Path 2, Purple Heart
     active_duty_service: null,
     service_connected_condition: null,
@@ -74,7 +74,7 @@ const requirements = [
     purple_heart: true,
   },
   {
-    benefit_id: 28, //Post 9-11 GI Bill
+    benefit_id: 4, //Post 9-11 GI Bill
                     //Path 3, 30 days continuous service
     active_duty_service: null,
     service_connected_condition: true,
