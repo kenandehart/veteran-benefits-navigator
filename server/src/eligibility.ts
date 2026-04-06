@@ -87,10 +87,18 @@ function checkPensionServiceReq(periods: ServicePeriod[]): boolean {
     hasWartimeOverlap
   ) return true;
 
-  // Path C: any active officer period started after Oct 16 1981, total days < 730
+  // Path C: any officer period started after Oct 16 1981 where total active duty days
+  // from prior service periods (separationDate before that officer period's entryDate) is < 730
   if (
-    active.some(p => new Date(p.entryDate) >= OCT_17_1981 && p.officerOrEnlisted === 'officer') &&
-    totalDays < 730
+    periods
+      .filter(p => p.officerOrEnlisted === 'officer' && new Date(p.entryDate) >= OCT_17_1981)
+      .some(officerPeriod => {
+        const officerEntry = new Date(officerPeriod.entryDate);
+        const priorActiveDays = periods
+          .filter(p => p.activeDuty && new Date(p.separationDate) < officerEntry)
+          .reduce((sum, p) => sum + periodDays(p), 0);
+        return priorActiveDays < 730;
+      })
   ) return true;
 
   return false;
