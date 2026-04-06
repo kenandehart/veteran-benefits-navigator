@@ -40,7 +40,7 @@ const OCT_17_1981  = new Date('1981-10-17');
 const WARTIME_PERIODS: Array<{ start: Date; end: Date | null }> = [
   { start: new Date('1941-12-07'), end: new Date('1946-12-31') },
   { start: new Date('1950-06-27'), end: new Date('1955-01-31') },
-  { start: new Date('1961-02-28'), end: new Date('1975-05-07') },
+  { start: new Date('1955-11-01'), end: new Date('1975-05-07') },
   { start: new Date('1990-08-02'), end: null }, // Gulf War, no end date
 ];
 
