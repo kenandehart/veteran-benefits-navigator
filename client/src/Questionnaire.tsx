@@ -21,6 +21,7 @@ interface ServicePeriod {
   entryDate: string;
   separationDate: string;
   activeDuty: boolean;
+  officerOrEnlisted: 'officer' | 'enlisted';
   dischargeLevel: number;
 }
 
@@ -30,6 +31,8 @@ interface QuestionnaireAnswers {
   hasDisabilityRating: boolean | null;
   disabilityRating: number | null;
   adaptiveHousingCondition: boolean;
+  incomeBelowLimit: boolean;
+  ageOrDisability: boolean;
   purpleHeartPost911: boolean;
 }
 
@@ -37,6 +40,7 @@ type Step =
   | 'entry-date'
   | 'separation-date'
   | 'active-duty'
+  | 'officer-enlisted'
   | 'discharge'
   | 'add-another'
   | 'service-connected'
@@ -44,6 +48,8 @@ type Step =
   | 'rating-value'
   | 'housing-condition'
   | 'housing-ownership'
+  | 'income-limit'
+  | 'age-disability'
   | 'purple-heart';
 
 interface Snapshot {
@@ -56,6 +62,7 @@ const STEP_SECTIONS: Record<Step, string> = {
   'entry-date':        'Service History',
   'separation-date':   'Service History',
   'active-duty':       'Service History',
+  'officer-enlisted':  'Service History',
   'discharge':         'Service History',
   'add-another':       'Service History',
   'service-connected': 'Health & Disability',
@@ -63,6 +70,8 @@ const STEP_SECTIONS: Record<Step, string> = {
   'rating-value':      'Health & Disability',
   'housing-condition': 'Housing',
   'housing-ownership': 'Housing',
+  'income-limit':      'Financial',
+  'age-disability':    'Financial',
   'purple-heart':      'Health & Disability',
 };
 
@@ -208,6 +217,8 @@ const INITIAL_ANSWERS: QuestionnaireAnswers = {
   hasDisabilityRating: null,
   disabilityRating: null,
   adaptiveHousingCondition: false,
+  incomeBelowLimit: false,
+  ageOrDisability: false,
   purpleHeartPost911: false,
 };
 
@@ -444,15 +455,39 @@ function Questionnaire() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
-              onClick={() => advance('discharge', { ...currentServicePeriod, activeDuty: false })}
+              onClick={() => advance('officer-enlisted', { ...currentServicePeriod, activeDuty: false })}
             >
               No
             </button>
             <button
               className="cta-button"
-              onClick={() => advance('discharge', { ...currentServicePeriod, activeDuty: true })}
+              onClick={() => advance('officer-enlisted', { ...currentServicePeriod, activeDuty: true })}
             >
               Yes
+            </button>
+          </div>
+          {backButton}
+        </>
+      );
+      break;
+    }
+
+    case 'officer-enlisted': {
+      stepContent = (
+        <>
+          <label className="q-label">Did you start this period of service as an officer or enlisted?</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
+            <button
+              className="cta-button"
+              onClick={() => advance('discharge', { ...currentServicePeriod, officerOrEnlisted: 'enlisted' })}
+            >
+              Enlisted
+            </button>
+            <button
+              className="cta-button"
+              onClick={() => advance('discharge', { ...currentServicePeriod, officerOrEnlisted: 'officer' })}
+            >
+              Officer
             </button>
           </div>
           {backButton}
@@ -683,7 +718,7 @@ function Questionnaire() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
-              onClick={() => advance('purple-heart', undefined, { ...answers, adaptiveHousingCondition: false })}
+              onClick={() => advance('income-limit', undefined, { ...answers, adaptiveHousingCondition: false })}
             >
               No
             </button>
@@ -733,13 +768,115 @@ function Questionnaire() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
-              onClick={() => advance('purple-heart', undefined, { ...answers, adaptiveHousingCondition: false })}
+              onClick={() => advance('income-limit', undefined, { ...answers, adaptiveHousingCondition: false })}
             >
               No
             </button>
             <button
               className="cta-button"
-              onClick={() => advance('purple-heart', undefined, { ...answers, adaptiveHousingCondition: true })}
+              onClick={() => advance('income-limit', undefined, { ...answers, adaptiveHousingCondition: true })}
+            >
+              Yes
+            </button>
+          </div>
+          {backButton}
+        </>
+      );
+      break;
+    }
+
+    case 'income-limit': {
+      stepContent = (
+        <>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+            <label className="q-label">
+              Is your combined net worth and annual income below $163,699?
+            </label>
+            <div style={{ position: 'relative', flexShrink: 0, marginTop: '4px' }}>
+              <button
+                onClick={() => setShowTooltip(v => !v)}
+                aria-label="More information"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '1.1rem',
+                  color: 'var(--gold)',
+                  padding: '0',
+                  lineHeight: 1,
+                }}
+              >
+                ⓘ
+              </button>
+              {showTooltip && (
+                <div
+                  role="tooltip"
+                  style={{
+                    position: 'absolute',
+                    top: '1.6rem',
+                    right: 0,
+                    width: '280px',
+                    background: 'var(--navy)',
+                    color: '#fff',
+                    borderRadius: '4px',
+                    padding: '12px 16px',
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    fontSize: '0.85rem',
+                    lineHeight: 1.5,
+                    zIndex: 10,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                  }}
+                >
+                  This includes all assets except your primary residence and personal vehicle. The VA adjusts this threshold annually.
+                </div>
+              )}
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
+            <button
+              className="cta-button"
+              onClick={() => advance('age-disability', undefined, { ...answers, incomeBelowLimit: false })}
+            >
+              No
+            </button>
+            <button
+              className="cta-button"
+              onClick={() => advance('age-disability', undefined, { ...answers, incomeBelowLimit: true })}
+            >
+              Yes
+            </button>
+          </div>
+          {backButton}
+        </>
+      );
+      break;
+    }
+
+    case 'age-disability': {
+      const AGE_DISABILITY_CONDITIONS = [
+        'You are 65 years old or older',
+        'You have a permanent and total disability',
+        'You are a patient in a nursing home receiving long-term care for a disability',
+        'You are receiving Social Security Disability Insurance or Supplemental Security Income',
+      ];
+      stepContent = (
+        <>
+          <label className="q-label">Are any of the following true?</label>
+          <ul style={{ fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '0.95rem', color: 'var(--text)', margin: '0 0 16px', paddingLeft: '1.25rem', lineHeight: 1.6 }}>
+            {AGE_DISABILITY_CONDITIONS.map((condition, i) => (
+              <li key={i}>{condition}</li>
+            ))}
+          </ul>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
+            <button
+              className="cta-button"
+              onClick={() => advance('purple-heart', undefined, { ...answers, ageOrDisability: false })}
+            >
+              No
+            </button>
+            <button
+              className="cta-button"
+              onClick={() => advance('purple-heart', undefined, { ...answers, ageOrDisability: true })}
             >
               Yes
             </button>
