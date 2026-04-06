@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './App.css';
 
@@ -232,9 +232,27 @@ function Questionnaire() {
   const [showMenu, setShowMenu] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
+  const serviceConnectedTooltipRef = useRef<HTMLDivElement>(null);
+  const incomeLimitTooltipRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => { try { localStorage.setItem('vbn_step', JSON.stringify(currentStep)); } catch {} }, [currentStep]);
   useEffect(() => { try { localStorage.setItem('vbn_answers', JSON.stringify(answers)); } catch {} }, [answers]);
   useEffect(() => { try { localStorage.setItem('vbn_history', JSON.stringify(history)); } catch {} }, [history]);
+
+  useEffect(() => {
+    if (!showTooltip) return;
+    function handleOutsideClick(e: MouseEvent) {
+      const target = e.target as Node;
+      if (
+        !serviceConnectedTooltipRef.current?.contains(target) &&
+        !incomeLimitTooltipRef.current?.contains(target)
+      ) {
+        setShowTooltip(false);
+      }
+    }
+    document.addEventListener('click', handleOutsideClick);
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, [showTooltip]);
 
   const isFirstPeriod = answers.servicePeriods.length === 0;
 
@@ -369,6 +387,7 @@ function Questionnaire() {
         fontFamily: 'system-ui, -apple-system, sans-serif',
         fontSize: '0.95rem',
         padding: '14px 0',
+        width: 'fit-content',
       }}
     >
       ← Back
@@ -573,7 +592,7 @@ function Questionnaire() {
             <label className="q-label">
               Do you have a current illness or injury that affects your mind or body and is related to your service?
             </label>
-            <div style={{ position: 'relative', flexShrink: 0, marginTop: '4px' }}>
+            <div ref={serviceConnectedTooltipRef} style={{ position: 'relative', flexShrink: 0, marginTop: '4px' }}>
               <button
                 onClick={() => setShowTooltip(v => !v)}
                 aria-label="More information"
@@ -792,7 +811,7 @@ function Questionnaire() {
             <label className="q-label">
               Is your combined net worth and annual income below $163,699?
             </label>
-            <div style={{ position: 'relative', flexShrink: 0, marginTop: '4px' }}>
+            <div ref={incomeLimitTooltipRef} style={{ position: 'relative', flexShrink: 0, marginTop: '4px' }}>
               <button
                 onClick={() => setShowTooltip(v => !v)}
                 aria-label="More information"
