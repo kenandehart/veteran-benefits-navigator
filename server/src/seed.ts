@@ -60,6 +60,19 @@ const benefits = [
     url: 'https://www.va.gov/education/about-gi-bill-benefits/post-9-11/',
     is_active: true,
   },
+    {
+    id: 5,
+    type: 'benefit',
+    category: 'pension',
+    name: 'Veterans Pension',
+    short_description: 'Tax-free monthly payments for wartime veterans with limited income',
+    description:
+      'A tax-free monetary benefit for low-income wartime veterans who meet certain age or disability requirements. The benefit amount depends on the veteran’s income, number of dependents, and whether they need regular help with daily activities or are unable to leave the home.',
+    eligibility_summary:
+      'Wartime veterans with a discharge better than dishonorable, who meet service time requirements, have limited income and net worth, and are 65 or older or have a permanent disability may be eligible.',
+    url: 'https://www.va.gov/pension/',
+    is_active: true,
+  },
 ];
 
 async function seed() {
