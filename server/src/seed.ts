@@ -57,7 +57,7 @@ const benefits = [
       'Helps pay for college, graduate school, and training programs for veterans who served on active duty after September 10, 2001. Benefits include tuition and fees, a monthly housing allowance, and a books and supplies stipend. The amount of benefit depends on length of active duty service.',
     eligibility_summary:
       'Veterans with an honorable discharge who served at least 90 days of active duty after September 10, 2001, may be eligible. Veterans with fewer days of service may also qualify with a Purple Heart or a service-connected disability.',
-    url: 'https://www.va.gov/housing-assistance/disability-housing-grants/',
+    url: 'https://www.va.gov/education/about-gi-bill-benefits/post-9-11/',
     is_active: true,
   },
 ];
