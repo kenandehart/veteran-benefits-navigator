@@ -3,7 +3,7 @@ import pool from './db.js';
 import { checkEligibility } from './eligibility.js';
 
 const app = express();
-const PORT = 3000;
+const PORT = parseInt(process.env.PORT || '3000', 10);
 
 app.set('json spaces', 2)
 
