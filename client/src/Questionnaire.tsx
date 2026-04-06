@@ -254,6 +254,41 @@ function Questionnaire() {
     return () => document.removeEventListener('click', handleOutsideClick);
   }, [showTooltip]);
 
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key !== 'Enter') return;
+      if ((e.target as HTMLElement).tagName === 'BUTTON') return;
+
+      switch (currentStep) {
+        case 'entry-date': {
+          const error = validateEntryDate(currentServicePeriod.entryDate ?? '');
+          if (currentServicePeriod.entryDate && !error) advance('separation-date');
+          break;
+        }
+        case 'separation-date': {
+          const error = validateSeparationDate(
+            currentServicePeriod.separationDate ?? '',
+            currentServicePeriod.entryDate ?? '',
+          );
+          if (currentServicePeriod.separationDate && !error) advance('active-duty');
+          break;
+        }
+        case 'discharge': {
+          if (currentServicePeriod.dischargeLevel) advance('add-another');
+          break;
+        }
+        case 'rating-value': {
+          if (answers.disabilityRating !== null) {
+            advance('housing-condition', undefined, { ...answers, serviceConnectedCondition: true });
+          }
+          break;
+        }
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [currentStep, currentServicePeriod, answers]);
+
   const isFirstPeriod = answers.servicePeriods.length === 0;
 
   function goHome() {
@@ -635,19 +670,19 @@ function Questionnaire() {
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             <button
               className="cta-button"
-              onClick={() => advance('housing-condition', undefined, { ...answers, serviceConnectedCondition: null })}
+              onClick={() => advance('income-limit', undefined, { ...answers, serviceConnectedCondition: null, adaptiveHousingCondition: false })}
             >
               I'm not sure
             </button>
             <button
               className="cta-button"
-              onClick={() => advance('housing-condition', undefined, { ...answers, serviceConnectedCondition: false })}
+              onClick={() => advance('income-limit', undefined, { ...answers, serviceConnectedCondition: false, adaptiveHousingCondition: false })}
             >
               No
             </button>
             <button
               className="cta-button"
-              onClick={() => advance('housing-condition', undefined, { ...answers, serviceConnectedCondition: true })}
+              onClick={() => advance('income-limit', undefined, { ...answers, serviceConnectedCondition: true, adaptiveHousingCondition: false })}
             >
               Yes
             </button>
@@ -725,7 +760,7 @@ function Questionnaire() {
       ];
       stepContent = (
         <>
-          <label className="q-label">Do you have any of the following conditions?</label>
+          <label className="q-label">Do your service-connected disabilities include any of the following?</label>
           <div className="conditions-wrapper">
             <ul className="conditions-list">
               {QUALIFYING_CONDITIONS.map((condition, i) => (
