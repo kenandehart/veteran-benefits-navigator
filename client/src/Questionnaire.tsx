@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './App.css';
 
 function getStored<T>(key: string, fallback: T): T {
@@ -10,20 +11,10 @@ function getStored<T>(key: string, fallback: T): T {
   }
 }
 
-const STORAGE_KEYS = ['vbn_step', 'vbn_answers', 'vbn_history', 'vbn_eligibleBenefits', 'vbn_selectedBenefit'];
+const STORAGE_KEYS = ['vbn_step', 'vbn_answers', 'vbn_history'];
 
 function clearQuestionnaireStorage() {
   STORAGE_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch {} });
-}
-
-interface Benefit {
-  id: number;
-  name: string;
-  category: string;
-  short_description: string;
-  description: string;
-  eligibility_summary: string;
-  url: string;
 }
 
 interface ServicePeriod {
@@ -216,33 +207,30 @@ const INITIAL_ANSWERS: QuestionnaireAnswers = {
   adaptiveHousingCondition: false,
 };
 
-function Questionnaire({ onGoHome }: { onGoHome: () => void }) {
+function Questionnaire() {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<Step>(() => getStored('vbn_step', 'entry-date'));
   const [currentServicePeriod, setCurrentServicePeriod] = useState<Partial<ServicePeriod>>({});
   const [answers, setAnswers] = useState<QuestionnaireAnswers>(() => getStored('vbn_answers', INITIAL_ANSWERS));
   const [history, setHistory] = useState<Snapshot[]>(() => getStored('vbn_history', []));
   const [showTooltip, setShowTooltip] = useState(false);
-  const [eligibleBenefits, setEligibleBenefits] = useState<Benefit[] | null>(() => getStored('vbn_eligibleBenefits', null));
-  const [selectedBenefit, setSelectedBenefit] = useState<Benefit | null>(() => getStored('vbn_selectedBenefit', null));
   const [showMenu, setShowMenu] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   useEffect(() => { try { localStorage.setItem('vbn_step', JSON.stringify(currentStep)); } catch {} }, [currentStep]);
   useEffect(() => { try { localStorage.setItem('vbn_answers', JSON.stringify(answers)); } catch {} }, [answers]);
   useEffect(() => { try { localStorage.setItem('vbn_history', JSON.stringify(history)); } catch {} }, [history]);
-  useEffect(() => { try { localStorage.setItem('vbn_eligibleBenefits', JSON.stringify(eligibleBenefits)); } catch {} }, [eligibleBenefits]);
-  useEffect(() => { try { localStorage.setItem('vbn_selectedBenefit', JSON.stringify(selectedBenefit)); } catch {} }, [selectedBenefit]);
 
   const isFirstPeriod = answers.servicePeriods.length === 0;
 
   function goHome() {
     clearQuestionnaireStorage();
-    onGoHome();
+    navigate('/');
   }
 
   function handleGoHome() {
     setShowMenu(false);
-    const hasProgress = history.length > 0 || eligibleBenefits !== null || selectedBenefit !== null;
+    const hasProgress = history.length > 0;
     if (hasProgress) {
       setShowConfirmDialog(true);
     } else {
@@ -295,7 +283,8 @@ function Questionnaire({ onGoHome }: { onGoHome: () => void }) {
       }
 
       const data = await response.json();
-      setEligibleBenefits(data.eligibleBenefits);
+      clearQuestionnaireStorage();
+      navigate('/results', { state: { eligibleBenefits: data.eligibleBenefits } });
     } catch (error) {
       console.error('Failed to submit questionnaire:', error);
     }
@@ -350,77 +339,6 @@ function Questionnaire({ onGoHome }: { onGoHome: () => void }) {
       </div>
     </div>
   );
-
-  if (selectedBenefit !== null) {
-    return (
-      <div className="page">
-        {siteHeader}
-        <main className="detail-main">
-          <div className="benefit-detail">
-            <button className="benefit-detail__back" onClick={() => setSelectedBenefit(null)}>
-              ← Back
-            </button>
-            <h1 className="benefit-detail__name">{selectedBenefit.name}</h1>
-            <div className="benefit-detail__section">
-              <h2 className="benefit-detail__section-label">About this benefit</h2>
-              <p className="benefit-detail__section-text">{selectedBenefit.description}</p>
-            </div>
-            <div className="benefit-detail__section">
-              <h2 className="benefit-detail__section-label">Who may be eligible</h2>
-              <p className="benefit-detail__section-text">{selectedBenefit.eligibility_summary}</p>
-            </div>
-            <a
-              href={selectedBenefit.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="cta-button benefit-detail__link"
-            >
-              Visit official resource →
-            </a>
-          </div>
-        </main>
-        {confirmDialog}
-        <footer className="footer"></footer>
-      </div>
-    );
-  }
-
-  if (eligibleBenefits !== null) {
-    return (
-      <div className="page">
-        {siteHeader}
-        <main className="results-main">
-          {eligibleBenefits.length === 0 ? (
-            <div className="no-results">
-              <p>We weren't able to find any matching benefits based on your answers.</p>
-              <p>Your situation may still qualify you for benefits not yet covered by this tool. Consider reaching out to a VA-accredited representative for a full review.</p>
-              <button className="cta-button" onClick={goHome}>Return to home page</button>
-            </div>
-          ) : (
-            <>
-              <h1 className="results-heading">Benefits you may be eligible for</h1>
-              <div className="benefits-grid">
-                {eligibleBenefits.map(benefit => (
-                  <button
-                    key={benefit.id}
-                    className="benefit-tile"
-                    onClick={() => setSelectedBenefit(benefit)}
-                  >
-                    <span className="benefit-tile__name">{benefit.name}</span>
-                    {benefit.short_description && (
-                      <span className="benefit-tile__desc">{benefit.short_description}</span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
-        </main>
-        {confirmDialog}
-        <footer className="footer"></footer>
-      </div>
-    );
-  }
 
   const showBack = history.length > 0;
   const section = STEP_SECTIONS[currentStep];
