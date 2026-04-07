@@ -30,6 +30,7 @@ interface ServicePeriod {
   activeDuty: boolean;
   officerOrEnlisted: 'officer' | 'enlisted';
   dischargeLevel: number;          // 1-5
+  disabilityDischarge?: boolean;   // only set for active duty periods
 }
 
 interface QuestionnaireAnswers {
@@ -54,8 +55,8 @@ interface EligibilityRequirement {
   benefit_id: number;
   active_duty_service: boolean | null;
   service_connected_condition: boolean | null;
-  min_discharge_level: number | null;      // 1-5
-  min_disability_rating: number | null;    // sentinel value, see below
+  min_discharge_level: number | null;          // 1-5
+  min_disability_rating: number | null;        // sentinel value, see below
   adaptive_housing_condition: boolean | null;
   purple_heart: boolean | null;
   post_911_90_days: boolean | null;
@@ -63,6 +64,9 @@ interface EligibilityRequirement {
   pension_service_req: boolean | null;
   income_below_limit: boolean | null;
   age_or_disability: boolean | null;
+  min_continuous_days: number | null;          // minimum continuous days in a single service period
+  service_disability_discharge: boolean | null; // period must have been discharged due to service-connected disability
+  entry_before_date: string | null;            // ISO date string; period's entry date must be before this date
 }
 ```
 
@@ -74,10 +78,13 @@ A benefit is eligible if **at least one service period passes both service-level
 
 ### Service-Level Checks (evaluated per service period)
 
-At least one service period must pass **both** of these:
+At least one service period must pass **all** of these:
 
 1. **Active duty:** If the requirement's `active_duty_service` is `true`, the period's `activeDuty` must be `true`.
 2. **Discharge level:** The period's `dischargeLevel` must be **≤** the requirement's `min_discharge_level`. Lower numbers represent better discharges (1 = Honorable, 5 = Dishonorable).
+3. **Minimum continuous days:** If `min_continuous_days` is set, the duration of the period (separationDate − entryDate in days) must be ≥ this value.
+4. **Service-connected disability discharge:** If `service_disability_discharge` is `true`, the period's `disabilityDischarge` must be `true`.
+5. **Entry before date:** If `entry_before_date` is set, the period's `entryDate` must be strictly before this date.
 
 ### Profile-Level Checks (evaluated once against the overall answers)
 
@@ -154,15 +161,18 @@ For reference, these are the current benefits and their requirements:
  */
 ```
 
-| benefit_id | Benefit | active_duty_service | service_connected_condition | min_discharge_level | min_disability_rating | adaptive_housing_condition | purple_heart | post_911_90_days | post_911_30_days | pension_service_req | income_below_limit | age_or_disability |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | Disability Compensation | true | true | 2 | -1 | null | null | null | null | null | null | null |
-| 2 | VR&E | true | true | 2 | 10 | null | null | null | null | null | null | null |
-| 3 | Adaptive Housing Grants | true | true | 2 | null | true | null | null | null | null | null | null |
-| 4 | Post 9/11 GI Bill (path 1: 90 days aggregate) | null | null | null | null | null | null | true | null | null | null | null |
-| 4 | Post 9/11 GI Bill (path 2: Purple Heart) | null | null | 1 | null | null | true | null | null | null | null | null |
-| 4 | Post 9/11 GI Bill (path 3: 30 days + service-connected) | null | true | null | null | null | null | null | true | null | null | null |
-| 5 | Veterans Pension | null | null | 4 | null | null | null | null | null | true | true | true |
+| benefit_id | Benefit | active_duty_service | service_connected_condition | min_discharge_level | min_disability_rating | adaptive_housing_condition | purple_heart | post_911_90_days | post_911_30_days | pension_service_req | income_below_limit | age_or_disability | min_continuous_days | service_disability_discharge | entry_before_date |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | Disability Compensation | true | true | 2 | -1 | null | null | null | null | null | null | null | null | null | null |
+| 2 | VR&E | true | true | 2 | 10 | null | null | null | null | null | null | null | null | null | null |
+| 3 | Adaptive Housing Grants | true | true | 2 | null | true | null | null | null | null | null | null | null | null | null |
+| 4 | Post 9/11 GI Bill (path 1: 90 days aggregate) | null | null | null | null | null | null | true | null | null | null | null | null | null | null |
+| 4 | Post 9/11 GI Bill (path 2: Purple Heart) | null | null | 1 | null | null | true | null | null | null | null | null | null | null | null |
+| 4 | Post 9/11 GI Bill (path 3: 30 days + service-connected) | null | true | null | null | null | null | null | true | null | null | null | null | null | null |
+| 5 | Veterans Pension | null | null | 4 | null | null | null | null | null | true | true | true | null | null | null |
+| 6 | VA Health Care (path 1: ≥730 continuous days) | true | null | 4 | null | null | null | null | null | null | null | null | 730 | null | null |
+| 6 | VA Health Care (path 2: disability discharge) | true | null | 4 | null | null | null | null | null | null | null | null | null | true | null |
+| 6 | VA Health Care (path 3: entry before 1980-09-07) | true | null | 4 | null | null | null | null | null | null | null | null | null | null | 1980-09-07 |
 
 ---
 

@@ -42,6 +42,14 @@ Keep the existing page structure (header, main with q-card, footer) and CSS clas
   - Other Than Honorable → 3
   - Bad Conduct → 4
   - Dishonorable → 5
+- Navigation: if the period was active duty → continue to **disability-discharge**; otherwise → continue to **add-another**
+
+**Step: disability-discharge** (conditional: only shown for active duty periods)
+
+- Label: “Were you discharged from this period of service specifically due to a service-connected disability?”
+- Input: No (left) / Yes (right) buttons
+- Store result as `disabilityDischarge` on the current service period
+- Both paths continue to **add-another**
 
 **Step: add-another**
 
@@ -146,6 +154,7 @@ interface ServicePeriod {
   activeDuty: boolean;
   officerOrEnlisted: 'officer' | 'enlisted';
   dischargeLevel: number;          // 1-5
+  disabilityDischarge?: boolean;   // only set for active duty periods
 }
 
 interface QuestionnaireAnswers {
