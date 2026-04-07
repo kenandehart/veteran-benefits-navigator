@@ -25,10 +25,11 @@ It returns an array of `benefit_id` numbers the veteran qualifies for.
 
 ```typescript
 interface ServicePeriod {
-  entryDate: string;       // ISO date string
-  separationDate: string;  // ISO date string
+  entryDate: string;               // ISO date string
+  separationDate: string;          // ISO date string
   activeDuty: boolean;
-  dischargeLevel: number;  // 1-5
+  officerOrEnlisted: 'officer' | 'enlisted';
+  dischargeLevel: number;          // 1-5
 }
 
 interface QuestionnaireAnswers {
@@ -37,6 +38,9 @@ interface QuestionnaireAnswers {
   hasDisabilityRating: boolean | null;
   disabilityRating: number | null;            // 0-100 in increments of 10
   adaptiveHousingCondition: boolean;
+  incomeBelowLimit: boolean;
+  ageOrDisability: boolean;
+  purpleHeartPost911: boolean;
 }
 ```
 
@@ -48,11 +52,17 @@ Matches the `eligibility_requirements` table schema:
 interface EligibilityRequirement {
   id: number;
   benefit_id: number;
-  active_duty_service: boolean;
-  service_connected_condition: boolean;
-  min_discharge_level: number;             // 1-5
+  active_duty_service: boolean | null;
+  service_connected_condition: boolean | null;
+  min_discharge_level: number | null;      // 1-5
   min_disability_rating: number | null;    // sentinel value, see below
   adaptive_housing_condition: boolean | null;
+  purple_heart: boolean | null;
+  post_911_90_days: boolean | null;
+  post_911_30_days: boolean | null;
+  pension_service_req: boolean | null;
+  income_below_limit: boolean | null;
+  age_or_disability: boolean | null;
 }
 ```
 
@@ -94,11 +104,39 @@ All applicable checks must pass:
    - `true`: the veteran's `adaptiveHousingCondition` must be `true`
    - `null`: skip this check
 
+4. **Purple Heart (post-9/11):**
+   - `true`: the veteran's `purpleHeartPost911` must be `true`
+   - `null`: skip this check
+
+5. **Post-9/11 service — 90 days aggregate (`post_911_90_days`):**
+   - `true`: the veteran must have accumulated ≥ 90 days of active duty service after September 11, 2001, across honorably discharged periods (discharge level 1)
+   - `null`: skip this check
+
+6. **Post-9/11 service — 30 days continuous (`post_911_30_days`):**
+   - `true`: the veteran must have at least one honorably discharged active duty period with ≥ 30 days of service after September 11, 2001
+   - `null`: skip this check
+
+7. **Pension service requirement (`pension_service_req`):**
+   - `true`: the veteran must meet one of these wartime service paths:
+     - **Path A**: any active period started before September 8, 1980, with ≥ 90 total active duty days and wartime overlap
+     - **Path B**: any enlisted active period started on or after September 8, 1980, with ≥ 730 total active duty days and wartime overlap
+     - **Path C**: any officer period started on or after October 17, 1981, where prior active duty days (before that officer period's entry date) total < 730
+   - `null`: skip this check
+   - Wartime periods: WWII (Dec 7 1941–Dec 31 1946), Korean War (Jun 27 1950–Jan 31 1955), Vietnam (Nov 1 1955–May 7 1975), Gulf War (Aug 2 1990–present)
+
+8. **Income below limit:**
+   - `true`: the veteran's `incomeBelowLimit` must be `true`
+   - `null`: skip this check
+
+9. **Age or disability:**
+   - `true`: the veteran's `ageOrDisability` must be `true`
+   - `null`: skip this check
+
 ---
 
 ## Current Eligibility Requirements Data
 
-For reference, these are the three benefits and their requirements:
+For reference, these are the current benefits and their requirements:
 
 ```
 /*
@@ -116,11 +154,15 @@ For reference, these are the three benefits and their requirements:
  */
 ```
 
-| benefit_id | Benefit | active_duty_service | service_connected_condition | min_discharge_level | min_disability_rating | adaptive_housing_condition |
-|---|---|---|---|---|---|---|
-| 7 | Disability Compensation | true | true | 2 | -1 | null |
-| 8 | VR&E | true | true | 2 | 10 | null |
-| 9 | Adaptive Housing Grants | true | true | 2 | null | true |
+| benefit_id | Benefit | active_duty_service | service_connected_condition | min_discharge_level | min_disability_rating | adaptive_housing_condition | purple_heart | post_911_90_days | post_911_30_days | pension_service_req | income_below_limit | age_or_disability |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | Disability Compensation | true | true | 2 | -1 | null | null | null | null | null | null | null |
+| 2 | VR&E | true | true | 2 | 10 | null | null | null | null | null | null | null |
+| 3 | Adaptive Housing Grants | true | true | 2 | null | true | null | null | null | null | null | null |
+| 4 | Post 9/11 GI Bill (path 1: 90 days aggregate) | null | null | null | null | null | null | true | null | null | null | null |
+| 4 | Post 9/11 GI Bill (path 2: Purple Heart) | null | null | 1 | null | null | true | null | null | null | null | null |
+| 4 | Post 9/11 GI Bill (path 3: 30 days + service-connected) | null | true | null | null | null | null | null | true | null | null | null |
+| 5 | Veterans Pension | null | null | 4 | null | null | null | null | null | true | true | true |
 
 ---
 
@@ -129,6 +171,6 @@ For reference, these are the three benefits and their requirements:
 In the POST `/questionnaire` route:
 
 1. Query `SELECT * FROM eligibility_requirements`
-2. Pass the query results and `req.body` to the eligibility function
-3. Return the matching benefit IDs in the response: `{ eligibleBenefitIds: number[] }`
-4. Remove the existing `console.log` statement
+2. Pass the query results and `req.body` to the eligibility function to get matching benefit IDs
+3. Fetch the full benefit records for those IDs: `SELECT id, name, category, short_description, description, eligibility_summary, url FROM benefits WHERE id = ANY($1)`
+4. Return the matching benefits in the response: `{ eligibleBenefits: Benefit[] }`

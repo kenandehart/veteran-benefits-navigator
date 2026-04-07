@@ -28,6 +28,11 @@ Keep the existing page structure (header, main with q-card, footer) and CSS clas
 - Label: “Was this period of service active duty?”
 - Input: No (left) / Yes (right) buttons
 
+**Step: officer-enlisted**
+
+- Label: “Did you start this period of service as an officer or enlisted?”
+- Input: Enlisted (left) / Officer (right) buttons
+
 **Step: discharge**
 
 - Label: “What was your characterization of discharge for this period of service?”
@@ -69,8 +74,7 @@ Keep the existing page structure (header, main with q-card, footer) and CSS clas
 - Label: “Do you have a current illness or injury that affects your mind or body and is related to your service?”
 - Include an info icon (ⓘ) that toggles a tooltip with this text: “This includes physical injuries, chronic conditions, and mental health conditions like PTSD, anxiety, or depression that began or worsened during your service. If you’re unsure, that’s okay — the VA can help determine this.”
 - Input: three buttons — I’m not sure (left) / No (center) / Yes (right)
-- If “No”: skip to **housing-condition**
-- If “Yes” or “I’m not sure”: continue to **housing-condition**
+- All paths continue to **income-limit** (housing questions are skipped for veterans without a disability rating)
 
 -----
 
@@ -78,17 +82,56 @@ Keep the existing page structure (header, main with q-card, footer) and CSS clas
 
 **Step: housing-condition**
 
-- Label: “Do you have any of the following conditions?”
-- Display a list of qualifying conditions below the label (use placeholder text for now: “[ list of qualifying conditions will be added ]”)
+- Label: “Do your service-connected disabilities include any of the following?”
+- Display the following qualifying conditions below the label:
+  - The loss, or loss of use, of more than one limb
+  - The loss or loss of use of both hands
+  - The loss, or loss of use, of a lower leg along with the residuals of an organic disease or injury
+  - Blindness in both eyes (with 20/200 visual acuity or less)
+  - Certain severe burns
+  - Certain respiratory or breathing injuries
+  - The loss, or loss of use, of one lower extremity (foot or leg) after September 11, 2001, which makes it so you can't balance or walk without the help of braces, crutches, canes, or a wheelchair
 - Input: No (left) / Yes (right) buttons
 - If yes: continue to **housing-ownership**
-- If no: proceed to completion screen
+- If no: continue to **income-limit**
 
 **Step: housing-ownership**
 
 - Label: “Are you currently living in, or planning to live in, a home that you or a family member own or will own?”
 - Input: No (left) / Yes (right) buttons
-- Proceed to completion screen
+- Proceed to **income-limit**
+
+-----
+
+### Section: Financial
+
+**Step: income-limit**
+
+- Label: “Is your combined net worth and annual income below $163,699?”
+- Include an info icon (ⓘ) that toggles a tooltip with this text: “This includes all assets except your primary residence and personal vehicle. The VA adjusts this threshold annually.”
+- Input: No (left) / Yes (right) buttons
+- Proceed to **age-disability**
+
+**Step: age-disability**
+
+- Label: “Are any of the following true?”
+- Display a list of conditions:
+  - You are 65 years old or older
+  - You have a permanent and total disability
+  - You are a patient in a nursing home receiving long-term care for a disability
+  - You are receiving Social Security Disability Insurance or Supplemental Security Income
+- Input: No (left) / Yes (right) buttons
+- Proceed to **purple-heart**
+
+-----
+
+### Final Step (section indicator: “Health & Disability”)
+
+**Step: purple-heart**
+
+- Label: “Were you awarded a Purple Heart on or after September 11, 2001?”
+- Input: No (left) / Yes (right) buttons
+- Both paths submit answers to the server and navigate to the results page
 
 -----
 
@@ -98,10 +141,11 @@ The component builds this data structure in state as the veteran progresses thro
 
 ```typescript
 interface ServicePeriod {
-  entryDate: string;       // ISO date string
-  separationDate: string;  // ISO date string
+  entryDate: string;               // ISO date string
+  separationDate: string;          // ISO date string
   activeDuty: boolean;
-  dischargeLevel: number;  // 1-5
+  officerOrEnlisted: 'officer' | 'enlisted';
+  dischargeLevel: number;          // 1-5
 }
 
 interface QuestionnaireAnswers {
@@ -110,6 +154,9 @@ interface QuestionnaireAnswers {
   hasDisabilityRating: boolean | null;         // null if question was not asked
   disabilityRating: number | null;             // 0-100 in increments of 10, null if no rating or not asked
   adaptiveHousingCondition: boolean;           // true only if BOTH housing-condition AND housing-ownership are "yes", false otherwise
+  incomeBelowLimit: boolean;
+  ageOrDisability: boolean;
+  purpleHeartPost911: boolean;
 }
 ```
 
@@ -122,8 +169,8 @@ interface QuestionnaireAnswers {
 - Steps **housing-condition** and **housing-ownership** combine into the single `adaptiveHousingCondition` boolean in the final answers object.
 - Include a Back button on every step except the first, allowing the veteran to revisit and change previous answers.
 - The Back button should correctly restore previous answers when navigating backwards, including navigating back into a service period that was already added.
-- Show a section indicator instead of “Step X of Y” since the total steps vary. Display which section the veteran is in: “Service History”, “Health & Disability”, or “Housing”.
-- On completion, display “Questionnaire Complete” centered in the q-card.
+- Show a section indicator instead of “Step X of Y” since the total steps vary. Display which section the veteran is in: “Service History”, “Health & Disability”, “Housing”, or “Financial”.
+- On completion, submit the answers to the server and navigate to the results page.
 - For yes/no button inputs, use styled buttons with No on the left and Yes on the right, consistent with the existing `cta-button` class conventions.
 - For the three-option service-connected step, order buttons: I’m not sure (left), No (center), Yes (right).
 - All yes/no button groups should use a two-column layout with each button centered in its respective half of the q-card.

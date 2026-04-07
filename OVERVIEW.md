@@ -35,7 +35,7 @@ The app does not simply show veterans what they qualify for — it walks them th
 - Collects veteran service profile information to determine eligibility
 - Conversational flow — not an overwhelming form
 - Populates a personal profile used throughout the app
-- Specific profile fields to be determined after benefits research phase
+- Collects service periods (dates, active duty status, officer/enlisted, discharge), disability rating, service-connected conditions, adaptive housing eligibility, income and age/disability status, and Purple Heart status
 
 ### 2. Personalized Benefits Catalogue
 - Displays benefits the veteran qualifies for based on their profile
