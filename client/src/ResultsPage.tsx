@@ -113,6 +113,9 @@ function ResultsPage() {
         ) : (
           <>
             <h1 className="results-heading">Benefits you may be eligible for</h1>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 'normal', margin: '0.25rem 0 1rem', textAlign: 'center' }}>
+              These results are based on the information you provided and may not reflect your full eligibility. You may qualify for benefits not shown here. For an official determination, contact the VA or a VA-accredited representative.
+            </p>
             <div className="benefits-grid">
               {eligibleBenefits.map(benefit => (
                 <button
