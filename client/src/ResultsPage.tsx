@@ -1,6 +1,7 @@
 import './App.css'
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import Footer from './Footer'
 
 interface Benefit {
   id: number
@@ -94,7 +95,7 @@ function ResultsPage() {
             </a>
           </div>
         </main>
-        <footer className="footer"></footer>
+        <Footer />
       </div>
     )
   }
@@ -129,7 +130,7 @@ function ResultsPage() {
           </>
         )}
       </main>
-      <footer className="footer"></footer>
+      <Footer />
     </div>
   )
 }

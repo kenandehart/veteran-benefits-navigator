@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './App.css';
+import Footer from './Footer';
 
 function getStored<T>(key: string, fallback: T): T {
   try {
@@ -1008,7 +1009,7 @@ function Questionnaire() {
       </main>
 
       {confirmDialog}
-      <footer className="footer"></footer>
+      <Footer />
     </div>
   );
 }
