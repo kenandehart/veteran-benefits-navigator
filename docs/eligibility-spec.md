@@ -40,6 +40,7 @@ interface QuestionnaireAnswers {
   hasDisabilityRating: boolean | null;
   disabilityRating: number | null;            // 0-100 in increments of 10
   adaptiveHousingCondition: boolean;
+  hasAutoGrantCondition: boolean;
   incomeBelowLimit: boolean;
   ageOrDisability: boolean;
   purpleHeartPost911: boolean;
@@ -60,6 +61,7 @@ interface EligibilityRequirement {
   min_discharge_level: number | null;          // 1-5
   min_disability_rating: number | null;        // sentinel value, see below
   adaptive_housing_condition: boolean | null;
+  auto_grant_condition: boolean | null;
   purple_heart: boolean | null;
   post_911_90_days: boolean | null;
   post_911_30_days: boolean | null;
@@ -115,19 +117,23 @@ All applicable checks must pass:
    - `true`: the veteran's `adaptiveHousingCondition` must be `true`
    - `null`: skip this check
 
-4. **Purple Heart (post-9/11):**
+4. **Automobile grant condition:**
+   - `true`: the veteran's `hasAutoGrantCondition` must be `true`
+   - `null`: skip this check
+
+5. **Purple Heart (post-9/11):**
    - `true`: the veteran's `purpleHeartPost911` must be `true`
    - `null`: skip this check
 
-5. **Post-9/11 service — 90 days aggregate (`post_911_90_days`):**
+6. **Post-9/11 service — 90 days aggregate (`post_911_90_days`):**
    - `true`: the veteran must have accumulated ≥ 90 days of active duty service after September 11, 2001, across honorably discharged periods (discharge level 1)
    - `null`: skip this check
 
-6. **Post-9/11 service — 30 days continuous (`post_911_30_days`):**
+7. **Post-9/11 service — 30 days continuous (`post_911_30_days`):**
    - `true`: the veteran must have at least one honorably discharged active duty period with ≥ 30 days of service after September 11, 2001
    - `null`: skip this check
 
-7. **Home loan service requirement (`home_loan_service_req`):**
+8. **Home loan service requirement (`home_loan_service_req`):**
    - `true`: the veteran must meet one of these three paths:
      - **Path 1 — Era-based active duty service:** at least one active duty period whose entry date falls within an era below, and whose duration meets that era's minimum:
        | Era | Entry date range | Minimum days | Notes |
@@ -144,7 +150,7 @@ All applicable checks must pass:
      - **Path 3 — Reserve/National Guard:** total days across all non-active-duty periods ≥ 2190 (approx. 6 years), and at least one of those periods has `dischargeLevel === 1` (Honorable)
    - `null`: skip this check
 
-8. **Pension service requirement (`pension_service_req`):**
+9. **Pension service requirement (`pension_service_req`):**
    - `true`: the veteran must meet one of these wartime service paths:
      - **Path A**: any active period started before September 8, 1980, with ≥ 90 total active duty days and wartime overlap
      - **Path B**: any enlisted active period started on or after September 8, 1980, with ≥ 730 total active duty days and wartime overlap
@@ -152,7 +158,7 @@ All applicable checks must pass:
    - `null`: skip this check
    - Wartime periods: WWII (Dec 7 1941–Dec 31 1946), Korean War (Jun 27 1950–Jan 31 1955), Vietnam (Nov 1 1955–May 7 1975), Gulf War (Aug 2 1990–present)
 
-9. **VGLI service requirement (`vgli_service_req`):**
+10. **VGLI service requirement (`vgli_service_req`):**
    - `true`: both of the following must be true:
      1. `answers.hadSGLI` is `true`
      2. At least one service period meets the date window condition:
@@ -160,11 +166,11 @@ All applicable checks must pass:
         - **Condition B**: the period was not active duty and the separation date is within 485 days of today
    - `null`: skip this check
 
-10. **Income below limit:**
+11. **Income below limit:**
    - `true`: the veteran's `incomeBelowLimit` must be `true`
    - `null`: skip this check
 
-11. **Age or disability:**
+12. **Age or disability:**
     - `true`: the veteran's `ageOrDisability` must be `true`
     - `null`: skip this check
 
@@ -190,20 +196,21 @@ For reference, these are the current benefits and their requirements:
  */
 ```
 
-| benefit_id | Benefit | active_duty_service | service_connected_condition | min_discharge_level | min_disability_rating | adaptive_housing_condition | purple_heart | post_911_90_days | post_911_30_days | pension_service_req | home_loan_service_req | vgli_service_req | income_below_limit | age_or_disability | min_continuous_days | service_disability_discharge | entry_before_date |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | Disability Compensation | true | true | 2 | -1 | null | null | null | null | null | null | null | null | null | null | null | null |
-| 2 | VR&E | true | true | 2 | 10 | null | null | null | null | null | null | null | null | null | null | null | null |
-| 3 | Adaptive Housing Grants | true | true | 2 | null | true | null | null | null | null | null | null | null | null | null | null | null |
-| 4 | Post 9/11 GI Bill (path 1: 90 days aggregate) | null | null | null | null | null | null | true | null | null | null | null | null | null | null | null | null |
-| 4 | Post 9/11 GI Bill (path 2: Purple Heart) | null | null | 1 | null | null | true | null | null | null | null | null | null | null | null | null | null |
-| 4 | Post 9/11 GI Bill (path 3: 30 days + service-connected) | null | true | null | null | null | null | null | true | null | null | null | null | null | null | null | null |
-| 5 | Veterans Pension | null | null | 4 | null | null | null | null | null | true | null | null | true | true | null | null | null |
-| 6 | VA Health Care (path 1: ≥730 continuous days) | true | null | 4 | null | null | null | null | null | null | null | null | null | null | 730 | null | null |
-| 6 | VA Health Care (path 2: disability discharge) | true | null | 4 | null | null | null | null | null | null | null | null | null | null | null | true | null |
-| 6 | VA Health Care (path 3: entry before 1980-09-07) | true | null | 4 | null | null | null | null | null | null | null | null | null | null | null | null | 1980-09-07 |
-| 7 | VA Home Loan Guaranty | null | null | 4 | null | null | null | null | null | null | true | null | null | null | null | null | null |
-| 8 | Veterans' Group Life Insurance (VGLI) | null | null | 4 | null | null | null | null | null | null | null | true | null | null | null | null | null |
+| benefit_id | Benefit | active_duty_service | service_connected_condition | min_discharge_level | min_disability_rating | adaptive_housing_condition | auto_grant_condition | purple_heart | post_911_90_days | post_911_30_days | pension_service_req | home_loan_service_req | vgli_service_req | income_below_limit | age_or_disability | min_continuous_days | service_disability_discharge | entry_before_date |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | Disability Compensation | true | true | 2 | -1 | null | null | null | null | null | null | null | null | null | null | null | null | null |
+| 2 | VR&E | true | true | 2 | 10 | null | null | null | null | null | null | null | null | null | null | null | null | null |
+| 3 | Adaptive Housing Grants | true | true | 2 | null | true | null | null | null | null | null | null | null | null | null | null | null | null |
+| 4 | Post 9/11 GI Bill (path 1: 90 days aggregate) | null | null | null | null | null | null | null | true | null | null | null | null | null | null | null | null | null |
+| 4 | Post 9/11 GI Bill (path 2: Purple Heart) | null | null | 1 | null | null | null | true | null | null | null | null | null | null | null | null | null | null |
+| 4 | Post 9/11 GI Bill (path 3: 30 days + service-connected) | null | true | null | null | null | null | null | null | true | null | null | null | null | null | null | null | null |
+| 5 | Veterans Pension | null | null | 4 | null | null | null | null | null | null | true | null | null | true | true | null | null | null |
+| 6 | VA Health Care (path 1: ≥730 continuous days) | true | null | 4 | null | null | null | null | null | null | null | null | null | null | null | 730 | null | null |
+| 6 | VA Health Care (path 2: disability discharge) | true | null | 4 | null | null | null | null | null | null | null | null | null | null | null | null | true | null |
+| 6 | VA Health Care (path 3: entry before 1980-09-07) | true | null | 4 | null | null | null | null | null | null | null | null | null | null | null | null | null | 1980-09-07 |
+| 7 | VA Home Loan Guaranty | null | null | 4 | null | null | null | null | null | null | null | true | null | null | null | null | null | null |
+| 8 | Veterans' Group Life Insurance (VGLI) | null | null | 4 | null | null | null | null | null | null | null | null | true | null | null | null | null | null |
+| 9 | Automobile Allowance and Adaptive Equipment | true | true | 2 | 0 | null | true | null | null | null | null | null | null | null | null | null | null | null |
 
 ---
 

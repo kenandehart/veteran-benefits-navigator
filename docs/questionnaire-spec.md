@@ -141,13 +141,31 @@ The VGLI date window condition is true if ANY service period satisfies either:
   - The loss, or loss of use, of one lower extremity (foot or leg) after September 11, 2001, which makes it so you can't balance or walk without the help of braces, crutches, canes, or a wheelchair
 - Input: No (left) / Yes (right) buttons
 - If yes: continue to **housing-ownership**
-- If no: continue to **income-limit**
+- If no: continue to **auto-grant-condition**
 
 **Step: housing-ownership**
 
 - Label: “Are you currently living in, or planning to live in, a home that you or a family member own or will own?”
 - Input: No (left) / Yes (right) buttons
-- Proceed to **income-limit**
+- Both paths continue to **auto-grant-condition**
+
+-----
+
+### Section: Health & Disability (continued)
+
+**Step: auto-grant-condition** (conditional: only shown if veteran has a VA disability rating)
+
+- Label: “Do you have any of the following service-connected conditions?”
+- Display the following qualifying conditions below the label:
+  - Loss, or permanent loss of use, of one or both feet
+  - Loss, or permanent loss of use, of one or both hands
+  - Permanent vision impairment in both eyes (20/200 or less in the better eye)
+  - Severe burn injuries limiting motion of one or more extremities or the trunk
+  - ALS (amyotrophic lateral sclerosis)
+  - Ankylosis of one or both knees or hips
+- Input: No (left) / Yes (right) buttons
+- Both paths continue to **income-limit**
+- Store result as `hasAutoGrantCondition` on the answers object
 
 -----
 
@@ -204,6 +222,7 @@ interface QuestionnaireAnswers {
   hasDisabilityRating: boolean | null;         // null if question was not asked
   disabilityRating: number | null;             // 0-100 in increments of 10, null if no rating or not asked
   adaptiveHousingCondition: boolean;           // true only if BOTH housing-condition AND housing-ownership are "yes", false otherwise
+  hasAutoGrantCondition: boolean;              // true if veteran answered "yes" to auto-grant-condition step, false otherwise
   incomeBelowLimit: boolean;
   ageOrDisability: boolean;
   purpleHeartPost911: boolean;
@@ -218,6 +237,7 @@ interface QuestionnaireAnswers {
 - Use a state machine approach with a `currentStep` string identifier (e.g., `'entry-date'`, `'discharge'`, `'has-rating'`) rather than an integer index into a flat array.
 - Build each service period incrementally in a `currentServicePeriod` state object, then push it to the `servicePeriods` array when the veteran moves past the **add-another** step.
 - Steps **housing-condition** and **housing-ownership** combine into the single `adaptiveHousingCondition` boolean in the final answers object.
+- Step **auto-grant-condition** is shown only when the veteran has a VA disability rating (i.e., the path through `rating-value`). Veterans who go through the `service-connected` step instead skip it; `hasAutoGrantCondition` defaults to `false`.
 - Include a Back button on every step except the first, allowing the veteran to revisit and change previous answers.
 - The Back button should correctly restore previous answers when navigating backwards, including navigating back into a service period that was already added.
 - Show a section indicator instead of “Step X of Y” since the total steps vary. Display which section the veteran is in: “Service History”, “Insurance”, “Health & Disability”, “Housing”, or “Financial”.
