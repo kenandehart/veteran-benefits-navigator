@@ -14,6 +14,7 @@ interface QuestionnaireAnswers {
   hasDisabilityRating: boolean | null;
   disabilityRating: number | null;
   adaptiveHousingCondition: boolean;
+  hasAutoGrantCondition: boolean;
   incomeBelowLimit: boolean;
   ageOrDisability: boolean;
   purpleHeartPost911: boolean;
@@ -28,6 +29,7 @@ interface EligibilityRequirement {
   min_discharge_level: number | null;
   min_disability_rating: number | null;
   adaptive_housing_condition: boolean | null;
+  auto_grant_condition: boolean | null;
   purple_heart: boolean | null;
   post_911_90_days: boolean | null;
   post_911_30_days: boolean | null;
@@ -216,6 +218,8 @@ export function checkEligibility(
     }
 
     if (req.adaptive_housing_condition === true && !answers.adaptiveHousingCondition) continue;
+
+    if (req.auto_grant_condition === true && !answers.hasAutoGrantCondition) continue;
 
     if (req.purple_heart === true && !answers.purpleHeartPost911) continue;
 

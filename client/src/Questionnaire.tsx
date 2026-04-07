@@ -34,6 +34,7 @@ interface QuestionnaireAnswers {
   hasDisabilityRating: boolean | null;
   disabilityRating: number | null;
   adaptiveHousingCondition: boolean;
+  hasAutoGrantCondition: boolean;
   incomeBelowLimit: boolean;
   ageOrDisability: boolean;
   purpleHeartPost911: boolean;
@@ -57,6 +58,7 @@ type Step =
   | 'sgli-coverage'
   | 'housing-condition'
   | 'housing-ownership'
+  | 'auto-grant-condition'
   | 'income-limit'
   | 'age-disability'
   | 'purple-heart';
@@ -82,9 +84,10 @@ const STEP_SECTIONS: Record<Step, string> = {
   'has-rating':        'Health & Disability',
   'rating-value':      'Health & Disability',
   'sgli-coverage':     'Insurance',
-  'housing-condition': 'Housing',
-  'housing-ownership': 'Housing',
-  'income-limit':      'Financial',
+  'housing-condition':   'Housing',
+  'housing-ownership':   'Housing',
+  'auto-grant-condition': 'Health & Disability',
+  'income-limit':        'Financial',
   'age-disability':    'Financial',
   'purple-heart':      'Health & Disability',
 };
@@ -245,6 +248,7 @@ const INITIAL_ANSWERS: QuestionnaireAnswers = {
   hasDisabilityRating: null,
   disabilityRating: null,
   adaptiveHousingCondition: false,
+  hasAutoGrantCondition: false,
   incomeBelowLimit: false,
   ageOrDisability: false,
   purpleHeartPost911: false,
@@ -988,12 +992,11 @@ function Questionnaire() {
                 <li key={i} className="conditions-list__item">{condition}</li>
               ))}
             </ul>
-            <div className="conditions-fade" aria-hidden="true" />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
-              onClick={() => advance('income-limit', undefined, { ...answers, adaptiveHousingCondition: false })}
+              onClick={() => advance('auto-grant-condition', undefined, { ...answers, adaptiveHousingCondition: false })}
             >
               No
             </button>
@@ -1043,13 +1046,52 @@ function Questionnaire() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
-              onClick={() => advance('income-limit', undefined, { ...answers, adaptiveHousingCondition: false })}
+              onClick={() => advance('auto-grant-condition', undefined, { ...answers, adaptiveHousingCondition: false })}
             >
               No
             </button>
             <button
               className="cta-button"
-              onClick={() => advance('income-limit', undefined, { ...answers, adaptiveHousingCondition: true })}
+              onClick={() => advance('auto-grant-condition', undefined, { ...answers, adaptiveHousingCondition: true })}
+            >
+              Yes
+            </button>
+          </div>
+          {backButton}
+        </>
+      );
+      break;
+    }
+
+    case 'auto-grant-condition': {
+      const AUTO_GRANT_CONDITIONS = [
+        'Loss, or permanent loss of use, of one or both feet',
+        'Loss, or permanent loss of use, of one or both hands',
+        'Permanent vision impairment in both eyes (20/200 or less in the better eye)',
+        'Severe burn injuries limiting motion of one or more extremities or the trunk',
+        'ALS (amyotrophic lateral sclerosis)',
+        'Ankylosis of one or both knees or hips',
+      ];
+      stepContent = (
+        <>
+          <label className="q-label">Do you have any of the following service-connected conditions?</label>
+          <div className="conditions-wrapper">
+            <ul className="conditions-list">
+              {AUTO_GRANT_CONDITIONS.map((condition, i) => (
+                <li key={i} className="conditions-list__item">{condition}</li>
+              ))}
+            </ul>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
+            <button
+              className="cta-button"
+              onClick={() => advance('income-limit', undefined, { ...answers, hasAutoGrantCondition: false })}
+            >
+              No
+            </button>
+            <button
+              className="cta-button"
+              onClick={() => advance('income-limit', undefined, { ...answers, hasAutoGrantCondition: true })}
             >
               Yes
             </button>

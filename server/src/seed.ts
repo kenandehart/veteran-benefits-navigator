@@ -112,6 +112,19 @@ const benefits = [
     url: 'https://www.va.gov/life-insurance/options-eligibility/vgli/',
     is_active: true,
   },
+  {
+    id: 9,
+    type: 'benefit',
+    category: 'disability',
+    name: 'Automobile Allowance and Adaptive Equipment',
+    short_description: 'Financial help to buy or adapt a vehicle if you have a service-connected disability affecting mobility or vision',
+    description:
+      'If you have a service-connected disability that prevents you from driving or limits your ability to get in and out of a vehicle, you may be eligible for a one-time grant toward the purchase of an automobile or other conveyance, adaptive equipment to modify a vehicle, or both. Adaptive equipment may include power steering, power brakes, power windows, power seats, wheelchair lifts, and other medically necessary modifications.',
+    eligibility_summary:
+      'You must have a service-connected disability resulting in the loss or permanent loss of use of one or both hands or feet, permanent vision impairment in both eyes, severe burn injuries limiting motion, ALS, or ankylosis of one or both knees or hips. You must have a VA disability rating.',
+    url: 'https://www.va.gov/disability/eligibility/special-claims/automobile-allowance-adaptive-equipment/',
+    is_active: true,
+  },
 ];
 
 async function seed() {

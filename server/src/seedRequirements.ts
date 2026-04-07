@@ -23,6 +23,7 @@ const requirements = [
     min_discharge_level: 2,
     min_disability_rating: -1, // must NOT have a rating
     adaptive_housing_condition: null,
+    auto_grant_condition: null,
     post_911_90_days: null,
     post_911_30_days: null,
     purple_heart: null,
@@ -42,6 +43,7 @@ const requirements = [
     min_discharge_level: 2,
     min_disability_rating: 10, // must have rating >= 10
     adaptive_housing_condition: null,
+    auto_grant_condition: null,
     post_911_90_days: null,
     post_911_30_days: null,
     purple_heart: null,
@@ -61,6 +63,7 @@ const requirements = [
     min_discharge_level: 2,
     min_disability_rating: null, // no rating requirement
     adaptive_housing_condition: true,
+    auto_grant_condition: null,
     post_911_90_days: null,
     post_911_30_days: null,
     purple_heart: null,
@@ -81,6 +84,7 @@ const requirements = [
     min_discharge_level: null,
     min_disability_rating: null,
     adaptive_housing_condition: null,
+    auto_grant_condition: null,
     post_911_90_days: true, //Compound calculation performed by eligibility checker
     post_911_30_days: null,
     purple_heart: null,
@@ -101,6 +105,7 @@ const requirements = [
     min_discharge_level: 1,
     min_disability_rating: null,
     adaptive_housing_condition: null,
+    auto_grant_condition: null,
     post_911_90_days: null,
     post_911_30_days: null,
     purple_heart: true,
@@ -121,6 +126,7 @@ const requirements = [
     min_discharge_level: null,
     min_disability_rating: null,
     adaptive_housing_condition: null,
+    auto_grant_condition: null,
     post_911_90_days: null,
     post_911_30_days: true, //Compound calculation performed by eligibility checker
     purple_heart: null,
@@ -140,6 +146,7 @@ const requirements = [
     min_discharge_level: 4,
     min_disability_rating: null,
     adaptive_housing_condition: null,
+    auto_grant_condition: null,
     post_911_90_days: null,
     post_911_30_days: null,
     purple_heart: null,
@@ -160,6 +167,7 @@ const requirements = [
     min_discharge_level: 4,
     min_disability_rating: null,
     adaptive_housing_condition: null,
+    auto_grant_condition: null,
     post_911_90_days: null,
     post_911_30_days: null,
     purple_heart: null,
@@ -180,6 +188,7 @@ const requirements = [
     min_discharge_level: 4,
     min_disability_rating: null,
     adaptive_housing_condition: null,
+    auto_grant_condition: null,
     post_911_90_days: null,
     post_911_30_days: null,
     purple_heart: null,
@@ -200,6 +209,7 @@ const requirements = [
     min_discharge_level: 4,
     min_disability_rating: null,
     adaptive_housing_condition: null,
+    auto_grant_condition: null,
     post_911_90_days: null,
     post_911_30_days: null,
     purple_heart: null,
@@ -219,6 +229,7 @@ const requirements = [
     min_discharge_level: 4,
     min_disability_rating: null,
     adaptive_housing_condition: null,
+    auto_grant_condition: null,
     post_911_90_days: null,
     post_911_30_days: null,
     purple_heart: null,
@@ -238,6 +249,7 @@ const requirements = [
     min_discharge_level: 4,
     min_disability_rating: null,
     adaptive_housing_condition: null,
+    auto_grant_condition: null,
     post_911_90_days: null,
     post_911_30_days: null,
     purple_heart: null,
@@ -250,6 +262,26 @@ const requirements = [
     home_loan_service_req: null,
     vgli_service_req: true,
   },
+  {
+    benefit_id: 9, // Automobile Allowance and Adaptive Equipment
+    active_duty_service: true,
+    service_connected_condition: true,
+    min_discharge_level: 2,
+    min_disability_rating: 0,     // requires any VA rating (>= 0%)
+    adaptive_housing_condition: null,
+    auto_grant_condition: true,
+    post_911_90_days: null,
+    post_911_30_days: null,
+    purple_heart: null,
+    pension_service_req: null,
+    income_below_limit: null,
+    age_or_disability: null,
+    min_continuous_days: null,
+    service_disability_discharge: null,
+    entry_before_date: null,
+    home_loan_service_req: null,
+    vgli_service_req: null,
+  },
 ];
 
 async function seed() {
@@ -261,11 +293,12 @@ async function seed() {
       await client.query(
         `INSERT INTO eligibility_requirements (benefit_id, active_duty_service, service_connected_condition,
                                               min_discharge_level, min_disability_rating, adaptive_housing_condition,
+                                              auto_grant_condition,
                                               post_911_90_days, purple_heart, post_911_30_days, pension_service_req,
                                               income_below_limit, age_or_disability,
                                               min_continuous_days, service_disability_discharge, entry_before_date,
                                               home_loan_service_req, vgli_service_req)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`,
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`,
         [
           requirement.benefit_id,
           requirement.active_duty_service,
@@ -273,6 +306,7 @@ async function seed() {
           requirement.min_discharge_level,
           requirement.min_disability_rating,
           requirement.adaptive_housing_condition,
+          requirement.auto_grant_condition,
           requirement.post_911_90_days,
           requirement.purple_heart,
           requirement.post_911_30_days,
