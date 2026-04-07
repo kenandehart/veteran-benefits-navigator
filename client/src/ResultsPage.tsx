@@ -117,18 +117,20 @@ function ResultsPage() {
               These results are based on the information you provided and may not reflect your full eligibility. You may qualify for benefits not shown here. For an official determination, contact the VA or a VA-accredited representative.
             </p>
             <div className="benefits-grid">
-              {eligibleBenefits.map(benefit => (
-                <button
-                  key={benefit.id}
-                  className="benefit-tile"
-                  onClick={() => { setSelectedBenefit(benefit); window.scrollTo(0, 0); }}
-                >
-                  <span className="benefit-tile__name">{benefit.name}</span>
-                  {benefit.short_description && (
-                    <span className="benefit-tile__desc">{benefit.short_description}</span>
-                  )}
-                </button>
-              ))}
+              {[...eligibleBenefits]
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map(benefit => (
+                  <button
+                    key={benefit.id}
+                    className="benefit-tile"
+                    onClick={() => { setSelectedBenefit(benefit); window.scrollTo(0, 0); }}
+                  >
+                    <span className="benefit-tile__name">{benefit.name}</span>
+                    {benefit.short_description && (
+                      <span className="benefit-tile__desc">{benefit.short_description}</span>
+                    )}
+                  </button>
+                ))}
             </div>
           </>
         )}

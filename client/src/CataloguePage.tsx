@@ -107,18 +107,20 @@ function CataloguePage() {
           This site is under development. More benefits will be added soon.
         </p>
         <div className="benefits-grid">
-          {benefits.map(benefit => (
-            <button
-              key={benefit.id}
-              className="benefit-tile"
-              onClick={() => { setSelectedBenefit(benefit); window.scrollTo(0, 0); }}
-            >
-              <span className="benefit-tile__name">{benefit.name}</span>
-              {benefit.short_description && (
-                <span className="benefit-tile__desc">{benefit.short_description}</span>
-              )}
-            </button>
-          ))}
+          {[...benefits]
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .map(benefit => (
+              <button
+                key={benefit.id}
+                className="benefit-tile"
+                onClick={() => { setSelectedBenefit(benefit); window.scrollTo(0, 0); }}
+              >
+                <span className="benefit-tile__name">{benefit.name}</span>
+                {benefit.short_description && (
+                  <span className="benefit-tile__desc">{benefit.short_description}</span>
+                )}
+              </button>
+            ))}
         </div>
       </main>
       <Footer />
