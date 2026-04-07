@@ -32,6 +32,7 @@ const requirements = [
     min_continuous_days: null,
     service_disability_discharge: null,
     entry_before_date: null,
+    home_loan_service_req: null,
   },
   {
     benefit_id: 2, // Veteran Readiness and Employment (VR&E)
@@ -49,6 +50,7 @@ const requirements = [
     min_continuous_days: null,
     service_disability_discharge: null,
     entry_before_date: null,
+    home_loan_service_req: null,
   },
   {
     benefit_id: 3, // Adaptive Housing Grants
@@ -66,6 +68,7 @@ const requirements = [
     min_continuous_days: null,
     service_disability_discharge: null,
     entry_before_date: null,
+    home_loan_service_req: null,
   },
   {
     benefit_id: 4, //Post 9-11 GI Bill
@@ -84,6 +87,7 @@ const requirements = [
     min_continuous_days: null,
     service_disability_discharge: null,
     entry_before_date: null,
+    home_loan_service_req: null,
   },
   {
     benefit_id: 4, //Post 9-11 GI Bill
@@ -102,6 +106,7 @@ const requirements = [
     min_continuous_days: null,
     service_disability_discharge: null,
     entry_before_date: null,
+    home_loan_service_req: null,
   },
   {
     benefit_id: 4, //Post 9-11 GI Bill
@@ -120,6 +125,7 @@ const requirements = [
     min_continuous_days: null,
     service_disability_discharge: null,
     entry_before_date: null,
+    home_loan_service_req: null,
   },
   {
     benefit_id: 5, //Veterans Pension
@@ -137,6 +143,7 @@ const requirements = [
     min_continuous_days: null,
     service_disability_discharge: null,
     entry_before_date: null,
+    home_loan_service_req: null,
   },
   {
     benefit_id: 6, // VA Health Care
@@ -155,6 +162,7 @@ const requirements = [
     min_continuous_days: 730,
     service_disability_discharge: null,
     entry_before_date: null,
+    home_loan_service_req: null,
   },
   {
     benefit_id: 6, // VA Health Care
@@ -173,6 +181,7 @@ const requirements = [
     min_continuous_days: null,
     service_disability_discharge: true,
     entry_before_date: null,
+    home_loan_service_req: null,
   },
   {
     benefit_id: 6, // VA Health Care
@@ -191,6 +200,25 @@ const requirements = [
     min_continuous_days: null,
     service_disability_discharge: null,
     entry_before_date: '1980-09-07',
+    home_loan_service_req: null,
+  },
+  {
+    benefit_id: 7, // VA Home Loan Guaranty
+    active_duty_service: null,
+    service_connected_condition: null,
+    min_discharge_level: 4,
+    min_disability_rating: null,
+    adaptive_housing_condition: null,
+    post_911_90_days: null,
+    post_911_30_days: null,
+    purple_heart: null,
+    pension_service_req: null,
+    income_below_limit: null,
+    age_or_disability: null,
+    min_continuous_days: null,
+    service_disability_discharge: null,
+    entry_before_date: null,
+    home_loan_service_req: true,
   },
 ];
 
@@ -205,8 +233,9 @@ async function seed() {
                                               min_discharge_level, min_disability_rating, adaptive_housing_condition,
                                               post_911_90_days, purple_heart, post_911_30_days, pension_service_req,
                                               income_below_limit, age_or_disability,
-                                              min_continuous_days, service_disability_discharge, entry_before_date)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+                                              min_continuous_days, service_disability_discharge, entry_before_date,
+                                              home_loan_service_req)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
         [
           requirement.benefit_id,
           requirement.active_duty_service,
@@ -223,6 +252,7 @@ async function seed() {
           requirement.min_continuous_days,
           requirement.service_disability_discharge,
           requirement.entry_before_date,
+          requirement.home_loan_service_req,
         ]
       );
     }

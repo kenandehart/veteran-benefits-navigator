@@ -30,7 +30,8 @@ interface ServicePeriod {
   activeDuty: boolean;
   officerOrEnlisted: 'officer' | 'enlisted';
   dischargeLevel: number;          // 1-5
-  disabilityDischarge?: boolean;   // only set for active duty periods
+  completedFullTerm?: boolean;     // set for all periods
+  disabilityDischarge?: boolean;   // set for all periods
 }
 
 interface QuestionnaireAnswers {
@@ -67,6 +68,7 @@ interface EligibilityRequirement {
   min_continuous_days: number | null;          // minimum continuous days in a single service period
   service_disability_discharge: boolean | null; // period must have been discharged due to service-connected disability
   entry_before_date: string | null;            // ISO date string; period's entry date must be before this date
+  home_loan_service_req: boolean | null;       // compound check; see Home Loan Service Requirement below
 }
 ```
 
@@ -123,7 +125,24 @@ All applicable checks must pass:
    - `true`: the veteran must have at least one honorably discharged active duty period with ≥ 30 days of service after September 11, 2001
    - `null`: skip this check
 
-7. **Pension service requirement (`pension_service_req`):**
+7. **Home loan service requirement (`home_loan_service_req`):**
+   - `true`: the veteran must meet one of these three paths:
+     - **Path 1 — Era-based active duty service:** at least one active duty period whose entry date falls within an era below, and whose duration meets that era's minimum:
+       | Era | Entry date range | Minimum days | Notes |
+       |---|---|---|---|
+       | WWII | Sep 16 1940 – Jul 25 1947 | 90 | |
+       | Post-WWII | Jul 26 1947 – Jun 26 1950 | 181 | |
+       | Korean War | Jun 27 1950 – Jan 31 1955 | 90 | |
+       | Post-Korean War | Feb 1 1955 – Aug 4 1964 | 181 | |
+       | Vietnam War | Aug 5 1964 – May 7 1975 | 90 | |
+       | Post-Vietnam | May 8 1975 – Sep 7 1980 (enlisted) or Oct 16 1981 (officers) | 181 | |
+       | Transition | Sep 8 1980 – Aug 1 1990 (enlisted) or Oct 17 1981 – Aug 1 1990 (officers) | 730; drops to 181 if `completedFullTerm` is `true` | |
+       | Gulf War | Aug 2 1990 – present | 730; drops to 90 if `completedFullTerm` is `true` | |
+     - **Path 2 — Disability discharge:** any active duty period has `disabilityDischarge === true`
+     - **Path 3 — Reserve/National Guard:** total days across all non-active-duty periods ≥ 2190 (approx. 6 years), and at least one of those periods has `dischargeLevel === 1` (Honorable)
+   - `null`: skip this check
+
+8. **Pension service requirement (`pension_service_req`):**
    - `true`: the veteran must meet one of these wartime service paths:
      - **Path A**: any active period started before September 8, 1980, with ≥ 90 total active duty days and wartime overlap
      - **Path B**: any enlisted active period started on or after September 8, 1980, with ≥ 730 total active duty days and wartime overlap
@@ -131,13 +150,13 @@ All applicable checks must pass:
    - `null`: skip this check
    - Wartime periods: WWII (Dec 7 1941–Dec 31 1946), Korean War (Jun 27 1950–Jan 31 1955), Vietnam (Nov 1 1955–May 7 1975), Gulf War (Aug 2 1990–present)
 
-8. **Income below limit:**
+9. **Income below limit:**
    - `true`: the veteran's `incomeBelowLimit` must be `true`
    - `null`: skip this check
 
-9. **Age or disability:**
-   - `true`: the veteran's `ageOrDisability` must be `true`
-   - `null`: skip this check
+10. **Age or disability:**
+    - `true`: the veteran's `ageOrDisability` must be `true`
+    - `null`: skip this check
 
 ---
 
@@ -161,18 +180,19 @@ For reference, these are the current benefits and their requirements:
  */
 ```
 
-| benefit_id | Benefit | active_duty_service | service_connected_condition | min_discharge_level | min_disability_rating | adaptive_housing_condition | purple_heart | post_911_90_days | post_911_30_days | pension_service_req | income_below_limit | age_or_disability | min_continuous_days | service_disability_discharge | entry_before_date |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | Disability Compensation | true | true | 2 | -1 | null | null | null | null | null | null | null | null | null | null |
-| 2 | VR&E | true | true | 2 | 10 | null | null | null | null | null | null | null | null | null | null |
-| 3 | Adaptive Housing Grants | true | true | 2 | null | true | null | null | null | null | null | null | null | null | null |
-| 4 | Post 9/11 GI Bill (path 1: 90 days aggregate) | null | null | null | null | null | null | true | null | null | null | null | null | null | null |
-| 4 | Post 9/11 GI Bill (path 2: Purple Heart) | null | null | 1 | null | null | true | null | null | null | null | null | null | null | null |
-| 4 | Post 9/11 GI Bill (path 3: 30 days + service-connected) | null | true | null | null | null | null | null | true | null | null | null | null | null | null |
-| 5 | Veterans Pension | null | null | 4 | null | null | null | null | null | true | true | true | null | null | null |
-| 6 | VA Health Care (path 1: ≥730 continuous days) | true | null | 4 | null | null | null | null | null | null | null | null | 730 | null | null |
-| 6 | VA Health Care (path 2: disability discharge) | true | null | 4 | null | null | null | null | null | null | null | null | null | true | null |
-| 6 | VA Health Care (path 3: entry before 1980-09-07) | true | null | 4 | null | null | null | null | null | null | null | null | null | null | 1980-09-07 |
+| benefit_id | Benefit | active_duty_service | service_connected_condition | min_discharge_level | min_disability_rating | adaptive_housing_condition | purple_heart | post_911_90_days | post_911_30_days | pension_service_req | home_loan_service_req | income_below_limit | age_or_disability | min_continuous_days | service_disability_discharge | entry_before_date |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | Disability Compensation | true | true | 2 | -1 | null | null | null | null | null | null | null | null | null | null | null |
+| 2 | VR&E | true | true | 2 | 10 | null | null | null | null | null | null | null | null | null | null | null |
+| 3 | Adaptive Housing Grants | true | true | 2 | null | true | null | null | null | null | null | null | null | null | null | null |
+| 4 | Post 9/11 GI Bill (path 1: 90 days aggregate) | null | null | null | null | null | null | true | null | null | null | null | null | null | null | null |
+| 4 | Post 9/11 GI Bill (path 2: Purple Heart) | null | null | 1 | null | null | true | null | null | null | null | null | null | null | null | null |
+| 4 | Post 9/11 GI Bill (path 3: 30 days + service-connected) | null | true | null | null | null | null | null | true | null | null | null | null | null | null | null |
+| 5 | Veterans Pension | null | null | 4 | null | null | null | null | null | true | null | true | true | null | null | null |
+| 6 | VA Health Care (path 1: ≥730 continuous days) | true | null | 4 | null | null | null | null | null | null | null | null | null | 730 | null | null |
+| 6 | VA Health Care (path 2: disability discharge) | true | null | 4 | null | null | null | null | null | null | null | null | null | null | true | null |
+| 6 | VA Health Care (path 3: entry before 1980-09-07) | true | null | 4 | null | null | null | null | null | null | null | null | null | null | null | 1980-09-07 |
+| 7 | VA Home Loan Guaranty | null | null | 4 | null | null | null | null | null | null | true | null | null | null | null | null |
 
 ---
 

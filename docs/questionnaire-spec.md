@@ -42,14 +42,36 @@ Keep the existing page structure (header, main with q-card, footer) and CSS clas
   - Other Than Honorable → 3
   - Bad Conduct → 4
   - Dishonorable → 5
-- Navigation: if the period was active duty → continue to **disability-discharge**; otherwise → continue to **add-another**
+- Navigation: continue to **completed-full-term**
 
-**Step: disability-discharge** (conditional: only shown for active duty periods)
+**Step: completed-full-term**
+
+- Label: “Did you complete the full term of service for this period?”
+- Input: No (left) / Yes (right) buttons
+- Store result as `completedFullTerm` on the current service period
+- Both paths continue to **disability-discharge**
+
+**Step: disability-discharge**
 
 - Label: “Were you discharged from this period of service specifically due to a service-connected disability?”
 - Input: No (left) / Yes (right) buttons
 - Store result as `disabilityDischarge` on the current service period
-- Both paths continue to **add-another**
+- If the period was active duty → continue to **add-another**
+- If the period was not active duty → continue to **activation-periods**
+
+**Step: activation-periods** (conditional: only shown for non-active duty periods)
+
+- Label: “Were you activated for federal active duty service (not including training) during this period?”
+- Input: No (left) / Yes (right) buttons
+- This step does not store anything on the service period
+- If no → continue to **add-another**
+- If yes → continue to **activation-guidance**
+
+**Step: activation-guidance** (conditional: only shown when veteran answers yes to activation-periods)
+
+- Display message: “Please add each activation as a separate period of service when prompted. This helps us accurately determine your eligibility.”
+- Continue button (right-aligned) → continue to **add-another**
+- This step does not store anything on the service period
 
 **Step: add-another**
 
@@ -154,7 +176,8 @@ interface ServicePeriod {
   activeDuty: boolean;
   officerOrEnlisted: 'officer' | 'enlisted';
   dischargeLevel: number;          // 1-5
-  disabilityDischarge?: boolean;   // only set for active duty periods
+  completedFullTerm?: boolean;     // set for all periods
+  disabilityDischarge?: boolean;   // set for all periods
 }
 
 interface QuestionnaireAnswers {

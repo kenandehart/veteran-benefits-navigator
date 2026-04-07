@@ -25,6 +25,7 @@ interface ServicePeriod {
   officerOrEnlisted: 'officer' | 'enlisted';
   dischargeLevel: number;
   disabilityDischarge?: boolean;
+  completedFullTerm?: boolean;
 }
 
 interface QuestionnaireAnswers {
@@ -45,6 +46,9 @@ type Step =
   | 'officer-enlisted'
   | 'discharge'
   | 'disability-discharge'
+  | 'completed-full-term'
+  | 'activation-periods'
+  | 'activation-guidance'
   | 'add-another'
   | 'service-connected'
   | 'has-rating'
@@ -68,6 +72,9 @@ const STEP_SECTIONS: Record<Step, string> = {
   'officer-enlisted':  'Service History',
   'discharge':             'Service History',
   'disability-discharge':  'Service History',
+  'completed-full-term':   'Service History',
+  'activation-periods':    'Service History',
+  'activation-guidance':   'Service History',
   'add-another':           'Service History',
   'service-connected': 'Health & Disability',
   'has-rating':        'Health & Disability',
@@ -279,11 +286,7 @@ function Questionnaire() {
           break;
         }
         case 'discharge': {
-          if (currentServicePeriod.dischargeLevel) {
-            currentServicePeriod.activeDuty
-              ? advance('disability-discharge')
-              : advance('add-another');
-          }
+          if (currentServicePeriod.dischargeLevel) advance('completed-full-term');
           break;
         }
         case 'rating-value': {
@@ -597,10 +600,7 @@ function Questionnaire() {
             {backButton}
             <button
               className="cta-button q-next-btn"
-              onClick={() => currentServicePeriod.activeDuty
-                ? advance('disability-discharge')
-                : advance('add-another')
-              }
+              onClick={() => advance('completed-full-term')}
               disabled={!currentServicePeriod.dischargeLevel}
               style={{ marginLeft: 'auto' }}
             >
@@ -621,18 +621,91 @@ function Questionnaire() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
-              onClick={() => advance('add-another', { ...currentServicePeriod, disabilityDischarge: false })}
+              onClick={() => advance(currentServicePeriod.activeDuty ? 'add-another' : 'activation-periods', { ...currentServicePeriod, disabilityDischarge: false })}
             >
               No
             </button>
             <button
               className="cta-button"
-              onClick={() => advance('add-another', { ...currentServicePeriod, disabilityDischarge: true })}
+              onClick={() => advance(currentServicePeriod.activeDuty ? 'add-another' : 'activation-periods', { ...currentServicePeriod, disabilityDischarge: true })}
             >
               Yes
             </button>
           </div>
           {backButton}
+        </>
+      );
+      break;
+    }
+
+    case 'completed-full-term': {
+      stepContent = (
+        <>
+          <label className="q-label">
+            Did you complete the full term of service for this period?
+          </label>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
+            <button
+              className="cta-button"
+              onClick={() => advance('disability-discharge', { ...currentServicePeriod, completedFullTerm: false })}
+            >
+              No
+            </button>
+            <button
+              className="cta-button"
+              onClick={() => advance('disability-discharge', { ...currentServicePeriod, completedFullTerm: true })}
+            >
+              Yes
+            </button>
+          </div>
+          {backButton}
+        </>
+      );
+      break;
+    }
+
+    case 'activation-periods': {
+      stepContent = (
+        <>
+          <label className="q-label">
+            Were you activated for federal active duty service (not including training) during this period?
+          </label>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
+            <button
+              className="cta-button"
+              onClick={() => advance('add-another')}
+            >
+              No
+            </button>
+            <button
+              className="cta-button"
+              onClick={() => advance('activation-guidance')}
+            >
+              Yes
+            </button>
+          </div>
+          {backButton}
+        </>
+      );
+      break;
+    }
+
+    case 'activation-guidance': {
+      stepContent = (
+        <>
+          <p className="q-label">
+            Please add each activation as a separate period of service when prompted. This helps us accurately determine your eligibility.
+          </p>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            {backButton}
+            <button
+              className="cta-button q-next-btn"
+              onClick={() => advance('add-another')}
+              style={{ marginLeft: 'auto' }}
+            >
+              Continue
+            </button>
+          </div>
         </>
       );
       break;

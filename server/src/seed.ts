@@ -86,6 +86,19 @@ const benefits = [
     url: 'https://www.va.gov/health-care/eligibility/',
     is_active: true,
   },
+  {
+    id: 7,
+    type: 'benefit',
+    category: 'housing',
+    name: 'VA Home Loan Guaranty',
+    short_description: 'No down payment home loans backed by VA',
+    description:
+      'The VA Home Loan Guaranty program helps veterans purchase homes with no down payment, no private mortgage insurance, and competitive interest rates. VA guarantees a portion of the loan, which allows lenders to offer more favorable terms.',
+    eligibility_summary:
+      'Veterans who meet minimum active duty service requirements for their era of service and have a discharge that is not dishonorable may be eligible. National Guard and Reserve members with 6 creditable years of service may also qualify.',
+    url: 'https://www.va.gov/housing-assistance/home-loans/eligibility/',
+    is_active: true,
+  },
 ];
 
 async function seed() {

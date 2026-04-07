@@ -5,6 +5,7 @@ interface ServicePeriod {
   officerOrEnlisted: 'officer' | 'enlisted';
   dischargeLevel: number;
   disabilityDischarge?: boolean;
+  completedFullTerm?: boolean;
 }
 
 interface QuestionnaireAnswers {
@@ -35,11 +36,25 @@ interface EligibilityRequirement {
   min_continuous_days: number | null;
   service_disability_discharge: boolean | null;
   entry_before_date: string | null;
+  home_loan_service_req: boolean | null;
 }
 
 const SEPT_11_2001 = new Date('2001-09-11');
 const SEPT_8_1980  = new Date('1980-09-08');
 const OCT_17_1981  = new Date('1981-10-17');
+
+const WWII_START      = new Date('1940-09-16');
+const WWII_END        = new Date('1947-07-25');
+const POST_WWII_END   = new Date('1950-06-26');
+const KOREAN_END      = new Date('1955-01-31');
+const POST_KOREAN_END = new Date('1964-08-04');
+const VIETNAM_END     = new Date('1975-05-07');
+const POST_VN_END_ENL = new Date('1980-09-07'); // Post-Vietnam end, enlisted
+const POST_VN_END_OFF = new Date('1981-10-16'); // Post-Vietnam end, officers
+const TRANS_START_ENL = new Date('1980-09-08'); // Transition start, enlisted
+const TRANS_START_OFF = new Date('1981-10-17'); // Transition start, officers
+const TRANS_END       = new Date('1990-08-01');
+const GULF_WAR_START  = new Date('1990-08-02');
 
 const WARTIME_PERIODS: Array<{ start: Date; end: Date | null }> = [
   { start: new Date('1941-12-07'), end: new Date('1946-12-31') },
@@ -108,6 +123,53 @@ function checkPensionServiceReq(periods: ServicePeriod[]): boolean {
   return false;
 }
 
+function checkHomeLoanServiceReq(periods: ServicePeriod[]): boolean {
+  const active    = periods.filter(p => p.activeDuty);
+  const nonActive = periods.filter(p => !p.activeDuty);
+
+  // PATH 1: Era-based active duty service
+  for (const p of active) {
+    const entry = new Date(p.entryDate);
+    const days  = periodDays(p);
+    const isEnl = p.officerOrEnlisted === 'enlisted';
+
+    if (entry >= WWII_START && entry <= WWII_END) {
+      if (days >= 90) return true;
+    } else if (entry > WWII_END && entry <= POST_WWII_END) {
+      if (days >= 181) return true;
+    } else if (entry > POST_WWII_END && entry <= KOREAN_END) {
+      if (days >= 90) return true;
+    } else if (entry > KOREAN_END && entry <= POST_KOREAN_END) {
+      if (days >= 181) return true;
+    } else if (entry > POST_KOREAN_END && entry <= VIETNAM_END) {
+      if (days >= 90) return true;
+    } else if (
+      entry > VIETNAM_END &&
+      ((isEnl && entry <= POST_VN_END_ENL) || (!isEnl && entry <= POST_VN_END_OFF))
+    ) {
+      if (days >= 181) return true;
+    } else if (
+      entry <= TRANS_END &&
+      ((isEnl && entry >= TRANS_START_ENL) || (!isEnl && entry >= TRANS_START_OFF))
+    ) {
+      const min = p.completedFullTerm ? 181 : 730;
+      if (days >= min) return true;
+    } else if (entry >= GULF_WAR_START) {
+      const min = p.completedFullTerm ? 90 : 730;
+      if (days >= min) return true;
+    }
+  }
+
+  // PATH 2: Discharged for service-connected disability
+  if (active.some(p => p.disabilityDischarge === true)) return true;
+
+  // PATH 3: Reserve/National Guard — ≥2190 total non-active days + at least one honorable
+  const totalNonActiveDays = nonActive.reduce((sum, p) => sum + periodDays(p), 0);
+  if (totalNonActiveDays >= 2190 && nonActive.some(p => p.dischargeLevel === 1)) return true;
+
+  return false;
+}
+
 export function checkEligibility(
   answers: QuestionnaireAnswers,
   requirements: EligibilityRequirement[]
@@ -155,6 +217,8 @@ export function checkEligibility(
     }
 
     if (req.pension_service_req === true && !checkPensionServiceReq(answers.servicePeriods)) continue;
+
+    if (req.home_loan_service_req === true && !checkHomeLoanServiceReq(answers.servicePeriods)) continue;
 
     if (req.income_below_limit === true && !answers.incomeBelowLimit) continue;
 
