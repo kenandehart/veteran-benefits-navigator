@@ -17,6 +17,7 @@ interface QuestionnaireAnswers {
   incomeBelowLimit: boolean;
   ageOrDisability: boolean;
   purpleHeartPost911: boolean;
+  hadSGLI: boolean;
 }
 
 interface EligibilityRequirement {
@@ -37,6 +38,7 @@ interface EligibilityRequirement {
   service_disability_discharge: boolean | null;
   entry_before_date: string | null;
   home_loan_service_req: boolean | null;
+  vgli_service_req: boolean | null;
 }
 
 const SEPT_11_2001 = new Date('2001-09-11');
@@ -170,6 +172,23 @@ function checkHomeLoanServiceReq(periods: ServicePeriod[]): boolean {
   return false;
 }
 
+function meetsVGLIDateWindow(periods: ServicePeriod[]): boolean {
+  const today = new Date();
+  const WINDOW_MS = 485 * 24 * 60 * 60 * 1000;
+  return periods.some(period => {
+    const sepDate = new Date(period.separationDate);
+    const diff = Math.abs(today.getTime() - sepDate.getTime());
+    if (diff > WINDOW_MS) return false;
+    if (period.activeDuty) return periodDays(period) >= 31;
+    return true; // Condition B: any non-active-duty period within window
+  });
+}
+
+function checkVGLIServiceReq(periods: ServicePeriod[], answers: QuestionnaireAnswers): boolean {
+  if (!answers.hadSGLI) return false;
+  return meetsVGLIDateWindow(periods);
+}
+
 export function checkEligibility(
   answers: QuestionnaireAnswers,
   requirements: EligibilityRequirement[]
@@ -219,6 +238,8 @@ export function checkEligibility(
     if (req.pension_service_req === true && !checkPensionServiceReq(answers.servicePeriods)) continue;
 
     if (req.home_loan_service_req === true && !checkHomeLoanServiceReq(answers.servicePeriods)) continue;
+
+    if (req.vgli_service_req === true && !checkVGLIServiceReq(answers.servicePeriods, answers)) continue;
 
     if (req.income_below_limit === true && !answers.incomeBelowLimit) continue;
 

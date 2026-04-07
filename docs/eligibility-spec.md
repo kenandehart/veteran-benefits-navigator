@@ -43,6 +43,7 @@ interface QuestionnaireAnswers {
   incomeBelowLimit: boolean;
   ageOrDisability: boolean;
   purpleHeartPost911: boolean;
+  hadSGLI: boolean;                           // false if SGLI step was skipped or veteran answered No
 }
 ```
 
@@ -69,6 +70,7 @@ interface EligibilityRequirement {
   service_disability_discharge: boolean | null; // period must have been discharged due to service-connected disability
   entry_before_date: string | null;            // ISO date string; period's entry date must be before this date
   home_loan_service_req: boolean | null;       // compound check; see Home Loan Service Requirement below
+  vgli_service_req: boolean | null;            // compound check; see VGLI Service Requirement below
 }
 ```
 
@@ -150,11 +152,19 @@ All applicable checks must pass:
    - `null`: skip this check
    - Wartime periods: WWII (Dec 7 1941–Dec 31 1946), Korean War (Jun 27 1950–Jan 31 1955), Vietnam (Nov 1 1955–May 7 1975), Gulf War (Aug 2 1990–present)
 
-9. **Income below limit:**
+9. **VGLI service requirement (`vgli_service_req`):**
+   - `true`: both of the following must be true:
+     1. `answers.hadSGLI` is `true`
+     2. At least one service period meets the date window condition:
+        - **Condition A**: the period was active duty, lasted ≥ 31 days, and the separation date is within 485 days of today (absolute difference)
+        - **Condition B**: the period was not active duty and the separation date is within 485 days of today
+   - `null`: skip this check
+
+10. **Income below limit:**
    - `true`: the veteran's `incomeBelowLimit` must be `true`
    - `null`: skip this check
 
-10. **Age or disability:**
+11. **Age or disability:**
     - `true`: the veteran's `ageOrDisability` must be `true`
     - `null`: skip this check
 
@@ -180,19 +190,20 @@ For reference, these are the current benefits and their requirements:
  */
 ```
 
-| benefit_id | Benefit | active_duty_service | service_connected_condition | min_discharge_level | min_disability_rating | adaptive_housing_condition | purple_heart | post_911_90_days | post_911_30_days | pension_service_req | home_loan_service_req | income_below_limit | age_or_disability | min_continuous_days | service_disability_discharge | entry_before_date |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | Disability Compensation | true | true | 2 | -1 | null | null | null | null | null | null | null | null | null | null | null |
-| 2 | VR&E | true | true | 2 | 10 | null | null | null | null | null | null | null | null | null | null | null |
-| 3 | Adaptive Housing Grants | true | true | 2 | null | true | null | null | null | null | null | null | null | null | null | null |
-| 4 | Post 9/11 GI Bill (path 1: 90 days aggregate) | null | null | null | null | null | null | true | null | null | null | null | null | null | null | null |
-| 4 | Post 9/11 GI Bill (path 2: Purple Heart) | null | null | 1 | null | null | true | null | null | null | null | null | null | null | null | null |
-| 4 | Post 9/11 GI Bill (path 3: 30 days + service-connected) | null | true | null | null | null | null | null | true | null | null | null | null | null | null | null |
-| 5 | Veterans Pension | null | null | 4 | null | null | null | null | null | true | null | true | true | null | null | null |
-| 6 | VA Health Care (path 1: ≥730 continuous days) | true | null | 4 | null | null | null | null | null | null | null | null | null | 730 | null | null |
-| 6 | VA Health Care (path 2: disability discharge) | true | null | 4 | null | null | null | null | null | null | null | null | null | null | true | null |
-| 6 | VA Health Care (path 3: entry before 1980-09-07) | true | null | 4 | null | null | null | null | null | null | null | null | null | null | null | 1980-09-07 |
-| 7 | VA Home Loan Guaranty | null | null | 4 | null | null | null | null | null | null | true | null | null | null | null | null |
+| benefit_id | Benefit | active_duty_service | service_connected_condition | min_discharge_level | min_disability_rating | adaptive_housing_condition | purple_heart | post_911_90_days | post_911_30_days | pension_service_req | home_loan_service_req | vgli_service_req | income_below_limit | age_or_disability | min_continuous_days | service_disability_discharge | entry_before_date |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | Disability Compensation | true | true | 2 | -1 | null | null | null | null | null | null | null | null | null | null | null | null |
+| 2 | VR&E | true | true | 2 | 10 | null | null | null | null | null | null | null | null | null | null | null | null |
+| 3 | Adaptive Housing Grants | true | true | 2 | null | true | null | null | null | null | null | null | null | null | null | null | null |
+| 4 | Post 9/11 GI Bill (path 1: 90 days aggregate) | null | null | null | null | null | null | true | null | null | null | null | null | null | null | null | null |
+| 4 | Post 9/11 GI Bill (path 2: Purple Heart) | null | null | 1 | null | null | true | null | null | null | null | null | null | null | null | null | null |
+| 4 | Post 9/11 GI Bill (path 3: 30 days + service-connected) | null | true | null | null | null | null | null | true | null | null | null | null | null | null | null | null |
+| 5 | Veterans Pension | null | null | 4 | null | null | null | null | null | true | null | null | true | true | null | null | null |
+| 6 | VA Health Care (path 1: ≥730 continuous days) | true | null | 4 | null | null | null | null | null | null | null | null | null | null | 730 | null | null |
+| 6 | VA Health Care (path 2: disability discharge) | true | null | 4 | null | null | null | null | null | null | null | null | null | null | null | true | null |
+| 6 | VA Health Care (path 3: entry before 1980-09-07) | true | null | 4 | null | null | null | null | null | null | null | null | null | null | null | null | 1980-09-07 |
+| 7 | VA Home Loan Guaranty | null | null | 4 | null | null | null | null | null | null | true | null | null | null | null | null | null |
+| 8 | Veterans' Group Life Insurance (VGLI) | null | null | 4 | null | null | null | null | null | null | null | true | null | null | null | null | null |
 
 ---
 

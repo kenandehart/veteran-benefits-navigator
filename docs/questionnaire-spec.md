@@ -78,7 +78,25 @@ Keep the existing page structure (header, main with q-card, footer) and CSS clas
 - Label: “Would you like to add another period of service?”
 - Input: No (left) / Yes (right) buttons
 - If yes: push current service period to array, loop back to **entry-date**
-- If no: push current service period to array, continue to **has-rating**
+- If no: push current service period to array, then check if any collected service period meets the VGLI date window (see SGLI Coverage step below):
+  - If the condition is met → continue to **sgli-coverage**
+  - If not → set `hadSGLI` to `false` and continue to **has-rating**
+
+-----
+
+### Section: Insurance
+
+**Step: sgli-coverage** (conditional: only shown when at least one service period meets the VGLI date window)
+
+The VGLI date window condition is true if ANY service period satisfies either:
+- **Condition A**: the period was active duty, lasted at least 31 days, and the separation date is within 485 days of today
+- **Condition B**: the period was not active duty and the separation date is within 485 days of today
+
+- Label: “Did you have Servicemembers' Group Life Insurance (SGLI) coverage during your service?”
+- Include an info icon (ⓘ) that toggles a tooltip with this text: “Most service members are automatically enrolled in SGLI unless they specifically opted out. If you're unsure, you likely had it.”
+- Input: No (left) / Yes (right) buttons
+- Store result as `hadSGLI` on the answers object
+- Both paths continue to **has-rating**
 
 -----
 
@@ -189,6 +207,7 @@ interface QuestionnaireAnswers {
   incomeBelowLimit: boolean;
   ageOrDisability: boolean;
   purpleHeartPost911: boolean;
+  hadSGLI: boolean;                            // false if sgli-coverage step was skipped or veteran answered No
 }
 ```
 
@@ -201,7 +220,7 @@ interface QuestionnaireAnswers {
 - Steps **housing-condition** and **housing-ownership** combine into the single `adaptiveHousingCondition` boolean in the final answers object.
 - Include a Back button on every step except the first, allowing the veteran to revisit and change previous answers.
 - The Back button should correctly restore previous answers when navigating backwards, including navigating back into a service period that was already added.
-- Show a section indicator instead of “Step X of Y” since the total steps vary. Display which section the veteran is in: “Service History”, “Health & Disability”, “Housing”, or “Financial”.
+- Show a section indicator instead of “Step X of Y” since the total steps vary. Display which section the veteran is in: “Service History”, “Insurance”, “Health & Disability”, “Housing”, or “Financial”.
 - On completion, submit the answers to the server and navigate to the results page.
 - For yes/no button inputs, use styled buttons with No on the left and Yes on the right, consistent with the existing `cta-button` class conventions.
 - For the three-option service-connected step, order buttons: I’m not sure (left), No (center), Yes (right).

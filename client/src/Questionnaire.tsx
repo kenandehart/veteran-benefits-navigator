@@ -37,6 +37,7 @@ interface QuestionnaireAnswers {
   incomeBelowLimit: boolean;
   ageOrDisability: boolean;
   purpleHeartPost911: boolean;
+  hadSGLI: boolean;
 }
 
 type Step =
@@ -53,6 +54,7 @@ type Step =
   | 'service-connected'
   | 'has-rating'
   | 'rating-value'
+  | 'sgli-coverage'
   | 'housing-condition'
   | 'housing-ownership'
   | 'income-limit'
@@ -79,6 +81,7 @@ const STEP_SECTIONS: Record<Step, string> = {
   'service-connected': 'Health & Disability',
   'has-rating':        'Health & Disability',
   'rating-value':      'Health & Disability',
+  'sgli-coverage':     'Insurance',
   'housing-condition': 'Housing',
   'housing-ownership': 'Housing',
   'income-limit':      'Financial',
@@ -135,6 +138,20 @@ function validateSeparationDate(iso: string, entryIso: string): string {
     if (date < entryDate) return 'Separation date cannot be before the entry date.';
   }
   return '';
+}
+
+function meetsVGLIDateWindow(periods: ServicePeriod[]): boolean {
+  const today = new Date();
+  const WINDOW_MS = 485 * 24 * 60 * 60 * 1000;
+  return periods.some(period => {
+    const sepDate = new Date(period.separationDate);
+    const diff = Math.abs(today.getTime() - sepDate.getTime());
+    if (diff > WINDOW_MS) return false;
+    const entryDate = new Date(period.entryDate);
+    const days = Math.floor((sepDate.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
+    if (period.activeDuty) return days >= 31;
+    return true;
+  });
 }
 
 function toISO(month: number, day: number, year: number): string {
@@ -231,6 +248,7 @@ const INITIAL_ANSWERS: QuestionnaireAnswers = {
   incomeBelowLimit: false,
   ageOrDisability: false,
   purpleHeartPost911: false,
+  hadSGLI: false,
 };
 
 function Questionnaire() {
@@ -246,6 +264,7 @@ function Questionnaire() {
 
   const serviceConnectedTooltipRef = useRef<HTMLDivElement>(null);
   const incomeLimitTooltipRef = useRef<HTMLDivElement>(null);
+  const sgliTooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { try { localStorage.setItem('vbn_step', JSON.stringify(currentStep)); } catch {} }, [currentStep]);
   useEffect(() => { try { localStorage.setItem('vbn_answers', JSON.stringify(answers)); } catch {} }, [answers]);
@@ -257,7 +276,8 @@ function Questionnaire() {
       const target = e.target as Node;
       if (
         !serviceConnectedTooltipRef.current?.contains(target) &&
-        !incomeLimitTooltipRef.current?.contains(target)
+        !incomeLimitTooltipRef.current?.contains(target) &&
+        !sgliTooltipRef.current?.contains(target)
       ) {
         setShowTooltip(false);
       }
@@ -724,7 +744,12 @@ function Questionnaire() {
                   ...answers,
                   servicePeriods: [...answers.servicePeriods, completedPeriod],
                 };
-                advance('has-rating', {}, updatedAnswers);
+                const showSGLI = meetsVGLIDateWindow(updatedAnswers.servicePeriods);
+                advance(
+                  showSGLI ? 'sgli-coverage' : 'has-rating',
+                  {},
+                  showSGLI ? updatedAnswers : { ...updatedAnswers, hadSGLI: false }
+                );
               }}
             >
               No
@@ -871,6 +896,74 @@ function Questionnaire() {
               Next
             </button>
           </div>
+        </>
+      );
+      break;
+    }
+
+    case 'sgli-coverage': {
+      const nextStep = 'has-rating';
+      stepContent = (
+        <>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+            <label className="q-label">
+              Did you have Servicemembers' Group Life Insurance (SGLI) coverage during your service?
+            </label>
+            <div ref={sgliTooltipRef} style={{ position: 'relative', flexShrink: 0, marginTop: '4px' }}>
+              <button
+                onClick={() => setShowTooltip(v => !v)}
+                aria-label="More information"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '1.1rem',
+                  color: 'var(--gold)',
+                  padding: '0',
+                  lineHeight: 1,
+                }}
+              >
+                ⓘ
+              </button>
+              {showTooltip && (
+                <div
+                  role="tooltip"
+                  style={{
+                    position: 'absolute',
+                    top: '1.6rem',
+                    right: 0,
+                    width: '280px',
+                    background: 'var(--navy)',
+                    color: '#fff',
+                    borderRadius: '4px',
+                    padding: '12px 16px',
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    fontSize: '0.85rem',
+                    lineHeight: 1.5,
+                    zIndex: 10,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                  }}
+                >
+                  Most service members are automatically enrolled in SGLI unless they specifically opted out. If you're unsure, you likely had it.
+                </div>
+              )}
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
+            <button
+              className="cta-button"
+              onClick={() => advance(nextStep, undefined, { ...answers, hadSGLI: false })}
+            >
+              No
+            </button>
+            <button
+              className="cta-button"
+              onClick={() => advance(nextStep, undefined, { ...answers, hadSGLI: true })}
+            >
+              Yes
+            </button>
+          </div>
+          {backButton}
         </>
       );
       break;

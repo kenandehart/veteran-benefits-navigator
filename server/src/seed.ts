@@ -99,6 +99,19 @@ const benefits = [
     url: 'https://www.va.gov/housing-assistance/home-loans/eligibility/',
     is_active: true,
   },
+  {
+    id: 8,
+    type: 'benefit',
+    category: 'insurance',
+    name: "Veterans' Group Life Insurance (VGLI)",
+    short_description: 'Convert your military life insurance to a civilian policy after separation',
+    description:
+      "Veterans' Group Life Insurance allows veterans to convert their Servicemembers' Group Life Insurance (SGLI) coverage to a renewable term life insurance policy after leaving the military. Coverage is available in amounts up to the SGLI coverage amount held at separation. No health screening is required if you apply within 240 days of separation.",
+    eligibility_summary:
+      'Veterans who had SGLI coverage during service and are within 1 year and 120 days of separation may be eligible. Most service members are automatically enrolled in SGLI unless they specifically opted out.',
+    url: 'https://www.va.gov/life-insurance/options-eligibility/vgli/',
+    is_active: true,
+  },
 ];
 
 async function seed() {
