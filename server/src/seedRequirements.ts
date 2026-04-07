@@ -282,6 +282,26 @@ const requirements = [
     home_loan_service_req: null,
     vgli_service_req: null,
   },
+  {
+    benefit_id: 10, // Veterans Affairs Life Insurance (VALife)
+    active_duty_service: null,
+    service_connected_condition: null,
+    min_discharge_level: null,
+    min_disability_rating: 0,     // requires any VA rating (>= 0%)
+    adaptive_housing_condition: null,
+    auto_grant_condition: null,
+    post_911_90_days: null,
+    post_911_30_days: null,
+    purple_heart: null,
+    pension_service_req: null,
+    income_below_limit: null,
+    age_or_disability: null,
+    min_continuous_days: null,
+    service_disability_discharge: null,
+    entry_before_date: null,
+    home_loan_service_req: null,
+    vgli_service_req: null,
+  },
 ];
 
 async function seed() {

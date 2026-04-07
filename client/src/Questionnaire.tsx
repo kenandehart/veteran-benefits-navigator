@@ -986,7 +986,7 @@ function Questionnaire() {
       stepContent = (
         <>
           <label className="q-label">Do your service-connected disabilities include any of the following?</label>
-          <div className="conditions-wrapper">
+          <div key={currentStep} className="conditions-wrapper">
             <ul className="conditions-list">
               {QUALIFYING_CONDITIONS.map((condition, i) => (
                 <li key={i} className="conditions-list__item">{condition}</li>
@@ -1075,7 +1075,7 @@ function Questionnaire() {
       stepContent = (
         <>
           <label className="q-label">Do you have any of the following service-connected conditions?</label>
-          <div className="conditions-wrapper">
+          <div key={currentStep} className="conditions-wrapper">
             <ul className="conditions-list">
               {AUTO_GRANT_CONDITIONS.map((condition, i) => (
                 <li key={i} className="conditions-list__item">{condition}</li>

@@ -125,6 +125,19 @@ const benefits = [
     url: 'https://www.va.gov/disability/eligibility/special-claims/automobile-allowance-adaptive-equipment/',
     is_active: true,
   },
+  {
+    id: 10,
+    type: 'benefit',
+    category: 'insurance',
+    name: 'Veterans Affairs Life Insurance (VALife)',
+    short_description: 'Guaranteed acceptance life insurance for veterans with a service-connected disability',
+    description:
+      'Veterans Affairs Life Insurance (VALife) is a guaranteed acceptance whole life insurance program for veterans with service-connected disabilities. Coverage is available in amounts up to $40,000 in $10,000 increments. If you meet the eligibility requirements, your application is automatically approved with no health screening required. Full coverage begins 2 years after you apply.',
+    eligibility_summary:
+      'You must have a VA service-connected disability rating. Any rating from 0% to 100% qualifies. There is no time limit to apply after receiving your disability rating.',
+    url: 'https://www.va.gov/life-insurance/options-eligibility/valife/',
+    is_active: true,
+  },
 ];
 
 async function seed() {

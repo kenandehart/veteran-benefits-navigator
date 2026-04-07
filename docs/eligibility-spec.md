@@ -211,6 +211,7 @@ For reference, these are the current benefits and their requirements:
 | 7 | VA Home Loan Guaranty | null | null | 4 | null | null | null | null | null | null | null | true | null | null | null | null | null | null |
 | 8 | Veterans' Group Life Insurance (VGLI) | null | null | 4 | null | null | null | null | null | null | null | null | true | null | null | null | null | null |
 | 9 | Automobile Allowance and Adaptive Equipment | true | true | 2 | 0 | null | true | null | null | null | null | null | null | null | null | null | null | null |
+| 10 | Veterans Affairs Life Insurance (VALife) | null | null | null | 0 | null | null | null | null | null | null | null | null | null | null | null | null | null |
 
 ---
 
