@@ -426,6 +426,12 @@
   margin: 0 auto;
 }
 
+.benefit-detail__header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .benefit-detail__back {
   background: none;
   border: none;

@@ -1,6 +1,6 @@
 import './App.css'
 import { useEffect, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 interface Benefit {
   id: number
@@ -12,18 +12,18 @@ interface Benefit {
   url: string
 }
 
-function ResultsPage() {
-  const location = useLocation()
+function CataloguePage() {
   const navigate = useNavigate()
-  const eligibleBenefits: Benefit[] | null = (location.state as { eligibleBenefits: Benefit[] } | null)?.eligibleBenefits ?? null
+  const [benefits, setBenefits] = useState<Benefit[]>([])
   const [selectedBenefit, setSelectedBenefit] = useState<Benefit | null>(null)
   const [showMenu, setShowMenu] = useState(false)
 
   useEffect(() => {
-    if (!eligibleBenefits) navigate('/')
-  }, [eligibleBenefits, navigate])
-
-  if (!eligibleBenefits) return null
+    fetch('/api/benefits')
+      .then(res => res.json())
+      .then(data => setBenefits(data))
+      .catch(err => console.error('Failed to fetch benefits:', err))
+  }, [])
 
   const siteHeader = (
     <>
@@ -42,18 +42,10 @@ function ResultsPage() {
           </button>
           {showMenu && (
             <div className="nav-dropdown" role="menu">
-              <button
-                className="nav-dropdown__item"
-                role="menuitem"
-                onClick={() => { setShowMenu(false); navigate('/') }}
-              >
+              <button className="nav-dropdown__item" role="menuitem" onClick={() => { setShowMenu(false); navigate('/') }}>
                 Home
               </button>
-              <button
-                className="nav-dropdown__item"
-                role="menuitem"
-                onClick={() => { setShowMenu(false); navigate('/benefits') }}
-              >
+              <button className="nav-dropdown__item" role="menuitem" onClick={() => setShowMenu(false)}>
                 Benefits
               </button>
             </div>
@@ -103,35 +95,34 @@ function ResultsPage() {
     <div className="page">
       {siteHeader}
       <main className="results-main">
-        {eligibleBenefits.length === 0 ? (
-          <div className="no-results">
-            <p>We weren't able to find any matching benefits based on your answers.</p>
-            <p>Your situation may still qualify you for benefits not yet covered by this tool. Consider reaching out to a VA-accredited representative for a full review.</p>
-            <button className="cta-button" onClick={() => navigate('/')}>Return to home page</button>
-          </div>
-        ) : (
-          <>
-            <h1 className="results-heading">Benefits you may be eligible for</h1>
-            <div className="benefits-grid">
-              {eligibleBenefits.map(benefit => (
-                <button
-                  key={benefit.id}
-                  className="benefit-tile"
-                  onClick={() => { setSelectedBenefit(benefit); window.scrollTo(0, 0); }}
-                >
-                  <span className="benefit-tile__name">{benefit.name}</span>
-                  {benefit.short_description && (
-                    <span className="benefit-tile__desc">{benefit.short_description}</span>
-                  )}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
+        <h1 className="results-heading">Benefits</h1>
+        <p style={{
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          fontSize: '0.9rem',
+          color: 'var(--text-muted)',
+          textAlign: 'center',
+          margin: '0 0 32px',
+        }}>
+          This site is under development. More benefits will be added soon.
+        </p>
+        <div className="benefits-grid">
+          {benefits.map(benefit => (
+            <button
+              key={benefit.id}
+              className="benefit-tile"
+              onClick={() => { setSelectedBenefit(benefit); window.scrollTo(0, 0); }}
+            >
+              <span className="benefit-tile__name">{benefit.name}</span>
+              {benefit.short_description && (
+                <span className="benefit-tile__desc">{benefit.short_description}</span>
+              )}
+            </button>
+          ))}
+        </div>
       </main>
       <footer className="footer"></footer>
     </div>
   )
 }
 
-export default ResultsPage
+export default CataloguePage

@@ -26,6 +26,9 @@ function LandingPage() {
               <button className="nav-dropdown__item" role="menuitem" onClick={() => setShowMenu(false)}>
                 Home
               </button>
+              <button className="nav-dropdown__item" role="menuitem" onClick={() => { setShowMenu(false); navigate('/benefits') }}>
+                Benefits
+              </button>
             </div>
           )}
         </div>

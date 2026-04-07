@@ -231,6 +231,7 @@ function Questionnaire() {
   const [showTooltip, setShowTooltip] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState('/');
 
   const serviceConnectedTooltipRef = useRef<HTMLDivElement>(null);
   const incomeLimitTooltipRef = useRef<HTMLDivElement>(null);
@@ -293,16 +294,30 @@ function Questionnaire() {
 
   function goHome() {
     clearQuestionnaireStorage();
-    navigate('/');
+    navigate(pendingNavigation);
   }
 
   function handleGoHome() {
     setShowMenu(false);
     const hasProgress = history.length > 0;
     if (hasProgress) {
+      setPendingNavigation('/');
       setShowConfirmDialog(true);
     } else {
-      goHome();
+      clearQuestionnaireStorage();
+      navigate('/');
+    }
+  }
+
+  function handleNavTo(path: string) {
+    setShowMenu(false);
+    const hasProgress = history.length > 0;
+    if (hasProgress) {
+      setPendingNavigation(path);
+      setShowConfirmDialog(true);
+    } else {
+      clearQuestionnaireStorage();
+      navigate(path);
     }
   }
 
@@ -377,6 +392,9 @@ function Questionnaire() {
             <div className="nav-dropdown" role="menu">
               <button className="nav-dropdown__item" role="menuitem" onClick={handleGoHome}>
                 Home
+              </button>
+              <button className="nav-dropdown__item" role="menuitem" onClick={() => handleNavTo('/benefits')}>
+                Benefits
               </button>
             </div>
           )}
