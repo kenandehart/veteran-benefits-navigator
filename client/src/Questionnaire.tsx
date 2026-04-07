@@ -23,6 +23,7 @@ interface ServicePeriod {
   activeDuty: boolean;
   officerOrEnlisted: 'officer' | 'enlisted';
   dischargeLevel: number;
+  disabilityDischarge?: boolean;
 }
 
 interface QuestionnaireAnswers {
@@ -42,6 +43,7 @@ type Step =
   | 'active-duty'
   | 'officer-enlisted'
   | 'discharge'
+  | 'disability-discharge'
   | 'add-another'
   | 'service-connected'
   | 'has-rating'
@@ -63,8 +65,9 @@ const STEP_SECTIONS: Record<Step, string> = {
   'separation-date':   'Service History',
   'active-duty':       'Service History',
   'officer-enlisted':  'Service History',
-  'discharge':         'Service History',
-  'add-another':       'Service History',
+  'discharge':             'Service History',
+  'disability-discharge':  'Service History',
+  'add-another':           'Service History',
   'service-connected': 'Health & Disability',
   'has-rating':        'Health & Disability',
   'rating-value':      'Health & Disability',
@@ -275,7 +278,11 @@ function Questionnaire() {
           break;
         }
         case 'discharge': {
-          if (currentServicePeriod.dischargeLevel) advance('add-another');
+          if (currentServicePeriod.dischargeLevel) {
+            currentServicePeriod.activeDuty
+              ? advance('disability-discharge')
+              : advance('add-another');
+          }
           break;
         }
         case 'rating-value': {
@@ -589,13 +596,42 @@ function Questionnaire() {
             {backButton}
             <button
               className="cta-button q-next-btn"
-              onClick={() => advance('add-another')}
+              onClick={() => currentServicePeriod.activeDuty
+                ? advance('disability-discharge')
+                : advance('add-another')
+              }
               disabled={!currentServicePeriod.dischargeLevel}
               style={{ marginLeft: 'auto' }}
             >
               Next
             </button>
           </div>
+        </>
+      );
+      break;
+    }
+
+    case 'disability-discharge': {
+      stepContent = (
+        <>
+          <label className="q-label">
+            Were you discharged from this period of service specifically due to a service-connected disability?
+          </label>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
+            <button
+              className="cta-button"
+              onClick={() => advance('add-another', { ...currentServicePeriod, disabilityDischarge: false })}
+            >
+              No
+            </button>
+            <button
+              className="cta-button"
+              onClick={() => advance('add-another', { ...currentServicePeriod, disabilityDischarge: true })}
+            >
+              Yes
+            </button>
+          </div>
+          {backButton}
         </>
       );
       break;

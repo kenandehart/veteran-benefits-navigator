@@ -4,6 +4,7 @@ interface ServicePeriod {
   activeDuty: boolean;
   officerOrEnlisted: 'officer' | 'enlisted';
   dischargeLevel: number;
+  disabilityDischarge?: boolean;
 }
 
 interface QuestionnaireAnswers {
@@ -31,6 +32,9 @@ interface EligibilityRequirement {
   pension_service_req: boolean | null;
   income_below_limit: boolean | null;
   age_or_disability: boolean | null;
+  min_continuous_days: number | null;
+  service_disability_discharge: boolean | null;
+  entry_before_date: string | null;
 }
 
 const SEPT_11_2001 = new Date('2001-09-11');
@@ -114,6 +118,9 @@ export function checkEligibility(
     const servicePasses = answers.servicePeriods.some((period) => {
       if (req.active_duty_service === true && !period.activeDuty) return false;
       if (req.min_discharge_level !== null && period.dischargeLevel > req.min_discharge_level) return false;
+      if (req.min_continuous_days !== null && periodDays(period) < req.min_continuous_days) return false;
+      if (req.service_disability_discharge === true && period.disabilityDischarge !== true) return false;
+      if (req.entry_before_date !== null && new Date(period.entryDate) >= new Date(req.entry_before_date)) return false;
       return true;
     });
 

@@ -73,6 +73,19 @@ const benefits = [
     url: 'https://www.va.gov/pension/',
     is_active: true,
   },
+  {
+    id: 6,
+    type: 'benefit',
+    category: 'health care',
+    name: 'VA Health Care',
+    short_description: 'Comprehensive medical care for eligible veterans',
+    description:
+      'VA health care provides eligible veterans with a range of medical, mental health, and specialty services including preventive care, primary care, mental health services, and more.',
+    eligibility_summary:
+      'Veterans who served on active duty with a discharge other than dishonorable may be eligible if they served for at least two continuous years, were discharged due to a service-connected disability, or began service before September 7, 1980.',
+    url: 'https://www.va.gov/health-care/eligibility/',
+    is_active: true,
+  },
 ];
 
 async function seed() {
