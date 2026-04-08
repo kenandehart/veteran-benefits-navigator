@@ -51,4 +51,46 @@ router.post('/register', async (req, res) => {
   }
 });
 
+const DUMMY_HASH = '$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012345';
+
+router.post('/login', async (req, res) => {
+  const { username, password } = req.body as {
+    username?: string;
+    password?: string;
+  };
+
+  if (!username || !password) {
+    res.status(400).json({ error: 'username and password are required' });
+    return;
+  }
+
+  try {
+    const result = await pool.query<{
+      id: number;
+      username: string;
+      email: string | null;
+      created_at: Date;
+      password_hash: string;
+    }>(
+      'SELECT id, username, email, created_at, password_hash FROM users WHERE username = $1',
+      [username]
+    );
+
+    const user = result.rows[0];
+    const passwordMatch = await bcrypt.compare(password, user?.password_hash ?? DUMMY_HASH);
+
+    if (!user || !passwordMatch) {
+      res.status(401).json({ error: 'Invalid username or password' });
+      return;
+    }
+
+    req.session.userId = user.id;
+    req.session.username = user.username;
+    res.json({ id: user.id, username: user.username, email: user.email, created_at: user.created_at });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
 export default router;
