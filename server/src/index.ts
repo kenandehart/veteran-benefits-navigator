@@ -6,6 +6,7 @@ import healthRouter from './routes/health.js';
 import benefitsRouter from './routes/benefits.js';
 import questionnaireRouter from './routes/questionnaire.js';
 import authRouter from './routes/auth.js';
+import userRouter from './routes/user.js';
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3000', 10);
@@ -35,6 +36,7 @@ app.use(healthRouter);
 app.use(benefitsRouter);
 app.use(questionnaireRouter);
 app.use('/auth', authRouter);
+app.use('/user/results', userRouter);
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
