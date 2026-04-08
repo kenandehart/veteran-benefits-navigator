@@ -6,10 +6,12 @@ import pool from '../db.js';
 const router = Router();
 
 router.post('/register', async (req, res) => {
-  const { username, password, email } = req.body as {
+  const { username, password, email, answers, matchedBenefitIds } = req.body as {
     username?: string;
     password?: string;
     email?: string;
+    answers?: unknown;
+    matchedBenefitIds?: unknown;
   };
 
   if (!username || !password) {
@@ -32,6 +34,15 @@ router.post('/register', async (req, res) => {
     );
 
     const user = result.rows[0];
+
+    if (answers !== undefined && matchedBenefitIds !== undefined) {
+      await pool.query(
+        `INSERT INTO user_questionnaire (user_id, answers, matched_benefit_ids)
+         VALUES ($1, $2, $3)`,
+        [user.id, JSON.stringify(answers), JSON.stringify(matchedBenefitIds)]
+      );
+    }
+
     req.session.userId = user.id;
     req.session.username = user.username;
     res.status(201).json(user);
