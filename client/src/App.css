@@ -671,6 +671,10 @@
   background-color: var(--bg);
 }
 
+.nav-dropdown__item--mobile-auth {
+  display: none;
+}
+
 /* ============================================================
    Confirm dialog
    ============================================================ */
@@ -1120,8 +1124,20 @@
     height: 56px;
   }
 
+  .header-auth {
+    display: none;
+  }
+
+  .nav-dropdown__item--mobile-auth {
+    display: block;
+  }
+
   .hero {
     padding: 64px 24px 56px;
+  }
+
+  .hero-headline {
+    font-size: 1.75rem;
   }
 
   .cta-button {

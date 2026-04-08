@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.tsx'
 import Footer from './Footer'
 import AuthButtons from './components/AuthButtons.tsx'
+import AuthMenuItems from './components/AuthMenuItems.tsx'
 import RegisterModal from './components/RegisterModal.tsx'
 
 interface Benefit {
@@ -73,6 +74,7 @@ function ResultsPage() {
                   Sign out
                 </button>
               )}
+              <AuthMenuItems onNavigate={() => setShowMenu(false)} />
             </div>
           )}
         </div>

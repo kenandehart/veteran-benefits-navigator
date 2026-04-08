@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.tsx'
 import Footer from './Footer'
 import AuthButtons from './components/AuthButtons.tsx'
+import AuthMenuItems from './components/AuthMenuItems.tsx'
 
 interface Benefit {
   id: number
@@ -57,6 +58,7 @@ function CataloguePage() {
                   Sign out
                 </button>
               )}
+              <AuthMenuItems onNavigate={() => setShowMenu(false)} />
             </div>
           )}
         </div>

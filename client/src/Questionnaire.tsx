@@ -4,6 +4,7 @@ import './App.css';
 import { useAuth } from './context/AuthContext.tsx';
 import Footer from './Footer';
 import AuthButtons from './components/AuthButtons.tsx';
+import AuthMenuItems from './components/AuthMenuItems.tsx';
 
 function getStored<T>(key: string, fallback: T): T {
   try {
@@ -469,6 +470,7 @@ function Questionnaire() {
                   Sign out
                 </button>
               )}
+              <AuthMenuItems onNavigate={() => setShowMenu(false)} />
             </div>
           )}
         </div>

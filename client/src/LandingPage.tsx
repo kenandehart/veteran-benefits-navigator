@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.tsx'
 import Footer from './Footer'
 import AuthButtons from './components/AuthButtons.tsx'
+import AuthMenuItems from './components/AuthMenuItems.tsx'
 
 function LandingPage() {
   const navigate = useNavigate()
@@ -42,6 +43,7 @@ function LandingPage() {
                   Sign out
                 </button>
               )}
+              <AuthMenuItems onNavigate={() => setShowMenu(false)} />
             </div>
           )}
         </div>
