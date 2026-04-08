@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.tsx'
 import Footer from './Footer'
 import AuthButtons from './components/AuthButtons.tsx'
+import RegisterModal from './components/RegisterModal.tsx'
 
 interface Benefit {
   id: number
@@ -18,10 +19,13 @@ interface Benefit {
 function ResultsPage() {
   const location = useLocation()
   const navigate = useNavigate()
-  const eligibleBenefits: Benefit[] | null = (location.state as { eligibleBenefits: Benefit[] } | null)?.eligibleBenefits ?? null
+  const state = location.state as { eligibleBenefits: Benefit[]; answers?: unknown } | null
+  const eligibleBenefits: Benefit[] | null = state?.eligibleBenefits ?? null
+  const answers: unknown = state?.answers ?? null
   const { user, logout } = useAuth()
   const [selectedBenefit, setSelectedBenefit] = useState<Benefit | null>(null)
   const [showMenu, setShowMenu] = useState(false)
+  const [showRegister, setShowRegister] = useState(false)
 
   useEffect(() => {
     if (!eligibleBenefits) navigate('/')
@@ -145,6 +149,24 @@ function ResultsPage() {
                   </button>
                 ))}
             </div>
+            {!user && (
+              <div className="results-save-cta">
+                <p className="results-save-cta__text">
+                  Create an account to save your results and access them anytime.
+                </p>
+                <button className="cta-button" onClick={() => setShowRegister(true)}>
+                  Save my results
+                </button>
+              </div>
+            )}
+            {showRegister && (
+              <RegisterModal
+                onClose={() => setShowRegister(false)}
+                answers={answers}
+                matchedBenefitIds={eligibleBenefits.map(b => b.id)}
+                onSuccess={() => navigate('/dashboard')}
+              />
+            )}
           </>
         )}
       </main>

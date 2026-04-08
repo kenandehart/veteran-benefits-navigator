@@ -423,8 +423,19 @@ function Questionnaire() {
       }
 
       const data = await response.json();
+
+      if (user) {
+        const benefitIds = data.eligibleBenefits.map((b: { id: number }) => b.id);
+        fetch('/api/user/results', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ answers: finalAnswers, matchedBenefitIds: benefitIds }),
+        }).catch(err => console.error('Failed to save results:', err));
+      }
+
       clearQuestionnaireStorage();
-      navigate('/results', { state: { eligibleBenefits: data.eligibleBenefits } });
+      navigate('/results', { state: { eligibleBenefits: data.eligibleBenefits, answers: finalAnswers } });
     } catch (error) {
       console.error('Failed to submit questionnaire:', error);
     }

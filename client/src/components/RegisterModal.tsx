@@ -5,9 +5,12 @@ import Modal from './Modal.tsx'
 
 interface RegisterModalProps {
   onClose: () => void
+  answers?: unknown
+  matchedBenefitIds?: number[]
+  onSuccess?: () => void
 }
 
-export default function RegisterModal({ onClose }: RegisterModalProps) {
+export default function RegisterModal({ onClose, answers, matchedBenefitIds, onSuccess }: RegisterModalProps) {
   const { register } = useAuth()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -20,8 +23,9 @@ export default function RegisterModal({ onClose }: RegisterModalProps) {
     setError('')
     setSubmitting(true)
     try {
-      await register(username, password, email || undefined)
-      onClose()
+      await register(username, password, email || undefined, answers, matchedBenefitIds)
+      if (onSuccess) onSuccess()
+      else onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed')
     } finally {
