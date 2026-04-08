@@ -1,11 +1,15 @@
 import './App.css'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Footer from './Footer'
 
 function LandingPage() {
   const navigate = useNavigate()
   const [showMenu, setShowMenu] = useState(false)
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   return (
     <div className="page">
