@@ -2,6 +2,7 @@ import './App.css'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Footer from './Footer'
+import AuthButtons from './components/AuthButtons.tsx'
 
 interface Benefit {
   id: number
@@ -53,6 +54,7 @@ function CataloguePage() {
           )}
         </div>
         <span className="wordmark">Benefits Navigator</span>
+        <AuthButtons />
       </header>
     </>
   )

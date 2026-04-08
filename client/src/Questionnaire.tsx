@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './App.css';
 import Footer from './Footer';
+import AuthButtons from './components/AuthButtons.tsx';
 
 function getStored<T>(key: string, fallback: T): T {
   try {
@@ -435,6 +436,7 @@ function Questionnaire() {
           )}
         </div>
         <span className="wordmark">Benefits Navigator</span>
+        <AuthButtons />
       </header>
     </>
   );

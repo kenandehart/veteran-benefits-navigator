@@ -2,6 +2,7 @@ import './App.css'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Footer from './Footer'
+import AuthButtons from './components/AuthButtons.tsx'
 
 function LandingPage() {
   const navigate = useNavigate()
@@ -38,6 +39,7 @@ function LandingPage() {
           )}
         </div>
         <span className="wordmark">Benefits Navigator</span>
+        <AuthButtons />
       </header>
 
       <main>
