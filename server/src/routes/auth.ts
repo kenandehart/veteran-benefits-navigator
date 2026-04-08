@@ -93,4 +93,46 @@ router.post('/login', async (req, res) => {
   }
 });
 
+router.post('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Logout failed' });
+      return;
+    }
+    res.json({ message: 'Logged out successfully' });
+  });
+});
+
+router.get('/me', async (req, res) => {
+  if (!req.session.userId) {
+    res.status(401).json({ error: 'Not authenticated' });
+    return;
+  }
+
+  try {
+    const result = await pool.query<{
+      id: number;
+      username: string;
+      email: string | null;
+      created_at: Date;
+    }>(
+      'SELECT id, username, email, created_at FROM users WHERE id = $1',
+      [req.session.userId]
+    );
+
+    const user = result.rows[0];
+    if (!user) {
+      req.session.destroy(() => {});
+      res.status(401).json({ error: 'Not authenticated' });
+      return;
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch user' });
+  }
+});
+
 export default router;
