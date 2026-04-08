@@ -7,6 +7,7 @@ const router = Router();
 router.get('/', requireAuth, async (req, res) => {
   const result = await pool.query<{
     answers: unknown;
+    updated_at: string;
     id: number;
     name: string;
     category: string;
@@ -17,6 +18,7 @@ router.get('/', requireAuth, async (req, res) => {
   }>(
     `SELECT
        uq.answers,
+       uq.updated_at,
        b.id,
        b.name,
        b.category,
@@ -46,7 +48,8 @@ router.get('/', requireAuth, async (req, res) => {
 
   res.json({
     answers: result.rows[0].answers,
-    matchedBenefits: result.rows.map(({ answers: _a, ...benefit }) => benefit),
+    updatedAt: result.rows[0].updated_at,
+    matchedBenefits: result.rows.map(({ answers: _a, updated_at: _u, ...benefit }) => benefit),
   });
 });
 
@@ -67,7 +70,8 @@ router.put('/', requireAuth, async (req, res) => {
        VALUES ($1, $2, $3)
        ON CONFLICT (user_id)
        DO UPDATE SET answers = EXCLUDED.answers,
-                     matched_benefit_ids = EXCLUDED.matched_benefit_ids`,
+                     matched_benefit_ids = EXCLUDED.matched_benefit_ids,
+                     updated_at = NOW()`,
       [req.session.userId, JSON.stringify(answers), JSON.stringify(matchedBenefitIds)]
     );
 

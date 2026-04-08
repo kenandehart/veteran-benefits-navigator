@@ -6,12 +6,13 @@ interface User {
   username: string
   email: string | null
   created_at: string
+  hasResults: boolean
 }
 
 interface AuthContextValue {
   user: User | null
   isLoading: boolean
-  login: (username: string, password: string) => Promise<void>
+  login: (username: string, password: string) => Promise<User>
   register: (
     username: string,
     password: string,
@@ -20,6 +21,7 @@ interface AuthContextValue {
     matchedBenefitIds?: unknown,
   ) => Promise<void>
   logout: () => Promise<void>
+  clearUser: () => void
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -39,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setIsLoading(false))
   }, [])
 
-  const login = useCallback(async (username: string, password: string) => {
+  const login = useCallback(async (username: string, password: string): Promise<User> => {
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -50,7 +52,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const body = await res.json().catch(() => ({}))
       throw new Error(body.error ?? 'Login failed')
     }
-    setUser(await res.json())
+    const loggedInUser: User = await res.json()
+    setUser(loggedInUser)
+    return loggedInUser
   }, [])
 
   const register = useCallback(
@@ -88,8 +92,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }, [])
 
+  const clearUser = useCallback(() => setUser(null), [])
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout, clearUser }}>
       {children}
     </AuthContext.Provider>
   )

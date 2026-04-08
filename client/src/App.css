@@ -754,15 +754,203 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
   padding: 60px 32px 80px;
   max-width: 960px;
   margin: 0 auto;
   width: 100%;
+  animation: fadeUp 0.35s ease both;
 }
 
-.dashboard-signout {
-  align-self: center;
+.dashboard-greeting {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  font-weight: 400;
+  color: var(--navy);
+  margin-bottom: 8px;
+  text-align: center;
+  letter-spacing: -0.01em;
+}
+
+.dashboard-benefits {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.dashboard-benefits__title {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  color: var(--navy);
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.dashboard-meta {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: var(--text-muted);
+  margin: 4px 0 0;
+  text-align: center;
+}
+
+.dashboard-retake {
+  margin-top: 28px;
+}
+
+.dashboard-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.dashboard-empty p {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 300;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.dashboard-section {
+  width: 100%;
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dashboard-section__title {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  color: var(--navy);
+}
+
+.dashboard-section__text {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 300;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.dashboard-change-btn {
+  background: none;
+  border: none;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s ease;
+}
+
+.dashboard-change-btn:hover {
+  color: var(--navy);
+}
+
+.dashboard-email-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.dashboard-email-form .q-input {
+  flex: 1;
+}
+
+.dashboard-email-form .cta-button {
+  flex-shrink: 0;
+}
+
+.dashboard-collapsible {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  color: var(--navy);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s ease;
+}
+
+.dashboard-collapsible:hover {
+  color: var(--navy-mid);
+}
+
+.dashboard-collapsible__arrow {
+  display: inline-block;
+  font-size: 0.7rem;
+  transition: transform 0.2s ease;
+}
+
+.dashboard-collapsible__arrow--open {
+  transform: rotate(90deg);
+}
+
+.dashboard-settings {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  margin-top: 20px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dashboard-settings__field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.dashboard-settings__label {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  margin: 0;
+}
+
+.dashboard-delete-btn {
+  background: none;
+  border: none;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #c0392b;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+.dashboard-delete-btn:hover {
+  opacity: 1;
 }
 
 /* ============================================================
@@ -990,6 +1178,19 @@
 
   .benefit-tile:hover {
     transform: none;
+  }
+
+  .dashboard-main {
+    padding: 40px 20px 56px;
+  }
+
+  .dashboard-email-form {
+    flex-direction: column;
+  }
+
+  .dashboard-email-form .cta-button {
+    width: 100%;
+    text-align: center;
   }
 
   .detail-main {

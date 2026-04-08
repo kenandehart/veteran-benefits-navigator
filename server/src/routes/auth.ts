@@ -2,6 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcrypt';
 import { DatabaseError } from 'pg';
 import pool from '../db.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -19,6 +20,8 @@ router.post('/register', async (req, res) => {
     return;
   }
 
+  const normalizedUsername = username.toLowerCase();
+
   try {
     const passwordHash = await bcrypt.hash(password, 10);
     const result = await pool.query<{
@@ -30,12 +33,13 @@ router.post('/register', async (req, res) => {
       `INSERT INTO users (username, password_hash, email)
        VALUES ($1, $2, $3)
        RETURNING id, username, email, created_at`,
-      [username, passwordHash, email ?? null]
+      [normalizedUsername, passwordHash, email ?? null]
     );
 
     const user = result.rows[0];
 
-    if (answers !== undefined && matchedBenefitIds !== undefined) {
+    const hasResults = answers !== undefined && matchedBenefitIds !== undefined;
+    if (hasResults) {
       await pool.query(
         `INSERT INTO user_questionnaire (user_id, answers, matched_benefit_ids)
          VALUES ($1, $2, $3)`,
@@ -45,7 +49,7 @@ router.post('/register', async (req, res) => {
 
     req.session.userId = user.id;
     req.session.username = user.username;
-    res.status(201).json(user);
+    res.status(201).json({ ...user, hasResults });
   } catch (error) {
     if (error instanceof DatabaseError && error.code === '23505') {
       if (error.constraint === 'users_username_key') {
@@ -75,6 +79,8 @@ router.post('/login', async (req, res) => {
     return;
   }
 
+  const normalizedUsername = username.toLowerCase();
+
   try {
     const result = await pool.query<{
       id: number;
@@ -84,7 +90,7 @@ router.post('/login', async (req, res) => {
       password_hash: string;
     }>(
       'SELECT id, username, email, created_at, password_hash FROM users WHERE username = $1',
-      [username]
+      [normalizedUsername]
     );
 
     const user = result.rows[0];
@@ -95,9 +101,14 @@ router.post('/login', async (req, res) => {
       return;
     }
 
+    const qResult = await pool.query(
+      'SELECT 1 FROM user_questionnaire WHERE user_id = $1',
+      [user.id]
+    );
+
     req.session.userId = user.id;
     req.session.username = user.username;
-    res.json({ id: user.id, username: user.username, email: user.email, created_at: user.created_at });
+    res.json({ id: user.id, username: user.username, email: user.email, created_at: user.created_at, hasResults: qResult.rows.length > 0 });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Login failed' });
@@ -139,10 +150,67 @@ router.get('/me', async (req, res) => {
       return;
     }
 
-    res.json(user);
+    const qResult = await pool.query(
+      'SELECT 1 FROM user_questionnaire WHERE user_id = $1',
+      [user.id]
+    );
+
+    res.json({ ...user, hasResults: qResult.rows.length > 0 });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch user' });
+  }
+});
+
+router.put('/email', requireAuth, async (req, res) => {
+  const { email } = req.body as { email?: string };
+
+  if (!email) {
+    res.status(400).json({ error: 'email is required' });
+    return;
+  }
+
+  if (!/^.+@.+\..+$/.test(email)) {
+    res.status(400).json({ error: 'Invalid email format' });
+    return;
+  }
+
+  try {
+    const result = await pool.query<{
+      id: number;
+      username: string;
+      email: string | null;
+      created_at: Date;
+    }>(
+      `UPDATE users SET email = $1 WHERE id = $2
+       RETURNING id, username, email, created_at`,
+      [email, req.session.userId]
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    if (error instanceof DatabaseError && error.code === '23505' && error.constraint === 'users_email_key') {
+      res.status(409).json({ error: 'Email already registered' });
+      return;
+    }
+    console.error(error);
+    res.status(500).json({ error: 'Failed to update email' });
+  }
+});
+
+router.delete('/account', requireAuth, async (req, res) => {
+  try {
+    await pool.query('DELETE FROM users WHERE id = $1', [req.session.userId]);
+
+    req.session.destroy((err) => {
+      if (err) {
+        console.error(err);
+      }
+      res.json({ message: 'Account deleted' });
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to delete account' });
   }
 });
 

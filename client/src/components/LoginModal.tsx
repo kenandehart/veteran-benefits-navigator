@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.tsx'
 import Modal from './Modal.tsx'
 
@@ -9,6 +10,7 @@ interface LoginModalProps {
 
 export default function LoginModal({ onClose }: LoginModalProps) {
   const { login } = useAuth()
+  const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -19,8 +21,9 @@ export default function LoginModal({ onClose }: LoginModalProps) {
     setError('')
     setSubmitting(true)
     try {
-      await login(username, password)
+      const loggedInUser = await login(username, password)
       onClose()
+      if (loggedInUser.hasResults) navigate('/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed')
     } finally {

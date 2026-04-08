@@ -21,6 +21,10 @@ export default function RegisterModal({ onClose, answers, matchedBenefitIds, onS
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError('')
+    if (email && !/^.+@.+\..+$/.test(email)) {
+      setError('Please enter a valid email address')
+      return
+    }
     setSubmitting(true)
     try {
       await register(username, password, email || undefined, answers, matchedBenefitIds)
