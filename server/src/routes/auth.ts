@@ -1,0 +1,54 @@
+import { Router } from 'express';
+import bcrypt from 'bcrypt';
+import { DatabaseError } from 'pg';
+import pool from '../db.js';
+
+const router = Router();
+
+router.post('/register', async (req, res) => {
+  const { username, password, email } = req.body as {
+    username?: string;
+    password?: string;
+    email?: string;
+  };
+
+  if (!username || !password) {
+    res.status(400).json({ error: 'username and password are required' });
+    return;
+  }
+
+  try {
+    const passwordHash = await bcrypt.hash(password, 10);
+    const result = await pool.query<{
+      id: number;
+      username: string;
+      email: string | null;
+      created_at: Date;
+    }>(
+      `INSERT INTO users (username, password_hash, email)
+       VALUES ($1, $2, $3)
+       RETURNING id, username, email, created_at`,
+      [username, passwordHash, email ?? null]
+    );
+
+    const user = result.rows[0];
+    req.session.userId = user.id;
+    req.session.username = user.username;
+    res.status(201).json(user);
+  } catch (error) {
+    if (error instanceof DatabaseError && error.code === '23505') {
+      if (error.constraint === 'users_username_key') {
+        res.status(409).json({ error: 'Username already taken' });
+      } else if (error.constraint === 'users_email_key') {
+        res.status(409).json({ error: 'Email already registered' });
+      } else {
+        res.status(409).json({ error: 'Duplicate value conflict' });
+      }
+      return;
+    }
+    console.error(error);
+    res.status(500).json({ error: 'Registration failed' });
+  }
+});
+
+export default router;
