@@ -1,6 +1,7 @@
 import './App.css'
 import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from './context/AuthContext.tsx'
 import Footer from './Footer'
 import AuthButtons from './components/AuthButtons.tsx'
 
@@ -18,6 +19,7 @@ function ResultsPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const eligibleBenefits: Benefit[] | null = (location.state as { eligibleBenefits: Benefit[] } | null)?.eligibleBenefits ?? null
+  const { user, logout } = useAuth()
   const [selectedBenefit, setSelectedBenefit] = useState<Benefit | null>(null)
   const [showMenu, setShowMenu] = useState(false)
 
@@ -47,7 +49,7 @@ function ResultsPage() {
               <button
                 className="nav-dropdown__item"
                 role="menuitem"
-                onClick={() => { setShowMenu(false); navigate('/') }}
+                onClick={() => { setShowMenu(false); navigate(user ? '/dashboard' : '/') }}
               >
                 Home
               </button>
@@ -58,6 +60,15 @@ function ResultsPage() {
               >
                 Benefits
               </button>
+              {user && (
+                <button
+                  className="nav-dropdown__item"
+                  role="menuitem"
+                  onClick={() => { setShowMenu(false); logout().then(() => navigate('/')) }}
+                >
+                  Sign out
+                </button>
+              )}
             </div>
           )}
         </div>

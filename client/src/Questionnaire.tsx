@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './App.css';
+import { useAuth } from './context/AuthContext.tsx';
 import Footer from './Footer';
 import AuthButtons from './components/AuthButtons.tsx';
 
@@ -264,8 +265,10 @@ function Questionnaire() {
   const [history, setHistory] = useState<Snapshot[]>(() => getStored('vbn_history', []));
   const [showTooltip, setShowTooltip] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+  const { user, logout } = useAuth();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState('/');
+  const [pendingLogout, setPendingLogout] = useState(false);
 
   const serviceConnectedTooltipRef = useRef<HTMLDivElement>(null);
   const incomeLimitTooltipRef = useRef<HTMLDivElement>(null);
@@ -330,18 +333,36 @@ function Questionnaire() {
 
   function goHome() {
     clearQuestionnaireStorage();
-    navigate(pendingNavigation);
+    if (pendingLogout) {
+      setPendingLogout(false);
+      logout().then(() => navigate('/'));
+    } else {
+      navigate(pendingNavigation);
+    }
   }
 
   function handleGoHome() {
     setShowMenu(false);
+    const homeRoute = user ? '/dashboard' : '/';
     const hasProgress = history.length > 0;
     if (hasProgress) {
-      setPendingNavigation('/');
+      setPendingNavigation(homeRoute);
       setShowConfirmDialog(true);
     } else {
       clearQuestionnaireStorage();
-      navigate('/');
+      navigate(homeRoute);
+    }
+  }
+
+  function handleSignOut() {
+    setShowMenu(false);
+    const hasProgress = history.length > 0;
+    if (hasProgress) {
+      setPendingLogout(true);
+      setShowConfirmDialog(true);
+    } else {
+      clearQuestionnaireStorage();
+      logout().then(() => navigate('/'));
     }
   }
 
@@ -432,6 +453,11 @@ function Questionnaire() {
               <button className="nav-dropdown__item" role="menuitem" onClick={() => handleNavTo('/benefits')}>
                 Benefits
               </button>
+              {user && (
+                <button className="nav-dropdown__item" role="menuitem" onClick={handleSignOut}>
+                  Sign out
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -441,15 +467,20 @@ function Questionnaire() {
     </>
   );
 
+  function dismissConfirmDialog() {
+    setShowConfirmDialog(false);
+    setPendingLogout(false);
+  }
+
   const confirmDialog = showConfirmDialog && (
-    <div className="dialog-overlay" onClick={() => setShowConfirmDialog(false)}>
+    <div className="dialog-overlay" onClick={dismissConfirmDialog}>
       <div className="dialog" onClick={e => e.stopPropagation()}>
         <h2 className="dialog__title">Leave questionnaire?</h2>
         <p className="dialog__body">
           Your answers have not been saved and will be lost if you leave. Are you sure you want to return to the home page?
         </p>
         <div className="dialog__actions">
-          <button className="dialog__cancel" onClick={() => setShowConfirmDialog(false)}>
+          <button className="dialog__cancel" onClick={dismissConfirmDialog}>
             Cancel
           </button>
           <button

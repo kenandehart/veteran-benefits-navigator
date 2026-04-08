@@ -1,11 +1,13 @@
 import './App.css'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from './context/AuthContext.tsx'
 import Footer from './Footer'
 import AuthButtons from './components/AuthButtons.tsx'
 
 function LandingPage() {
   const navigate = useNavigate()
+  const { user, logout } = useAuth()
   const [showMenu, setShowMenu] = useState(false)
 
   useEffect(() => {
@@ -29,12 +31,17 @@ function LandingPage() {
           </button>
           {showMenu && (
             <div className="nav-dropdown" role="menu">
-              <button className="nav-dropdown__item" role="menuitem" onClick={() => setShowMenu(false)}>
+              <button className="nav-dropdown__item" role="menuitem" onClick={() => { setShowMenu(false); if (user) navigate('/dashboard') }}>
                 Home
               </button>
               <button className="nav-dropdown__item" role="menuitem" onClick={() => { setShowMenu(false); navigate('/benefits') }}>
                 Benefits
               </button>
+              {user && (
+                <button className="nav-dropdown__item" role="menuitem" onClick={() => { setShowMenu(false); logout().then(() => navigate('/')) }}>
+                  Sign out
+                </button>
+              )}
             </div>
           )}
         </div>

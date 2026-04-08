@@ -723,6 +723,26 @@
 }
 
 /* ============================================================
+   Dashboard
+   ============================================================ */
+
+.dashboard-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 60px 32px 80px;
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.dashboard-signout {
+  align-self: center;
+}
+
+/* ============================================================
    Modal
    ============================================================ */
 

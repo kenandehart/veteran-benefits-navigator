@@ -1,6 +1,7 @@
 import './App.css'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from './context/AuthContext.tsx'
 import Footer from './Footer'
 import AuthButtons from './components/AuthButtons.tsx'
 
@@ -17,6 +18,7 @@ interface Benefit {
 function CataloguePage() {
   const navigate = useNavigate()
   const [benefits, setBenefits] = useState<Benefit[]>([])
+  const { user, logout } = useAuth()
   const [selectedBenefit, setSelectedBenefit] = useState<Benefit | null>(null)
   const [showMenu, setShowMenu] = useState(false)
 
@@ -44,12 +46,17 @@ function CataloguePage() {
           </button>
           {showMenu && (
             <div className="nav-dropdown" role="menu">
-              <button className="nav-dropdown__item" role="menuitem" onClick={() => { setShowMenu(false); navigate('/') }}>
+              <button className="nav-dropdown__item" role="menuitem" onClick={() => { setShowMenu(false); navigate(user ? '/dashboard' : '/') }}>
                 Home
               </button>
               <button className="nav-dropdown__item" role="menuitem" onClick={() => setShowMenu(false)}>
                 Benefits
               </button>
+              {user && (
+                <button className="nav-dropdown__item" role="menuitem" onClick={() => { setShowMenu(false); logout().then(() => navigate('/')) }}>
+                  Sign out
+                </button>
+              )}
             </div>
           )}
         </div>
