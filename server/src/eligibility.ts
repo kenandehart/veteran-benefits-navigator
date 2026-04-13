@@ -4,8 +4,8 @@ interface ServicePeriod {
   activeDuty: boolean;
   officerOrEnlisted: 'officer' | 'enlisted';
   dischargeLevel: number;
-  disabilityDischarge?: boolean;
-  completedFullTerm?: boolean;
+  disabilityDischarge: boolean;
+  completedFullTerm: boolean;
 }
 
 interface QuestionnaireAnswers {
@@ -19,28 +19,6 @@ interface QuestionnaireAnswers {
   ageOrDisability: boolean;
   purpleHeartPost911: boolean;
   hadSGLI: boolean;
-}
-
-interface EligibilityRequirement {
-  id: number;
-  benefit_id: number;
-  active_duty_service: boolean | null;
-  service_connected_condition: boolean | null;
-  min_discharge_level: number | null;
-  min_disability_rating: number | null;
-  adaptive_housing_condition: boolean | null;
-  auto_grant_condition: boolean | null;
-  purple_heart: boolean | null;
-  post_911_90_days: boolean | null;
-  post_911_30_days: boolean | null;
-  pension_service_req: boolean | null;
-  income_below_limit: boolean | null;
-  age_or_disability: boolean | null;
-  min_continuous_days: number | null;
-  service_disability_discharge: boolean | null;
-  entry_before_date: string | null;
-  home_loan_service_req: boolean | null;
-  vgli_service_req: boolean | null;
 }
 
 const SEPT_11_2001 = new Date('2001-09-11');
@@ -191,66 +169,44 @@ function checkVGLIServiceReq(periods: ServicePeriod[], answers: QuestionnaireAns
   return meetsVGLIDateWindow(periods);
 }
 
-export function checkEligibility(
-  answers: QuestionnaireAnswers,
-  requirements: EligibilityRequirement[]
-): number[] {
-  const eligibleBenefitIds: number[] = [];
-
-  for (const req of requirements) {
-    const servicePasses = answers.servicePeriods.some((period) => {
-      if (req.active_duty_service === true && !period.activeDuty) return false;
-      if (req.min_discharge_level !== null && period.dischargeLevel > req.min_discharge_level) return false;
-      if (req.min_continuous_days !== null && periodDays(period) < req.min_continuous_days) return false;
-      if (req.service_disability_discharge === true && period.disabilityDischarge !== true) return false;
-      if (req.entry_before_date !== null && new Date(period.entryDate) >= new Date(req.entry_before_date)) return false;
-      return true;
-    });
-
-    if (!servicePasses) continue;
-
-    if (req.service_connected_condition === true && answers.serviceConnectedCondition === false) continue;
-
-    if (req.min_disability_rating === -1) {
-      if (answers.hasDisabilityRating !== false) continue;
-    } else if (req.min_disability_rating !== null) {
-      if (answers.disabilityRating === null || answers.disabilityRating < req.min_disability_rating) continue;
+function checkPost911GIBill(answers: QuestionnaireAnswers): boolean{
+  
+  // If you served at least 90 days on active duty (either all at once or with breaks in service)
+  // on or after September 11, 2001
+  let totalDays = 0;
+  
+  for (const period of answers.servicePeriods){
+    if(period.activeDuty && period.dischargeLevel === 1){
+      totalDays += daysAfterSept11(period);
     }
-
-    if (req.adaptive_housing_condition === true && !answers.adaptiveHousingCondition) continue;
-
-    if (req.auto_grant_condition === true && !answers.hasAutoGrantCondition) continue;
-
-    if (req.purple_heart === true && !answers.purpleHeartPost911) continue;
-
-    if (req.post_911_90_days === true) {
-      const qualifyingPeriods = answers.servicePeriods.filter(
-        (p) => p.activeDuty && p.dischargeLevel === 1
-      );
-      const totalDays = qualifyingPeriods.reduce((sum, p) => sum + daysAfterSept11(p), 0);
-      if (totalDays < 90) continue;
-    }
-
-    if (req.post_911_30_days === true) {
-      const qualifyingPeriods = answers.servicePeriods.filter(
-        (p) => p.activeDuty && p.dischargeLevel === 1
-      );
-      const passes = qualifyingPeriods.some((p) => daysAfterSept11(p) >= 30);
-      if (!passes) continue;
-    }
-
-    if (req.pension_service_req === true && !checkPensionServiceReq(answers.servicePeriods)) continue;
-
-    if (req.home_loan_service_req === true && !checkHomeLoanServiceReq(answers.servicePeriods)) continue;
-
-    if (req.vgli_service_req === true && !checkVGLIServiceReq(answers.servicePeriods, answers)) continue;
-
-    if (req.income_below_limit === true && !answers.incomeBelowLimit) continue;
-
-    if (req.age_or_disability === true && !answers.ageOrDisability) continue;
-
-    eligibleBenefitIds.push(req.benefit_id);
   }
 
-  return eligibleBenefitIds;
+  if (totalDays >= 90) return true;
+
+  // Or you received a Purple Heart on or after September 11, 2001, 
+  // and were honorably discharged after any amount of service
+  if(
+    answers.purpleHeartPost911 && answers.servicePeriods.some(p => p.dischargeLevel === 1)
+  ) return true;
+
+  // Or you served for at least 30 continuous days (all at once, without a break in service)
+  // on or after September 11, 2001,
+  // and were honorably discharged with a service-connected disability
+  for (const period of answers.servicePeriods) {
+    if (
+        period.activeDuty &&
+        period.dischargeLevel === 1 &&
+        period.disabilityDischarge &&
+        daysAfterSept11(period) >= 30
+    ) return true;
+  }
+
+
+  return false;
+}
+
+export function checkEligibility(answers: QuestionnaireAnswers): number[] {
+  const matched: number[] = [];
+  if (checkPost911GIBill(answers)) matched.push(4)
+  return matched;
 }

@@ -14,8 +14,7 @@ router.post('/questionnaire', async (req, res) => {
   }
 
   try {
-    const result = await pool.query('SELECT * FROM eligibility_requirements');
-    const eligibleBenefitIds = checkEligibility(answers, result.rows);
+    const eligibleBenefitIds = checkEligibility(answers);
     const benefitsResult = await pool.query(
       'SELECT id, name, category, short_description, description, eligibility_summary, url FROM benefits WHERE id = ANY($1)',
       [eligibleBenefitIds]
