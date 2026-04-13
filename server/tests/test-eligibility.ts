@@ -2,7 +2,9 @@ import { checkEligibility } from '../src/eligibility';
 
 const BENEFIT_NAMES: Record<number, string> = {
 4: "Post-9/11 GI Bill",
-6: "VA Health Care"
+6: "VA Health Care",
+10: "VA Life Insurance",
+1: "Disability Compensation"
 };
 
 
@@ -17,7 +19,7 @@ const testAnswers = {
     completedFullTerm: false,
     hardshipOrEarlyOut: false
   }],
-  serviceConnectedCondition: true,
+  serviceConnectedCondition: false,
   hasDisabilityRating: true,
   disabilityRating: 30,
   adaptiveHousingCondition: false,

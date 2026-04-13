@@ -170,10 +170,22 @@ function checkVGLIServiceReq(periods: ServicePeriod[], answers: QuestionnaireAns
   return meetsVGLIDateWindow(periods);
 }
 
+function checkDisabilityCompensation(answers: QuestionnaireAnswers): boolean{
+  if(answers.serviceConnectedCondition === false) return false;
+  for (const period of answers.servicePeriods) {
+    if(period.dischargeLevel <= 4) return true;
+  }
+  return false;
+}
+
+function checkVALife(answers: QuestionnaireAnswers): boolean{
+  return answers.hasDisabilityRating === true;
+}
+
 function checkHealthCare(answers: QuestionnaireAnswers): boolean{
   for (const period of answers.servicePeriods) {
     if (!period.activeDuty) continue;
-    if (period.dischargeLevel >= 6) continue; // dishonorable
+    if (period.dischargeLevel >= 5) continue; // dishonorable
 
     const entry = new Date(period.entryDate);
     const days = periodDays(period);
@@ -234,5 +246,7 @@ export function checkEligibility(answers: QuestionnaireAnswers): number[] {
   const matched: number[] = [];
   if (checkPost911GIBill(answers)) matched.push(4);
   if (checkHealthCare(answers)) matched.push(6);
+  if (checkVALife(answers)) matched.push(10);
+  if (checkDisabilityCompensation(answers)) matched.push(1);
   return matched;
 }
