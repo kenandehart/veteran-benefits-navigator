@@ -6,6 +6,7 @@ interface ServicePeriod {
   dischargeLevel: number;
   disabilityDischarge: boolean;
   completedFullTerm: boolean;
+  hardshipOrEarlyOut: boolean;
 }
 
 interface QuestionnaireAnswers {
@@ -169,6 +170,30 @@ function checkVGLIServiceReq(periods: ServicePeriod[], answers: QuestionnaireAns
   return meetsVGLIDateWindow(periods);
 }
 
+function checkHealthCare(answers: QuestionnaireAnswers): boolean{
+  for (const period of answers.servicePeriods) {
+    if (!period.activeDuty) continue;
+    if (period.dischargeLevel >= 6) continue; // dishonorable
+
+    const entry = new Date(period.entryDate);
+    const days = periodDays(period);
+
+    // No minimum service requirement
+    if (entry < SEPT_8_1980) return true;
+    if (period.officerOrEnlisted === 'officer' && entry < OCT_17_1981) return true;
+    if (period.disabilityDischarge) return true;
+    if (period.hardshipOrEarlyOut) return true;
+
+    // 24 Month minimum
+    if (days >= 730 || period.completedFullTerm){
+      if (period.officerOrEnlisted === 'enlisted' && entry >= SEPT_8_1980) return true;
+      if (period.officerOrEnlisted === 'officer' && entry >= OCT_17_1981) return true;
+    }
+  }
+
+  return false;
+}
+
 function checkPost911GIBill(answers: QuestionnaireAnswers): boolean{
   
   // If you served at least 90 days on active duty (either all at once or with breaks in service)
@@ -207,6 +232,7 @@ function checkPost911GIBill(answers: QuestionnaireAnswers): boolean{
 
 export function checkEligibility(answers: QuestionnaireAnswers): number[] {
   const matched: number[] = [];
-  if (checkPost911GIBill(answers)) matched.push(4)
+  if (checkPost911GIBill(answers)) matched.push(4);
+  if (checkHealthCare(answers)) matched.push(6);
   return matched;
 }
