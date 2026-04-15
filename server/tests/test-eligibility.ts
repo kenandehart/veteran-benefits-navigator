@@ -5,7 +5,8 @@ const BENEFIT_NAMES: Record<number, string> = {
 6: "VA Health Care",
 10: "VA Life Insurance",
 1: "Disability Compensation",
-9: "Adaptive Automobile Grant"
+9: "Adaptive Automobile Grant",
+3: "Adapted Housing Grant"
 };
 
 
@@ -21,9 +22,9 @@ const testAnswers = {
     hardshipOrEarlyOut: false
   }],
   serviceConnectedCondition: false,
-  hasDisabilityRating: true,
+  hasDisabilityRating: false,
   disabilityRating: 30,
-  adaptiveHousingCondition: false,
+  adaptiveHousingCondition: true,
   hasAutoGrantCondition: true,
   incomeBelowLimit: false,
   ageOrDisability: false,
