@@ -29,6 +29,7 @@ interface ServicePeriod {
   dischargeLevel: number;
   disabilityDischarge?: boolean;
   completedFullTerm?: boolean;
+  hardshipOrEarlyOut?: boolean;
 }
 
 interface QuestionnaireAnswers {
@@ -52,6 +53,7 @@ type Step =
   | 'discharge'
   | 'disability-discharge'
   | 'completed-full-term'
+  | 'hardship-early-out'
   | 'activation-periods'
   | 'activation-guidance'
   | 'add-another'
@@ -80,6 +82,7 @@ const STEP_SECTIONS: Record<Step, string> = {
   'discharge':             'Service History',
   'disability-discharge':  'Service History',
   'completed-full-term':   'Service History',
+  'hardship-early-out':    'Service History',
   'activation-periods':    'Service History',
   'activation-guidance':   'Service History',
   'add-another':           'Service History',
@@ -717,13 +720,39 @@ function Questionnaire() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
-              onClick={() => advance('disability-discharge', { ...currentServicePeriod, completedFullTerm: false })}
+              onClick={() => advance('hardship-early-out', { ...currentServicePeriod, completedFullTerm: false })}
             >
               No
             </button>
             <button
               className="cta-button"
-              onClick={() => advance('disability-discharge', { ...currentServicePeriod, completedFullTerm: true })}
+              onClick={() => advance('disability-discharge', { ...currentServicePeriod, completedFullTerm: true, hardshipOrEarlyOut: false })}
+            >
+              Yes
+            </button>
+          </div>
+          {backButton}
+        </>
+      );
+      break;
+    }
+
+    case 'hardship-early-out': {
+      stepContent = (
+        <>
+          <label className="q-label">
+            Were you discharged for a hardship or &lsquo;early out&rsquo;?
+          </label>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
+            <button
+              className="cta-button"
+              onClick={() => advance('disability-discharge', { ...currentServicePeriod, hardshipOrEarlyOut: false })}
+            >
+              No
+            </button>
+            <button
+              className="cta-button"
+              onClick={() => advance('disability-discharge', { ...currentServicePeriod, hardshipOrEarlyOut: true })}
             >
               Yes
             </button>
