@@ -170,6 +170,11 @@ function checkVGLIServiceReq(periods: ServicePeriod[], answers: QuestionnaireAns
   return meetsVGLIDateWindow(periods);
 }
 
+function checkAutomobileGrant(answers: QuestionnaireAnswers): boolean{
+  if (answers.hasAutoGrantCondition && answers.hasDisabilityRating) return true;
+  return false;
+}
+
 function checkDisabilityCompensation(answers: QuestionnaireAnswers): boolean{
   if(answers.serviceConnectedCondition === false) return false;
   for (const period of answers.servicePeriods) {
@@ -248,5 +253,6 @@ export function checkEligibility(answers: QuestionnaireAnswers): number[] {
   if (checkHealthCare(answers)) matched.push(6);
   if (checkVALife(answers)) matched.push(10);
   if (checkDisabilityCompensation(answers)) matched.push(1);
+  if (checkAutomobileGrant(answers)) matched.push(9);
   return matched;
 }
