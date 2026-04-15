@@ -155,6 +155,7 @@ function checkHomeLoanServiceReq(periods: ServicePeriod[]): boolean {
 
 function meetsVGLIDateWindow(periods: ServicePeriod[]): boolean {
   const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
   const WINDOW_MS = 485 * 24 * 60 * 60 * 1000;
   return periods.some(period => {
     const sepDate = new Date(period.separationDate);
@@ -165,9 +166,9 @@ function meetsVGLIDateWindow(periods: ServicePeriod[]): boolean {
   });
 }
 
-function checkVGLIServiceReq(periods: ServicePeriod[], answers: QuestionnaireAnswers): boolean {
+function checkVGLI(answers: QuestionnaireAnswers): boolean{
   if (!answers.hadSGLI) return false;
-  return meetsVGLIDateWindow(periods);
+  return meetsVGLIDateWindow(answers.servicePeriods);
 }
 
 function checkHousingGrant(answers: QuestionnaireAnswers): boolean{
@@ -270,5 +271,6 @@ export function checkEligibility(answers: QuestionnaireAnswers): number[] {
   if (checkAutomobileGrant(answers)) matched.push(9);
   if (checkHousingGrant(answers)) matched.push(3);
   if (checkVRE(answers)) matched.push(2);
+  if (checkVGLI(answers)) matched.push(8);
   return matched;
 }

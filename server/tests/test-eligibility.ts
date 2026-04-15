@@ -7,15 +7,16 @@ const BENEFIT_NAMES: Record<number, string> = {
 1: "Disability Compensation",
 9: "Adaptive Automobile Grant",
 3: "Adapted Housing Grant",
-2: "VR&E"
+2: "VR&E",
+8: "VGLI"
 };
 
 
 const testAnswers = {
   servicePeriods: [{
-    entryDate: "2001-10-18",
-    separationDate: "2003-10-19",
-    activeDuty: true,
+    entryDate: "2024-11-16",
+    separationDate: "2024-12-16",
+    activeDuty: false,
     officerOrEnlisted: "enlisted" as const,
     dischargeLevel: 1,
     disabilityDischarge: false,
