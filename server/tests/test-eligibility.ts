@@ -6,7 +6,8 @@ const BENEFIT_NAMES: Record<number, string> = {
 10: "VA Life Insurance",
 1: "Disability Compensation",
 9: "Adaptive Automobile Grant",
-3: "Adapted Housing Grant"
+3: "Adapted Housing Grant",
+2: "VR&E"
 };
 
 
@@ -23,7 +24,7 @@ const testAnswers = {
   }],
   serviceConnectedCondition: false,
   hasDisabilityRating: false,
-  disabilityRating: 30,
+  disabilityRating: 10,
   adaptiveHousingCondition: true,
   hasAutoGrantCondition: true,
   incomeBelowLimit: false,

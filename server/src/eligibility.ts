@@ -252,6 +252,15 @@ function checkPost911GIBill(answers: QuestionnaireAnswers): boolean{
   return false;
 }
 
+function checkVRE(answers: QuestionnaireAnswers): boolean{
+  const rating = answers.disabilityRating;
+  if (rating === null || rating < 10) return false;
+  for(const period of answers.servicePeriods){
+    if (period.dischargeLevel < 5) return true;
+  }
+  return false;
+}
+
 export function checkEligibility(answers: QuestionnaireAnswers): number[] {
   const matched: number[] = [];
   if (checkPost911GIBill(answers)) matched.push(4);
@@ -260,5 +269,6 @@ export function checkEligibility(answers: QuestionnaireAnswers): number[] {
   if (checkDisabilityCompensation(answers)) matched.push(1);
   if (checkAutomobileGrant(answers)) matched.push(9);
   if (checkHousingGrant(answers)) matched.push(3);
+  if (checkVRE(answers)) matched.push(2);
   return matched;
 }
