@@ -96,7 +96,21 @@ function ResultsPage() {
               </button>
               <h1 className="benefit-detail__name">{selectedBenefit.name}</h1>
             </div>
-            <div className="benefit-detail__section">
+            {selectedBenefit.id === 5 && (
+              <p style={{
+                background: 'var(--bg)',
+                borderLeft: '3px solid #b8860b',
+                borderRadius: '2px',
+                padding: '14px 18px 14px 20px',
+                marginTop: '-24px',
+                fontSize: '0.88rem',
+                lineHeight: 1.55,
+                color: 'var(--text)',
+              }}>
+                If you're eligible for both Veterans Pension and VA Disability Compensation, you can't receive both at the same time. The VA will pay whichever benefit amount is higher.
+              </p>
+            )}
+            <div className="benefit-detail__section" style={selectedBenefit.id === 5 ? { borderTop: 'none', paddingTop: 0 } : undefined}>
               <h2 className="benefit-detail__section-label">About this benefit</h2>
               <p className="benefit-detail__section-text">{selectedBenefit.description}</p>
             </div>

@@ -71,37 +71,30 @@ function overlapsWartime(period: ServicePeriod): boolean {
 }
 
 function checkPensionServiceReq(periods: ServicePeriod[]): boolean {
-  const active = periods.filter(p => p.activeDuty);
-  const totalDays = active.reduce((sum, p) => sum + periodDays(p), 0);
-  const hasWartimeOverlap = active.some(overlapsWartime);
+  if (!periods.some(overlapsWartime)) return false;
 
-  // Path A: any active period started before Sep 8 1980, ≥90 total days, wartime overlap
-  if (
-    active.some(p => new Date(p.entryDate) < SEPT_8_1980) &&
-    totalDays >= 90 &&
-    hasWartimeOverlap
-  ) return true;
+  const totalDays = periods.reduce((sum, p) => sum + periodDays(p), 0);
 
-  // Path B: any active enlisted period started on/after Sep 8 1980, ≥730 total days, wartime overlap
-  if (
-    active.some(p => new Date(p.entryDate) >= SEPT_8_1980 && p.officerOrEnlisted === 'enlisted') &&
-    totalDays >= 730 &&
-    hasWartimeOverlap
-  ) return true;
+  // Path A: pre-cutoff (90-day minimum)
+  const hasPreCutoff = periods.some(p => {
+    const entry = new Date(p.entryDate);
+    if (entry < SEPT_8_1980) return true;
+    if (p.officerOrEnlisted === 'officer' && entry < OCT_17_1981) return true;
+    return false;
+  });
+  if (hasPreCutoff && totalDays >= 90) return true;
 
-  // Path C: any officer period started after Oct 16 1981 where total active duty days
-  // from prior service periods (separationDate before that officer period's entryDate) is < 730
-  if (
-    periods
-      .filter(p => p.officerOrEnlisted === 'officer' && new Date(p.entryDate) >= OCT_17_1981)
-      .some(officerPeriod => {
-        const officerEntry = new Date(officerPeriod.entryDate);
-        const priorActiveDays = periods
-          .filter(p => p.activeDuty && new Date(p.separationDate) < officerEntry)
-          .reduce((sum, p) => sum + periodDays(p), 0);
-        return priorActiveDays < 730;
-      })
-  ) return true;
+  // Path B: post-cutoff (24-month / 730-day minimum)
+  const hasPostCutoff = periods.some(p => {
+    const entry = new Date(p.entryDate);
+    if (p.officerOrEnlisted === 'enlisted' && entry >= SEPT_8_1980) return true;
+    if (p.officerOrEnlisted === 'officer' && entry >= OCT_17_1981) return true;
+    return false;
+  });
+  if (hasPostCutoff) {
+    if (totalDays >= 730) return true;
+    if (periods.some(p => p.completedFullTerm)) return true;
+  }
 
   return false;
 }
@@ -166,22 +159,34 @@ function meetsVGLIDateWindow(periods: ServicePeriod[]): boolean {
   });
 }
 
-function checkVGLI(answers: QuestionnaireAnswers): boolean{
+function checkPension(answers: QuestionnaireAnswers): boolean {
+  if (!answers.incomeBelowLimit) return false;
+  if (!answers.ageOrDisability) return false;
+
+  const qualifyingPeriods = answers.servicePeriods.filter(
+    p => p.activeDuty && p.dischargeLevel < 5
+  );
+  if (qualifyingPeriods.length === 0) return false;
+
+  return checkPensionServiceReq(qualifyingPeriods);
+}
+
+function checkVGLI(answers: QuestionnaireAnswers): boolean {
   if (!answers.hadSGLI) return false;
   return meetsVGLIDateWindow(answers.servicePeriods);
 }
 
-function checkHousingGrant(answers: QuestionnaireAnswers): boolean{
+function checkHousingGrant(answers: QuestionnaireAnswers): boolean {
   if (answers.hasDisabilityRating && answers.adaptiveHousingCondition) return true;
   return false;
 }
 
-function checkAutomobileGrant(answers: QuestionnaireAnswers): boolean{
+function checkAutomobileGrant(answers: QuestionnaireAnswers): boolean {
   if (answers.hasDisabilityRating && answers.hasAutoGrantCondition) return true;
   return false;
 }
 
-function checkDisabilityCompensation(answers: QuestionnaireAnswers): boolean{
+function checkDisabilityCompensation(answers: QuestionnaireAnswers): boolean {
   if(answers.serviceConnectedCondition === false) return false;
   for (const period of answers.servicePeriods) {
     if(period.dischargeLevel <= 4) return true;
@@ -189,11 +194,11 @@ function checkDisabilityCompensation(answers: QuestionnaireAnswers): boolean{
   return false;
 }
 
-function checkVALife(answers: QuestionnaireAnswers): boolean{
+function checkVALife(answers: QuestionnaireAnswers): boolean {
   return answers.hasDisabilityRating === true;
 }
 
-function checkHealthCare(answers: QuestionnaireAnswers): boolean{
+function checkHealthCare(answers: QuestionnaireAnswers): boolean {
   for (const period of answers.servicePeriods) {
     if (!period.activeDuty) continue;
     if (period.dischargeLevel >= 5) continue; // dishonorable
@@ -217,7 +222,7 @@ function checkHealthCare(answers: QuestionnaireAnswers): boolean{
   return false;
 }
 
-function checkPost911GIBill(answers: QuestionnaireAnswers): boolean{
+function checkPost911GIBill(answers: QuestionnaireAnswers): boolean {
   
   // If you served at least 90 days on active duty (either all at once or with breaks in service)
   // on or after September 11, 2001
@@ -253,7 +258,7 @@ function checkPost911GIBill(answers: QuestionnaireAnswers): boolean{
   return false;
 }
 
-function checkVRE(answers: QuestionnaireAnswers): boolean{
+function checkVRE(answers: QuestionnaireAnswers): boolean {
   const rating = answers.disabilityRating;
   if (rating === null || rating < 10) return false;
   for(const period of answers.servicePeriods){
@@ -272,5 +277,6 @@ export function checkEligibility(answers: QuestionnaireAnswers): number[] {
   if (checkHousingGrant(answers)) matched.push(3);
   if (checkVRE(answers)) matched.push(2);
   if (checkVGLI(answers)) matched.push(8);
+  if (checkPension(answers)) matched.push(5);
   return matched;
 }

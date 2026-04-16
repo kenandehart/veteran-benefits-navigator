@@ -8,19 +8,30 @@ const BENEFIT_NAMES: Record<number, string> = {
 9: "Adaptive Automobile Grant",
 3: "Adapted Housing Grant",
 2: "VR&E",
-8: "VGLI"
+8: "VGLI",
+5: "Pension"
 };
 
 
 const testAnswers = {
   servicePeriods: [{
-    entryDate: "2024-11-16",
-    separationDate: "2024-12-16",
-    activeDuty: false,
+    entryDate: "1968-03-15",
+    separationDate: "1970-06-20",
+    activeDuty: true,
+    officerOrEnlisted: "enlisted" as const,
+    dischargeLevel: 5,
+    disabilityDischarge: false,
+    completedFullTerm: true,
+    hardshipOrEarlyOut: false
+  },
+  {
+    entryDate: "1972-01-10",
+    separationDate: "1974-08-25",
+    activeDuty: true,
     officerOrEnlisted: "enlisted" as const,
     dischargeLevel: 1,
     disabilityDischarge: false,
-    completedFullTerm: false,
+    completedFullTerm: true,
     hardshipOrEarlyOut: false
   }],
   serviceConnectedCondition: false,
@@ -28,8 +39,8 @@ const testAnswers = {
   disabilityRating: 10,
   adaptiveHousingCondition: true,
   hasAutoGrantCondition: true,
-  incomeBelowLimit: false,
-  ageOrDisability: false,
+  incomeBelowLimit: true,
+  ageOrDisability: true,
   purpleHeartPost911: false,
   hadSGLI: false
 };
