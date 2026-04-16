@@ -43,6 +43,7 @@ interface QuestionnaireAnswers {
   ageOrDisability: boolean;
   purpleHeartPost911: boolean;
   hadSGLI: boolean;
+  servedInVietnam: boolean;
 }
 
 type Step =
@@ -57,6 +58,7 @@ type Step =
   | 'activation-periods'
   | 'activation-guidance'
   | 'add-another'
+  | 'vietnam-service'
   | 'service-connected'
   | 'has-rating'
   | 'rating-value'
@@ -86,6 +88,7 @@ const STEP_SECTIONS: Record<Step, string> = {
   'activation-periods':    'Service History',
   'activation-guidance':   'Service History',
   'add-another':           'Service History',
+  'vietnam-service':       'Service History',
   'service-connected': 'Health & Disability',
   'has-rating':        'Health & Disability',
   'rating-value':      'Health & Disability',
@@ -259,6 +262,7 @@ const INITIAL_ANSWERS: QuestionnaireAnswers = {
   ageOrDisability: false,
   purpleHeartPost911: false,
   hadSGLI: false,
+  servedInVietnam: false,
 };
 
 function Questionnaire() {
@@ -823,12 +827,20 @@ function Questionnaire() {
                   ...answers,
                   servicePeriods: [...answers.servicePeriods, completedPeriod],
                 };
-                const showSGLI = meetsVGLIDateWindow(updatedAnswers.servicePeriods);
-                advance(
-                  showSGLI ? 'sgli-coverage' : 'has-rating',
-                  {},
-                  showSGLI ? updatedAnswers : { ...updatedAnswers, hadSGLI: false }
-                );
+                const hasVietnamEra = updatedAnswers.servicePeriods.some(p => {
+                  return new Date(p.entryDate) < new Date('1975-05-07')
+                    && new Date(p.separationDate) > new Date('1955-11-01');
+                });
+                if (hasVietnamEra) {
+                  advance('vietnam-service', {}, updatedAnswers);
+                } else {
+                  const showSGLI = meetsVGLIDateWindow(updatedAnswers.servicePeriods);
+                  advance(
+                    showSGLI ? 'sgli-coverage' : 'has-rating',
+                    {},
+                    showSGLI ? updatedAnswers : { ...updatedAnswers, hadSGLI: false }
+                  );
+                }
               }}
             >
               No
@@ -841,6 +853,45 @@ function Questionnaire() {
                   servicePeriods: [...answers.servicePeriods, completedPeriod],
                 };
                 advance('entry-date', {}, updatedAnswers);
+              }}
+            >
+              Yes
+            </button>
+          </div>
+          {backButton}
+        </>
+      );
+      break;
+    }
+
+    case 'vietnam-service': {
+      stepContent = (
+        <>
+          <label className="q-label">Did you serve in the Republic of Vietnam?</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
+            <button
+              className="cta-button"
+              onClick={() => {
+                const showSGLI = meetsVGLIDateWindow(answers.servicePeriods);
+                advance(
+                  showSGLI ? 'sgli-coverage' : 'has-rating',
+                  {},
+                  showSGLI ? answers : { ...answers, hadSGLI: false }
+                );
+              }}
+            >
+              No
+            </button>
+            <button
+              className="cta-button"
+              onClick={() => {
+                const updatedAnswers = { ...answers, servedInVietnam: true };
+                const showSGLI = meetsVGLIDateWindow(answers.servicePeriods);
+                advance(
+                  showSGLI ? 'sgli-coverage' : 'has-rating',
+                  {},
+                  showSGLI ? updatedAnswers : { ...updatedAnswers, hadSGLI: false }
+                );
               }}
             >
               Yes

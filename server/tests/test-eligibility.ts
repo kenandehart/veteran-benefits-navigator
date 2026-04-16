@@ -9,24 +9,15 @@ const BENEFIT_NAMES: Record<number, string> = {
 3: "Adapted Housing Grant",
 2: "VR&E",
 8: "VGLI",
-5: "Pension"
+5: "Pension",
+7: "Home Loan"
 };
 
 
 const testAnswers = {
   servicePeriods: [{
-    entryDate: "1968-03-15",
-    separationDate: "1970-06-20",
-    activeDuty: true,
-    officerOrEnlisted: "enlisted" as const,
-    dischargeLevel: 5,
-    disabilityDischarge: false,
-    completedFullTerm: true,
-    hardshipOrEarlyOut: false
-  },
-  {
-    entryDate: "1972-01-10",
-    separationDate: "1974-08-25",
+    entryDate: "1960-03-01",
+    separationDate: "1960-09-15",
     activeDuty: true,
     officerOrEnlisted: "enlisted" as const,
     dischargeLevel: 1,
@@ -42,7 +33,8 @@ const testAnswers = {
   incomeBelowLimit: true,
   ageOrDisability: true,
   purpleHeartPost911: false,
-  hadSGLI: false
+  hadSGLI: false,
+  servedInVietnam: true
 };
 
 const results = checkEligibility(testAnswers);

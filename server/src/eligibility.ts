@@ -20,6 +20,7 @@ interface QuestionnaireAnswers {
   ageOrDisability: boolean;
   purpleHeartPost911: boolean;
   hadSGLI: boolean;
+  servedInVietnam: boolean;
 }
 
 const SEPT_11_2001 = new Date('2001-09-11');
@@ -38,6 +39,7 @@ const TRANS_START_ENL = new Date('1980-09-08'); // Transition start, enlisted
 const TRANS_START_OFF = new Date('1981-10-17'); // Transition start, officers
 const TRANS_END       = new Date('1990-08-01');
 const GULF_WAR_START  = new Date('1990-08-02');
+const VIETNAM_IN_COUNTRY_START = new Date('1955-11-01');
 
 const WARTIME_PERIODS: Array<{ start: Date; end: Date | null }> = [
   { start: new Date('1941-12-07'), end: new Date('1946-12-31') },
@@ -99,15 +101,23 @@ function checkPensionServiceReq(periods: ServicePeriod[]): boolean {
   return false;
 }
 
-function checkHomeLoanServiceReq(periods: ServicePeriod[]): boolean {
-  const active    = periods.filter(p => p.activeDuty);
-  const nonActive = periods.filter(p => !p.activeDuty);
+function checkHomeLoanServiceReq(answers: QuestionnaireAnswers): boolean {
+  const active    = answers.servicePeriods.filter(p => p.activeDuty && p.dischargeLevel < 5);
+  const nonActive = answers.servicePeriods.filter(p => !p.activeDuty);
 
   // PATH 1: Era-based active duty service
   for (const p of active) {
     const entry = new Date(p.entryDate);
     const days  = periodDays(p);
     const isEnl = p.officerOrEnlisted === 'enlisted';
+
+    // Vietnam in-country pre-check
+    if (
+      answers.servedInVietnam &&
+      entry < VIETNAM_END &&
+      new Date(p.separationDate) > VIETNAM_IN_COUNTRY_START &&
+      days >= 90
+    ) return true;
 
     if (entry >= WWII_START && entry <= WWII_END) {
       if (days >= 90) return true;
@@ -128,10 +138,10 @@ function checkHomeLoanServiceReq(periods: ServicePeriod[]): boolean {
       entry <= TRANS_END &&
       ((isEnl && entry >= TRANS_START_ENL) || (!isEnl && entry >= TRANS_START_OFF))
     ) {
-      const min = p.completedFullTerm ? 181 : 730;
+      const min = (p.completedFullTerm || p.hardshipOrEarlyOut) ? 181 : 730;
       if (days >= min) return true;
     } else if (entry >= GULF_WAR_START) {
-      const min = p.completedFullTerm ? 90 : 730;
+      const min = (p.completedFullTerm || p.hardshipOrEarlyOut) ? 90 : 730;
       if (days >= min) return true;
     }
   }
@@ -144,6 +154,10 @@ function checkHomeLoanServiceReq(periods: ServicePeriod[]): boolean {
   if (totalNonActiveDays >= 2190 && nonActive.some(p => p.dischargeLevel === 1)) return true;
 
   return false;
+}
+
+function checkHomeLoan(answers: QuestionnaireAnswers): boolean {
+  return checkHomeLoanServiceReq(answers);
 }
 
 function meetsVGLIDateWindow(periods: ServicePeriod[]): boolean {
@@ -278,5 +292,6 @@ export function checkEligibility(answers: QuestionnaireAnswers): number[] {
   if (checkVRE(answers)) matched.push(2);
   if (checkVGLI(answers)) matched.push(8);
   if (checkPension(answers)) matched.push(5);
+  if (checkHomeLoan(answers)) matched.push(7);
   return matched;
 }
