@@ -6,3 +6,6 @@
 *.suo
 *.user
 node_modules/
+tsconfig.tsbuildinfo
+*.tsbuildinfo
+*.tsbuildinfo

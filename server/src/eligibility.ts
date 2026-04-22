@@ -20,6 +20,9 @@ interface QuestionnaireAnswers {
   ageOrDisability: boolean;
   purpleHeartPost911: boolean;
   hadSGLI: boolean;
+  currentlyInVRE: boolean;
+  singleDisability100OrTDIU: boolean;
+  formerPOW: boolean;
   servedInVietnam: boolean;
 }
 
@@ -273,11 +276,39 @@ function checkPost911GIBill(answers: QuestionnaireAnswers): boolean {
 }
 
 function checkVRE(answers: QuestionnaireAnswers): boolean {
+  if (answers.currentlyInVRE) return false;
   const rating = answers.disabilityRating;
   if (rating === null || rating < 10) return false;
-  for(const period of answers.servicePeriods){
+  for (const period of answers.servicePeriods) {
     if (period.dischargeLevel < 5) return true;
   }
+  return false;
+}
+
+function checkDental(answers: QuestionnaireAnswers): boolean {
+  const hasValidDischarge = answers.servicePeriods.some(p => p.dischargeLevel < 5);
+  if (!hasValidDischarge) return false;
+
+  if (answers.formerPOW) return true;
+  if (answers.singleDisability100OrTDIU) return true;
+  if (answers.currentlyInVRE) return true;
+
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
+  const WINDOW_MS = 180 * 24 * 60 * 60 * 1000;
+  for (const period of answers.servicePeriods) {
+    if (!period.activeDuty) continue;
+    if (period.dischargeLevel >= 5) continue;
+    const entry = new Date(period.entryDate);
+    if (entry < GULF_WAR_START) continue;
+    if (periodDays(period) < 90 && !period.completedFullTerm) continue;
+    const sepDate = new Date(period.separationDate);
+    const diff = today.getTime() - sepDate.getTime();
+    if (diff < 0) continue;
+    if (diff > WINDOW_MS) continue;
+    return true;
+  }
+
   return false;
 }
 
@@ -293,5 +324,6 @@ export function checkEligibility(answers: QuestionnaireAnswers): number[] {
   if (checkVGLI(answers)) matched.push(8);
   if (checkPension(answers)) matched.push(5);
   if (checkHomeLoan(answers)) matched.push(7);
+  if (checkDental(answers)) matched.push(11);
   return matched;
 }

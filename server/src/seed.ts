@@ -138,6 +138,19 @@ const benefits = [
     url: 'https://www.va.gov/life-insurance/options-eligibility/valife/',
     is_active: true,
   },
+  {
+    id: 11,
+    type: 'benefit',
+    category: 'health care',
+    name: 'VA Dental Care',
+    short_description: 'Free dental care for veterans meeting specific eligibility criteria',
+    description:
+      'VA provides comprehensive dental care to certain qualifying veterans, including services like cleanings, fillings, extractions, dentures, and oral surgery.',
+    eligibility_summary:
+      'Veterans may qualify based on a service-connected dental condition, a 100% service-connected disability rating (single condition or TDIU), former prisoner of war status, recent separation from 90+ days of active duty during the Persian Gulf War era, or active participation in a VR&E program.',
+    url: 'https://www.va.gov/health-care/about-va-health-benefits/dental-care/',
+    is_active: true,
+  }
 ];
 
 async function seed() {

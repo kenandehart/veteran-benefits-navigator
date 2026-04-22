@@ -10,7 +10,8 @@ const BENEFIT_NAMES: Record<number, string> = {
 2: "VR&E",
 8: "VGLI",
 5: "Pension",
-7: "Home Loan"
+7: "Home Loan",
+11: "VA Dental Care"
 };
 
 
@@ -34,7 +35,10 @@ const testAnswers = {
   ageOrDisability: true,
   purpleHeartPost911: false,
   hadSGLI: false,
-  servedInVietnam: true
+  servedInVietnam: true,
+  currentlyInVRE: false,
+  formerPOW: false,
+  singleDisability100OrTDIU: false
 };
 
 const results = checkEligibility(testAnswers);

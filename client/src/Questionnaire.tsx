@@ -43,6 +43,9 @@ interface QuestionnaireAnswers {
   ageOrDisability: boolean;
   purpleHeartPost911: boolean;
   hadSGLI: boolean;
+  currentlyInVRE: boolean;
+  singleDisability100OrTDIU: boolean;
+  formerPOW: boolean;
   servedInVietnam: boolean;
 }
 
@@ -62,13 +65,16 @@ type Step =
   | 'service-connected'
   | 'has-rating'
   | 'rating-value'
+  | 'single-disability-tdiu'
+  | 'currently-in-vre'
   | 'sgli-coverage'
   | 'housing-condition'
   | 'housing-ownership'
   | 'auto-grant-condition'
   | 'income-limit'
   | 'age-disability'
-  | 'purple-heart';
+  | 'purple-heart'
+  | 'former-pow';
 
 interface Snapshot {
   step: Step;
@@ -92,6 +98,8 @@ const STEP_SECTIONS: Record<Step, string> = {
   'service-connected': 'Health & Disability',
   'has-rating':        'Health & Disability',
   'rating-value':      'Health & Disability',
+  'single-disability-tdiu': 'Health & Disability',
+  'currently-in-vre':  'Health & Disability',
   'sgli-coverage':     'Insurance',
   'housing-condition':   'Housing',
   'housing-ownership':   'Housing',
@@ -99,6 +107,7 @@ const STEP_SECTIONS: Record<Step, string> = {
   'income-limit':        'Financial',
   'age-disability':    'Financial',
   'purple-heart':      'Health & Disability',
+  'former-pow':        'Service History',
 };
 
 const DISCHARGE_OPTIONS = [
@@ -262,6 +271,9 @@ const INITIAL_ANSWERS: QuestionnaireAnswers = {
   ageOrDisability: false,
   purpleHeartPost911: false,
   hadSGLI: false,
+  currentlyInVRE: false,
+  singleDisability100OrTDIU: false,
+  formerPOW: false,
   servedInVietnam: false,
 };
 
@@ -327,7 +339,22 @@ function Questionnaire() {
         }
         case 'rating-value': {
           if (answers.disabilityRating !== null) {
-            advance('housing-condition', undefined, { ...answers, serviceConnectedCondition: true });
+            if (answers.disabilityRating === 100) {
+              advance('single-disability-tdiu', undefined, { ...answers, serviceConnectedCondition: true });
+            } else if (answers.disabilityRating >= 10) {
+              advance('currently-in-vre', undefined, {
+                ...answers,
+                serviceConnectedCondition: true,
+                singleDisability100OrTDIU: false,
+              });
+            } else {
+              advance('housing-condition', undefined, {
+                ...answers,
+                serviceConnectedCondition: true,
+                currentlyInVRE: false,
+                singleDisability100OrTDIU: false,
+              });
+            }
           }
           break;
         }
@@ -1019,13 +1046,88 @@ function Questionnaire() {
             {backButton}
             <button
               className="cta-button q-next-btn"
-              onClick={() => advance('housing-condition', undefined, { ...answers, serviceConnectedCondition: true })}
+              onClick={() => {
+                if (answers.disabilityRating === 100) {
+                  advance('single-disability-tdiu', undefined, { ...answers, serviceConnectedCondition: true });
+                } else if (answers.disabilityRating !== null && answers.disabilityRating >= 10) {
+                  advance('currently-in-vre', undefined, {
+                    ...answers,
+                    serviceConnectedCondition: true,
+                    singleDisability100OrTDIU: false,
+                  });
+                } else {
+                  advance('housing-condition', undefined, {
+                    ...answers,
+                    serviceConnectedCondition: true,
+                    currentlyInVRE: false,
+                    singleDisability100OrTDIU: false,
+                  });
+                }
+              }}
               disabled={answers.disabilityRating === null}
               style={{ marginLeft: 'auto' }}
             >
               Next
             </button>
           </div>
+        </>
+      );
+      break;
+    }
+
+    case 'single-disability-tdiu': {
+      stepContent = (
+        <>
+          <label className="q-label">
+            Do you have any single service-connected disability rated 100% on its own, OR do you receive disability compensation at the 100% rate because you can't work due to your service-connected conditions (also known as TDIU)?
+          </label>
+          <div
+            style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }}
+            className="yn-row"
+          >
+            <button
+              className="cta-button"
+              onClick={() => advance('currently-in-vre', undefined, { ...answers, singleDisability100OrTDIU: false })}
+            >
+              No
+            </button>
+            <button
+              className="cta-button"
+              onClick={() => advance('currently-in-vre', undefined, { ...answers, singleDisability100OrTDIU: true })}
+            >
+              Yes
+            </button>
+          </div>
+          {backButton}
+        </>
+      );
+      break;
+    }
+
+    case 'currently-in-vre': {
+      stepContent = (
+        <>
+          <label className="q-label">
+            Are you currently participating in a VR&amp;E (Veteran Readiness and Employment / Chapter 31) program?
+          </label>
+          <div
+            style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }}
+            className="yn-row"
+          >
+            <button
+              className="cta-button"
+              onClick={() => advance('housing-condition', undefined, { ...answers, currentlyInVRE: false })}
+            >
+              No
+            </button>
+            <button
+              className="cta-button"
+              onClick={() => advance('housing-condition', undefined, { ...answers, currentlyInVRE: true })}
+            >
+              Yes
+            </button>
+          </div>
+          {backButton}
         </>
       );
       break;
@@ -1146,13 +1248,37 @@ function Questionnaire() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
-              onClick={() => handleSubmit({ ...answers, purpleHeartPost911: false })}
+              onClick={() => advance('former-pow', undefined, { ...answers, purpleHeartPost911: false })}
             >
               No
             </button>
             <button
               className="cta-button"
-              onClick={() => handleSubmit({ ...answers, purpleHeartPost911: true })}
+              onClick={() => advance('former-pow', undefined, { ...answers, purpleHeartPost911: true })}
+            >
+              Yes
+            </button>
+          </div>
+          {backButton}
+        </>
+      );
+      break;
+    }
+
+    case 'former-pow': {
+      stepContent = (
+        <>
+          <label className="q-label">Were you ever a prisoner of war?</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
+            <button
+              className="cta-button"
+              onClick={() => handleSubmit({ ...answers, formerPOW: false })}
+            >
+              No
+            </button>
+            <button
+              className="cta-button"
+              onClick={() => handleSubmit({ ...answers, formerPOW: true })}
             >
               Yes
             </button>
