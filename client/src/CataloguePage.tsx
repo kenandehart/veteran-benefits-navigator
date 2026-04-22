@@ -129,7 +129,7 @@ function CataloguePage() {
           textAlign: 'center',
           margin: '0 0 32px',
         }}>
-          This site is under development. More benefits will be added soon.
+          This is not an exhaustive list of benefits available to veterans. For complete information, visit <a href="https://www.va.gov/" target="_blank" rel="noopener noreferrer">va.gov</a>.
         </p>
         <div className="benefits-grid">
           {[...benefits]
