@@ -9,7 +9,7 @@
     "seed": "node --loader ts-node/esm src/seed.ts",
     "seed:requirements": "node --loader ts-node/esm src/seedRequirements.ts",
     "migrate:users": "node --loader ts-node/esm src/migrations/createUsers.ts",
-    "test": "LOG_LEVEL=silent tsx --test tests/feedback.test.ts tests/adminFeedback.test.ts"
+    "test": "LOG_LEVEL=silent tsx --test tests/feedback.test.ts tests/adminFeedback.test.ts tests/logger.test.ts"
   },
   "keywords": [],
   "author": "",

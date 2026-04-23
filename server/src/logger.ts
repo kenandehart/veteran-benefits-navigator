@@ -11,8 +11,18 @@
 //   err serializer — strips err.parameters (pg-specific; holds query
 //                    parameters including usernames, emails, password
 //                    hashes, answers JSON) and err.config.
-//   redact paths  — censors cookie, authorization, password, passwordHash
-//                    anywhere they appear in a log record.
+//   req serializer — whitelist serializer. Emits id/method/url/query/params
+//                    plus a fixed set of headers (user-agent, host, referer,
+//                    x-request-id). Intentionally omits remoteAddress and
+//                    remotePort so client IPs never hit the log stream.
+//                    IPs remain available via req.ip to the rate limiters,
+//                    which do not call into the logger — so keying on IP
+//                    in memory is fine without leaking IPs to logs.
+//   redact paths  — belt-and-suspenders censoring of cookie, authorization,
+//                    password, passwordHash anywhere they appear in a log
+//                    record (the req serializer already drops the header
+//                    ones, but handlers that log req.body would still be
+//                    covered).
 
 import pino from 'pino';
 import { pinoHttp } from 'pino-http';
@@ -40,9 +50,39 @@ function errSerializer(err: Error): Record<string, unknown> {
   return serialized;
 }
 
+// Only these headers survive serialization. Everything else — including
+// cookie, authorization, and any IP-carrying headers like x-forwarded-for
+// or x-real-ip — is dropped before the record reaches the transport.
+const SAFE_HEADER_NAMES = ['user-agent', 'host', 'referer', 'x-request-id'] as const;
+
+interface SerializableReq {
+  id?: unknown;
+  method?: unknown;
+  url?: unknown;
+  query?: unknown;
+  params?: unknown;
+  headers?: Record<string, unknown>;
+}
+
+export function reqSerializer(req: SerializableReq): Record<string, unknown> {
+  const incoming = req.headers ?? {};
+  const headers: Record<string, unknown> = {};
+  for (const name of SAFE_HEADER_NAMES) {
+    if (incoming[name] !== undefined) headers[name] = incoming[name];
+  }
+  return {
+    id: req.id,
+    method: req.method,
+    url: req.url,
+    query: req.query,
+    params: req.params,
+    headers,
+  };
+}
+
 export const logger = pino({
   level: process.env.LOG_LEVEL ?? 'info',
-  serializers: { err: errSerializer },
+  serializers: { req: reqSerializer, err: errSerializer },
   redact: {
     paths: [
       'req.headers.cookie',
@@ -57,6 +97,7 @@ export const logger = pino({
 
 export const httpLogger = pinoHttp({
   logger,
+  serializers: { req: reqSerializer },
   genReqId: (req, res) => {
     const incoming = req.headers['x-request-id'];
     const id = typeof incoming === 'string' && incoming.length > 0 ? incoming : randomUUID();
