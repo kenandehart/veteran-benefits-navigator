@@ -68,3 +68,15 @@ export const writeLimiter = rateLimit({
   },
   message: { error: 'Too many requests. Please slow down.' },
 });
+
+// Feedback submissions are unauthenticated, so the only key we can use is IP.
+// Tight limit (5 / 15 min) is deliberate: feedback is a low-frequency action
+// for a real user, and the endpoint is an attractive target for spam bots.
+export const feedbackLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: 'draft-6',
+  legacyHeaders: false,
+  keyGenerator: (req: Request) => ipKeyGenerator(req.ip ?? ''),
+  message: { error: 'Too many feedback submissions. Please try again later.' },
+});

@@ -6,6 +6,7 @@ import Footer from './Footer'
 import AuthButtons from './components/AuthButtons.tsx'
 import AuthMenuItems from './components/AuthMenuItems.tsx'
 import RegisterModal from './components/RegisterModal.tsx'
+import FeedbackWidget from './components/FeedbackWidget.tsx'
 
 interface Benefit {
   id: number
@@ -175,6 +176,13 @@ function ResultsPage() {
                 </button>
               </div>
             )}
+            <section className="results-feedback">
+              <h2 className="results-feedback__heading">Help us improve</h2>
+              <FeedbackWidget
+                pageContext="results"
+                metadata={(answers ?? undefined) as object | undefined}
+              />
+            </section>
             {showRegister && (
               <RegisterModal
                 onClose={() => setShowRegister(false)}

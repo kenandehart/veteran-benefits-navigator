@@ -71,8 +71,18 @@ export const UserResultsUpdateSchema = z.object({
   answers: QuestionnaireAnswersSchema,
 });
 
+// page_context is an enum stored as TEXT in the DB with a CHECK constraint.
+// Keep this list in sync with the DB constraint when a new surface is added.
+export const FeedbackSchema = z.object({
+  comment: z.string().min(1).max(2000),
+  email: z.email().optional(),
+  page_context: z.enum(['results', 'footer']),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+});
+
 export type RegisterBody = z.infer<typeof RegisterBodySchema>;
 export type LoginBody = z.infer<typeof LoginBodySchema>;
 export type EmailUpdate = z.infer<typeof EmailUpdateSchema>;
 export type QuestionnaireAnswers = z.infer<typeof QuestionnaireAnswersSchema>;
 export type UserResultsUpdate = z.infer<typeof UserResultsUpdateSchema>;
+export type FeedbackBody = z.infer<typeof FeedbackSchema>;

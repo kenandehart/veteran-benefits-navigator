@@ -10,6 +10,8 @@ import benefitsRouter from './routes/benefits.js';
 import questionnaireRouter from './routes/questionnaire.js';
 import authRouter from './routes/auth.js';
 import userRouter from './routes/user.js';
+import feedbackRouter from './routes/feedback.js';
+import adminFeedbackRouter from './routes/adminFeedback.js';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -80,6 +82,8 @@ app.use(benefitsRouter);
 app.use(questionnaireRouter);
 app.use('/auth', authRouter);
 app.use('/user/results', userRouter);
+app.use('/feedback', feedbackRouter);
+app.use('/admin/feedback', adminFeedbackRouter);
 
 const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   const errLike = err as Error & { statusCode?: number; status?: number };
