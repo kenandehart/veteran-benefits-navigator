@@ -24,6 +24,10 @@ function CataloguePage() {
   const [showMenu, setShowMenu] = useState(false)
 
   useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
+  useEffect(() => {
     fetch('/api/benefits')
       .then(res => res.json())
       .then(data => setBenefits(data))

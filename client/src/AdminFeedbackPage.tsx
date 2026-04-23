@@ -38,6 +38,10 @@ export default function AdminFeedbackPage() {
   const [expandedComments, setExpandedComments] = useState<Set<number>>(new Set())
   const [expandedMetadata, setExpandedMetadata] = useState<Set<number>>(new Set())
 
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
   const fetchFeedback = useCallback(async (header: string) => {
     setLoading(true)
     setError('')

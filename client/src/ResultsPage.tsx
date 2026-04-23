@@ -30,6 +30,10 @@ function ResultsPage() {
   const [showRegister, setShowRegister] = useState(false)
 
   useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
+  useEffect(() => {
     if (!eligibleBenefits) navigate('/')
   }, [eligibleBenefits, navigate])
 

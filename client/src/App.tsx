@@ -7,6 +7,7 @@ import ResultsPage from './ResultsPage'
 import CataloguePage from './CataloguePage'
 import DashboardPage from './DashboardPage'
 import AdminFeedbackPage from './AdminFeedbackPage'
+import PrivacyPage from './PrivacyPage'
 
 function App() {
   const { user, isLoading } = useAuth()
@@ -27,6 +28,7 @@ function App() {
       <Route path="/results" element={<ResultsPage />} />
       <Route path="/benefits" element={<CataloguePage />} />
       <Route path="/admin/feedback" element={<AdminFeedbackPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
     </Routes>
   )
 }

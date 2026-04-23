@@ -207,9 +207,15 @@
   text-align: center;
 }
 
+.footer-links {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin-top: 10px;
+}
+
 .footer-link {
-  display: block;
-  margin: 10px auto 0;
   background: none;
   border: none;
   padding: 4px 8px;
@@ -220,6 +226,7 @@
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.55);
   cursor: pointer;
+  text-decoration: none;
   transition: color 0.15s ease;
 }
 
@@ -1106,6 +1113,71 @@
   font-size: 1.15rem;
   font-weight: 400;
   color: var(--navy);
+}
+
+/* ============================================================
+   Privacy policy page
+   ============================================================ */
+
+.privacy-page {
+  flex: 1;
+  padding: 48px 32px 80px;
+  max-width: 680px;
+  margin: 0 auto;
+  width: 100%;
+  animation: fadeUp 0.35s ease both;
+}
+
+.privacy-page__title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(1.7rem, 4vw, 2.2rem);
+  font-weight: 400;
+  color: var(--navy);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin: 0 0 6px;
+}
+
+.privacy-page__meta {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.85rem;
+  font-weight: 300;
+  color: var(--text-muted);
+  margin: 0 0 32px;
+}
+
+.privacy-page__heading {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: var(--navy);
+  margin: 36px 0 12px;
+  letter-spacing: -0.005em;
+}
+
+.privacy-page p {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--text);
+  line-height: 1.75;
+  margin: 0 0 14px;
+}
+
+.privacy-page code {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 0.92em;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  border-radius: 2px;
+  padding: 1px 6px;
+}
+
+@media (max-width: 768px) {
+  .privacy-page {
+    padding: 32px 20px 64px;
+  }
 }
 
 /* ============================================================
