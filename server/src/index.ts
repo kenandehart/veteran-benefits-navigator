@@ -1,6 +1,8 @@
 import express from 'express';
 import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
+import cors from 'cors';
+import helmet from 'helmet';
 import pool from './db.js';
 import healthRouter from './routes/health.js';
 import benefitsRouter from './routes/benefits.js';
@@ -20,18 +22,37 @@ if (!SESSION_SECRET || SESSION_SECRET.length < 32) {
   );
 }
 
+const ALLOWED_ORIGINS = [process.env.APP_ORIGIN, process.env.STAGING_ORIGIN]
+  .filter((o): o is string => !!o);
+if (ALLOWED_ORIGINS.length === 0) {
+  throw new Error(
+    'At least one of APP_ORIGIN or STAGING_ORIGIN must be set. Refusing to start.'
+  );
+}
+
 app.set('json spaces', 2)
 
-app.use(express.json());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      'font-src': ["'self'", 'https://fonts.gstatic.com', 'data:'],
+    },
+  },
+  // HSTS is set at the Nginx edge — disable here to avoid header conflicts.
+  hsts: false,
+}));
+
+app.use(cors({
+  origin: ALLOWED_ORIGINS,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+}));
+
+app.use(express.json({ limit: '10kb' }));
 
 const PgSession = connectPgSimple(session);
-
-app.use((_req, res, next) => {
-res.header('Access-Control-Allow-Origin', '*');
-res.header('Access-Control-Allow-Headers', 'Content-Type');
-res.header('Access-Control-Allow-Methods', 'GET, POST');
-next();
-});
 
 app.use(session({
   store: new PgSession({ pool }),
