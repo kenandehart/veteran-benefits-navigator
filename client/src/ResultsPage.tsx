@@ -178,9 +178,19 @@ function ResultsPage() {
             )}
             <section className="results-feedback">
               <h2 className="results-feedback__heading">Help us improve</h2>
+              {/* Logged-in users already have their questionnaire answers stored on
+                  their account — attaching them again as feedback metadata would
+                  duplicate the data and give the feedback row a longer retention
+                  tail than the account itself. Send only the matched benefit IDs
+                  for context. Anonymous submissions still include the full answers
+                  because there's no account-side copy to reference. */}
               <FeedbackWidget
                 pageContext="results"
-                metadata={(answers ?? undefined) as object | undefined}
+                metadata={
+                  user
+                    ? { matched_benefit_ids: eligibleBenefits.map((b) => b.id) }
+                    : ((answers ?? undefined) as object | undefined)
+                }
               />
             </section>
             {showRegister && (

@@ -9,6 +9,7 @@ interface FeedbackRow {
   page_context: string
   metadata: unknown
   user_agent: string | null
+  user_id: number | null
   submitted_at: string
 }
 
@@ -144,6 +145,7 @@ export default function AdminFeedbackPage() {
                     <tr>
                       <th>Submitted</th>
                       <th>Page</th>
+                      <th>User</th>
                       <th>Email</th>
                       <th>Comment</th>
                       <th>Metadata</th>
@@ -164,6 +166,13 @@ export default function AdminFeedbackPage() {
                             {new Date(row.submitted_at).toLocaleString()}
                           </td>
                           <td>{row.page_context}</td>
+                          <td>
+                            {row.user_id === null ? (
+                              <span className="admin-feedback__muted">anonymous</span>
+                            ) : (
+                              row.user_id
+                            )}
+                          </td>
                           <td>{row.email ?? <span className="admin-feedback__muted">—</span>}</td>
                           <td className="admin-feedback__comment">
                             <span>{displayComment}</span>

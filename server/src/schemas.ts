@@ -73,7 +73,12 @@ export const UserResultsUpdateSchema = z.object({
 
 // page_context is an enum stored as TEXT in the DB with a CHECK constraint.
 // Keep this list in sync with the DB constraint when a new surface is added.
-export const FeedbackSchema = z.object({
+//
+// strictObject is deliberate: user_id on feedback rows is derived from the
+// session server-side, never from the client. Rejecting unknown fields (e.g.
+// a client attempting to smuggle user_id=99) surfaces the attempt as a 400
+// rather than silently stripping it.
+export const FeedbackSchema = z.strictObject({
   comment: z.string().min(1).max(2000),
   email: z.email().optional(),
   page_context: z.enum(['results', 'footer']),

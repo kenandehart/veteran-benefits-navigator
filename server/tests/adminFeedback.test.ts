@@ -75,8 +75,10 @@ describe('GET /admin/feedback', () => {
 
   test('200 with rows and aggregate stats when credentials are correct', async () => {
     const now = new Date().toISOString();
+    let rowsQueryText = '';
     setMock(async (text) => {
       if (text.includes('SELECT id, comment')) {
+        rowsQueryText = text;
         return {
           rows: [
             {
@@ -86,6 +88,7 @@ describe('GET /admin/feedback', () => {
               page_context: 'footer',
               metadata: null,
               user_agent: 'ua',
+              user_id: 7,
               submitted_at: now,
             },
             {
@@ -95,6 +98,7 @@ describe('GET /admin/feedback', () => {
               page_context: 'results',
               metadata: { foo: 'bar' },
               user_agent: 'ua',
+              user_id: null,
               submitted_at: now,
             },
           ],
@@ -114,6 +118,9 @@ describe('GET /admin/feedback', () => {
     assert.equal(res.status, 200);
     assert.equal(res.body.feedback.length, 2);
     assert.equal(res.body.feedback[0].id, 2, 'rows should come back in DESC order as returned by query');
+    assert.strictEqual(res.body.feedback[0].user_id, 7, 'logged-in submission carries user_id');
+    assert.strictEqual(res.body.feedback[1].user_id, null, 'anonymous submission has null user_id');
+    assert.match(rowsQueryText, /user_id/, 'admin SELECT projects user_id');
     assert.deepEqual(res.body.stats, { total: 2, last_7_days: 1 });
   });
 

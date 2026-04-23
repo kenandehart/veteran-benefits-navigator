@@ -38,9 +38,10 @@ router.get('/', adminAuth, async (req, res, next) => {
       page_context: string;
       metadata: unknown;
       user_agent: string | null;
+      user_id: number | null;
       submitted_at: Date;
     }>(
-      `SELECT id, comment, email, page_context, metadata, user_agent, submitted_at
+      `SELECT id, comment, email, page_context, metadata, user_agent, user_id, submitted_at
        FROM feedback
        ORDER BY submitted_at DESC`
     );

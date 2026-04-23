@@ -16,10 +16,16 @@ router.post('/', feedbackLimiter, validateBody(FeedbackSchema), async (req, res,
   const rawUA = req.headers['user-agent'];
   const userAgent = typeof rawUA === 'string' ? rawUA.slice(0, UA_MAX_LEN) : null;
 
+  // user_id is always derived from the session, never from the request body.
+  // Anonymous submissions insert NULL; the column is nullable and the FK is
+  // ON DELETE SET NULL, so account deletion cleanly severs the link without
+  // deleting the feedback text itself.
+  const userId = req.session.userId ?? null;
+
   try {
     const result = await pool.query<{ id: number }>(
-      `INSERT INTO feedback (comment, email, page_context, metadata, user_agent)
-       VALUES ($1, $2, $3, $4, $5)
+      `INSERT INTO feedback (comment, email, page_context, metadata, user_agent, user_id)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING id`,
       [
         comment,
@@ -27,6 +33,7 @@ router.post('/', feedbackLimiter, validateBody(FeedbackSchema), async (req, res,
         page_context,
         metadata ? JSON.stringify(metadata) : null,
         userAgent,
+        userId,
       ]
     );
 

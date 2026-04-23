@@ -7,11 +7,23 @@ import feedbackRouter from '../src/routes/feedback.js';
 import { feedbackLimiter } from '../src/middleware/rateLimit.js';
 import { httpLogger } from '../src/logger.js';
 
-function buildApp() {
+// Stub session shape matching the express-session augmentation in
+// src/types/session.d.ts. An empty object represents an anonymous visitor
+// (no userId); supplying { userId } simulates a logged-in user.
+type SessionStub = { userId?: number; username?: string };
+
+function buildApp(session: SessionStub = {}) {
   const app = express();
   app.set('trust proxy', 1);
   app.use(httpLogger);
   app.use(express.json());
+  // Fake express-session so req.session.userId is readable in the route.
+  // Real express-session would attach a Session instance here; the route
+  // only touches .userId so a plain object is enough.
+  app.use((req, _res, next) => {
+    (req as unknown as { session: SessionStub }).session = { ...session };
+    next();
+  });
   app.use('/feedback', feedbackRouter);
   return app;
 }
@@ -71,6 +83,7 @@ describe('POST /feedback', () => {
     assert.equal(params[2], 'results');
     assert.equal(params[3], null); // metadata not provided
     assert.equal(params[4], 'jest-test-agent/1.0');
+    assert.equal(params[5], null); // anonymous session → user_id NULL
   });
 
   test('persists metadata as JSON string and email when provided', async () => {
@@ -92,6 +105,92 @@ describe('POST /feedback', () => {
     assert.equal(params[2], 'footer');
     assert.equal(typeof params[3], 'string');
     assert.deepEqual(JSON.parse(params[3] as string), { source: 'homepage', count: 3 });
+    assert.equal(params[5], null);
+  });
+
+  test('inserts NULL user_id when session is anonymous', async () => {
+    setMock(async () => ({ rows: [{ id: 1 }] }));
+    const app = buildApp(); // no session userId
+
+    const res = await request(app)
+      .post('/feedback')
+      .send({ comment: 'hi', page_context: 'results' });
+
+    assert.equal(res.status, 201);
+    const params = queryCalls[0].params as unknown[];
+    assert.strictEqual(params[5], null);
+  });
+
+  test('inserts user_id from req.session.userId when logged in', async () => {
+    setMock(async () => ({ rows: [{ id: 1 }] }));
+    const app = buildApp({ userId: 42, username: 'vet' });
+
+    const res = await request(app)
+      .post('/feedback')
+      .send({ comment: 'thanks', page_context: 'results' });
+
+    assert.equal(res.status, 201);
+    const params = queryCalls[0].params as unknown[];
+    assert.strictEqual(params[5], 42);
+  });
+
+  test('400 when body includes user_id (strict schema rejects client-supplied user_id)', async () => {
+    const app = buildApp();
+    const res = await request(app)
+      .post('/feedback')
+      .send({ comment: 'hi', page_context: 'results', user_id: 999 });
+    assert.equal(res.status, 400);
+    // No DB call should have happened; validation rejects before the handler runs.
+    assert.equal(queryCalls.length, 0);
+  });
+
+  test('client-supplied user_id cannot override session value (anon session + body user_id → rejected)', async () => {
+    const app = buildApp(); // anonymous
+    const res = await request(app)
+      .post('/feedback')
+      .send({ comment: 'sneaky', page_context: 'results', user_id: 1 });
+    // Strict schema rejects; no row inserted.
+    assert.equal(res.status, 400);
+    assert.equal(queryCalls.length, 0);
+  });
+
+  test('logged-in results submission persists small metadata + session user_id', async () => {
+    setMock(async () => ({ rows: [{ id: 1 }] }));
+    const app = buildApp({ userId: 7 });
+
+    const res = await request(app)
+      .post('/feedback')
+      .send({
+        comment: 'love it',
+        page_context: 'results',
+        metadata: { matched_benefit_ids: [1, 4, 6] },
+      });
+
+    assert.equal(res.status, 201);
+    const params = queryCalls[0].params as unknown[];
+    assert.strictEqual(params[5], 7);
+    assert.equal(typeof params[3], 'string');
+    assert.deepEqual(JSON.parse(params[3] as string), { matched_benefit_ids: [1, 4, 6] });
+  });
+
+  test('anonymous results submission persists full answers metadata + NULL user_id', async () => {
+    setMock(async () => ({ rows: [{ id: 1 }] }));
+    const app = buildApp(); // anonymous
+    // Realistic shape for an anon results-page submission.
+    const answers = {
+      servicePeriods: [{ entryDate: '2001-01-01', separationDate: '2005-01-01' }],
+      disabilityRating: 70,
+      incomeBelowLimit: true,
+    };
+
+    const res = await request(app)
+      .post('/feedback')
+      .send({ comment: 'thanks', page_context: 'results', metadata: answers });
+
+    assert.equal(res.status, 201);
+    const params = queryCalls[0].params as unknown[];
+    assert.strictEqual(params[5], null);
+    assert.deepEqual(JSON.parse(params[3] as string), answers);
   });
 
   test('400 when comment is missing', async () => {
