@@ -41,8 +41,10 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-      'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
-      'font-src': ["'self'", 'https://fonts.gstatic.com', 'data:'],
+      // Fonts are self-hosted via @fontsource, so no CDN origins need allowing.
+      // 'unsafe-inline' on style-src stays for inline styles React emits.
+      'style-src': ["'self'", "'unsafe-inline'"],
+      'font-src': ["'self'", 'data:'],
     },
   },
   // HSTS is set at the Nginx edge — disable here to avoid header conflicts.
