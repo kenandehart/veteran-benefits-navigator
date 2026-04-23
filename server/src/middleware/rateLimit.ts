@@ -80,3 +80,21 @@ export const feedbackLimiter = rateLimit({
   keyGenerator: (req: Request) => ipKeyGenerator(req.ip ?? ''),
   message: { error: 'Too many feedback submissions. Please try again later.' },
 });
+
+// Password-reset requests: 3 per hour per (IP, email). Prevents using the
+// endpoint as a spam relay. Composite key is built pre-validation, so guard
+// against a non-string email payload.
+function resetRequestKey(req: Request): string {
+  const body = (req.body ?? {}) as { email?: unknown };
+  const email = typeof body.email === 'string' ? body.email.toLowerCase() : '';
+  return `${ipKeyGenerator(req.ip ?? '')}::${email}`;
+}
+
+export const resetRequestLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 3,
+  standardHeaders: 'draft-6',
+  legacyHeaders: false,
+  keyGenerator: resetRequestKey,
+  message: { error: 'Too many reset requests. Please try again later.' },
+});

@@ -85,9 +85,20 @@ export const FeedbackSchema = z.strictObject({
   metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
+export const RequestPasswordResetSchema = z.object({
+  email: z.email(),
+});
+
+export const ResetPasswordSchema = z.object({
+  token: z.string().min(1).max(128),
+  newPassword: z.string().min(10).max(200),
+});
+
 export type RegisterBody = z.infer<typeof RegisterBodySchema>;
 export type LoginBody = z.infer<typeof LoginBodySchema>;
 export type EmailUpdate = z.infer<typeof EmailUpdateSchema>;
 export type QuestionnaireAnswers = z.infer<typeof QuestionnaireAnswersSchema>;
 export type UserResultsUpdate = z.infer<typeof UserResultsUpdateSchema>;
 export type FeedbackBody = z.infer<typeof FeedbackSchema>;
+export type RequestPasswordReset = z.infer<typeof RequestPasswordResetSchema>;
+export type ResetPassword = z.infer<typeof ResetPasswordSchema>;
