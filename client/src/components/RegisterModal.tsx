@@ -21,6 +21,10 @@ export default function RegisterModal({ onClose, answers, matchedBenefitIds, onS
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError('')
+    if (password.length < 10) {
+      setError('Password must be at least 10 characters.')
+      return
+    }
     if (email && !/^.+@.+\..+$/.test(email)) {
       setError('Please enter a valid email address')
       return
@@ -59,8 +63,10 @@ export default function RegisterModal({ onClose, answers, matchedBenefitIds, onS
             type="password"
             value={password}
             onChange={e => setPassword(e.target.value)}
+            minLength={10}
             required
           />
+          <span className="modal-helper">Must be at least 10 characters.</span>
         </label>
         <label className="modal-label">
           Email <span className="modal-optional">(optional)</span>

@@ -8,6 +8,8 @@ import CataloguePage from './CataloguePage'
 import DashboardPage from './DashboardPage'
 import AdminFeedbackPage from './AdminFeedbackPage'
 import PrivacyPage from './PrivacyPage'
+import ForgotPasswordPage from './ForgotPasswordPage'
+import ResetPasswordPage from './ResetPasswordPage'
 
 function App() {
   const { user, isLoading } = useAuth()
@@ -29,6 +31,8 @@ function App() {
       <Route path="/benefits" element={<CataloguePage />} />
       <Route path="/admin/feedback" element={<AdminFeedbackPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
     </Routes>
   )
 }

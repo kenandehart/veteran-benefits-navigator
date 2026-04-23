@@ -60,6 +60,25 @@ export default function LoginModal({ onClose }: LoginModalProps) {
         <button className="cta-button" type="submit" disabled={submitting}>
           {submitting ? 'Logging in...' : 'Log in'}
         </button>
+        <button
+          type="button"
+          className="modal-forgot-link"
+          onClick={() => { onClose(); navigate('/forgot-password') }}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: '4px 0',
+            marginTop: '4px',
+            alignSelf: 'center',
+            color: 'var(--navy)',
+            textDecoration: 'underline',
+            fontFamily: "'Source Sans 3', system-ui, sans-serif",
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+          }}
+        >
+          Forgot your password?
+        </button>
       </form>
     </Modal>
   )

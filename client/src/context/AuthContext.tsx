@@ -1,5 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import type { ReactNode } from 'react'
+import { useNavigate } from 'react-router-dom'
+
+const POST_LOGIN_REDIRECT_FROM: string[] = ['/reset-password', '/forgot-password']
 
 interface User {
   id: number
@@ -29,6 +32,7 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const navigate = useNavigate()
 
   useEffect(() => {
     fetch('/api/auth/me', { credentials: 'include' })
@@ -54,8 +58,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     const loggedInUser: User = await res.json()
     setUser(loggedInUser)
+    if (POST_LOGIN_REDIRECT_FROM.includes(window.location.pathname)) {
+      navigate('/')
+    }
     return loggedInUser
-  }, [])
+  }, [navigate])
 
   const register = useCallback(
     async (
