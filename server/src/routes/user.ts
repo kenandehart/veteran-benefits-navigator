@@ -5,56 +5,53 @@ import { writeLimiter } from '../middleware/rateLimit.js';
 
 const router = Router();
 
-router.get('/', requireAuth, async (req, res) => {
-  const result = await pool.query<{
-    answers: unknown;
-    updated_at: string;
-    id: number;
-    name: string;
-    category: string;
-    short_description: string;
-    description: string;
-    eligibility_summary: string;
-    url: string;
-  }>(
-    `SELECT
-       uq.answers,
-       uq.updated_at,
-       b.id,
-       b.name,
-       b.category,
-       b.short_description,
-       b.description,
-       b.eligibility_summary,
-       b.url
-     FROM user_questionnaire uq
-     JOIN benefits b
-       ON b.id = ANY(ARRAY(SELECT jsonb_array_elements_text(uq.matched_benefit_ids)::integer))
-     WHERE uq.user_id = $1`,
-    [req.session.userId]
-  ).catch((error) => {
-    console.error(error);
-    return null;
-  });
+router.get('/', requireAuth, async (req, res, next) => {
+  try {
+    const result = await pool.query<{
+      answers: unknown;
+      updated_at: string;
+      id: number;
+      name: string;
+      category: string;
+      short_description: string;
+      description: string;
+      eligibility_summary: string;
+      url: string;
+    }>(
+      `SELECT
+         uq.answers,
+         uq.updated_at,
+         b.id,
+         b.name,
+         b.category,
+         b.short_description,
+         b.description,
+         b.eligibility_summary,
+         b.url
+       FROM user_questionnaire uq
+       JOIN benefits b
+         ON b.id = ANY(ARRAY(SELECT jsonb_array_elements_text(uq.matched_benefit_ids)::integer))
+       WHERE uq.user_id = $1`,
+      [req.session.userId]
+    );
 
-  if (!result) {
-    res.status(500).json({ error: 'Failed to fetch results' });
-    return;
+    if (result.rows.length === 0) {
+      res.status(404).json({ error: 'No saved results found' });
+      return;
+    }
+
+    res.json({
+      answers: result.rows[0].answers,
+      updatedAt: result.rows[0].updated_at,
+      matchedBenefits: result.rows.map(({ answers: _a, updated_at: _u, ...benefit }) => benefit),
+    });
+  } catch (error) {
+    req.log.error({ err: error }, 'Failed to fetch user results');
+    next(error);
   }
-
-  if (result.rows.length === 0) {
-    res.status(404).json({ error: 'No saved results found' });
-    return;
-  }
-
-  res.json({
-    answers: result.rows[0].answers,
-    updatedAt: result.rows[0].updated_at,
-    matchedBenefits: result.rows.map(({ answers: _a, updated_at: _u, ...benefit }) => benefit),
-  });
 });
 
-router.put('/', writeLimiter, requireAuth, async (req, res) => {
+router.put('/', writeLimiter, requireAuth, async (req, res, next) => {
   const { answers, matchedBenefitIds } = req.body as {
     answers?: unknown;
     matchedBenefitIds?: unknown;
@@ -78,8 +75,8 @@ router.put('/', writeLimiter, requireAuth, async (req, res) => {
 
     res.json({ message: 'Results saved' });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to save results' });
+    req.log.error({ err: error }, 'Failed to save results');
+    next(error);
   }
 });
 

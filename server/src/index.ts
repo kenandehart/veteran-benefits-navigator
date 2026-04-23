@@ -1,9 +1,10 @@
-import express from 'express';
+import express, { type ErrorRequestHandler } from 'express';
 import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
 import cors from 'cors';
 import helmet from 'helmet';
 import pool from './db.js';
+import { logger, httpLogger } from './logger.js';
 import healthRouter from './routes/health.js';
 import benefitsRouter from './routes/benefits.js';
 import questionnaireRouter from './routes/questionnaire.js';
@@ -17,6 +18,7 @@ const PORT = parseInt(process.env.PORT || '3000', 10);
 
 const SESSION_SECRET = process.env.SESSION_SECRET;
 if (!SESSION_SECRET || SESSION_SECRET.length < 32) {
+  logger.fatal('SESSION_SECRET must be set to a value of at least 32 characters.');
   throw new Error(
     'SESSION_SECRET must be set to a value of at least 32 characters. Refusing to start.'
   );
@@ -25,6 +27,7 @@ if (!SESSION_SECRET || SESSION_SECRET.length < 32) {
 const ALLOWED_ORIGINS = [process.env.APP_ORIGIN, process.env.STAGING_ORIGIN]
   .filter((o): o is string => !!o);
 if (ALLOWED_ORIGINS.length === 0) {
+  logger.fatal('At least one of APP_ORIGIN or STAGING_ORIGIN must be set.');
   throw new Error(
     'At least one of APP_ORIGIN or STAGING_ORIGIN must be set. Refusing to start.'
   );
@@ -49,6 +52,8 @@ app.use(cors({
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
 }));
+
+app.use(httpLogger);
 
 app.use(express.json({ limit: '10kb' }));
 
@@ -76,6 +81,29 @@ app.use(questionnaireRouter);
 app.use('/auth', authRouter);
 app.use('/user/results', userRouter);
 
+const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
+  const errLike = err as Error & { statusCode?: number; status?: number };
+  const statusCode = errLike.statusCode ?? errLike.status ?? 500;
+
+  req.log.error({ err }, 'Unhandled error');
+
+  const rawMessage = typeof errLike.message === 'string' ? errLike.message : '';
+  const safeMessage =
+    statusCode >= 400 &&
+    statusCode < 500 &&
+    rawMessage.length > 0 &&
+    rawMessage.length < 200 &&
+    !rawMessage.includes('\n')
+      ? rawMessage
+      : 'Internal server error';
+
+  res.status(statusCode).json({
+    error: safeMessage,
+    requestId: req.id,
+  });
+};
+app.use(errorHandler);
+
 app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
+  logger.info({ port: PORT }, 'Server listening');
 });

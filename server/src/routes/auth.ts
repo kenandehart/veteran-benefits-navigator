@@ -7,7 +7,7 @@ import { authIpLimiter, authUserLimiter, readLimiter } from '../middleware/rateL
 
 const router = Router();
 
-router.post('/register', authIpLimiter, authUserLimiter, async (req, res) => {
+router.post('/register', authIpLimiter, authUserLimiter, async (req, res, next) => {
   const { username, password, email, answers, matchedBenefitIds } = req.body as {
     username?: string;
     password?: string;
@@ -62,14 +62,14 @@ router.post('/register', authIpLimiter, authUserLimiter, async (req, res) => {
       }
       return;
     }
-    console.error(error);
-    res.status(500).json({ error: 'Registration failed' });
+    req.log.error({ err: error }, 'Registration failed');
+    next(error);
   }
 });
 
 const DUMMY_HASH = '$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012345';
 
-router.post('/login', authIpLimiter, authUserLimiter, async (req, res) => {
+router.post('/login', authIpLimiter, authUserLimiter, async (req, res, next) => {
   const { username, password } = req.body as {
     username?: string;
     password?: string;
@@ -111,23 +111,22 @@ router.post('/login', authIpLimiter, authUserLimiter, async (req, res) => {
     req.session.username = user.username;
     res.json({ id: user.id, username: user.username, email: user.email, created_at: user.created_at, hasResults: qResult.rows.length > 0 });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Login failed' });
+    req.log.error({ err: error }, 'Login failed');
+    next(error);
   }
 });
 
-router.post('/logout', (req, res) => {
+router.post('/logout', (req, res, next) => {
   req.session.destroy((err) => {
     if (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Logout failed' });
-      return;
+      req.log.error({ err }, 'Failed to destroy session on logout');
+      return next(err);
     }
     res.json({ message: 'Logged out successfully' });
   });
 });
 
-router.get('/me', readLimiter, async (req, res) => {
+router.get('/me', readLimiter, async (req, res, next) => {
   if (!req.session.userId) {
     res.status(401).json({ error: 'Not authenticated' });
     return;
@@ -158,12 +157,12 @@ router.get('/me', readLimiter, async (req, res) => {
 
     res.json({ ...user, hasResults: qResult.rows.length > 0 });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to fetch user' });
+    req.log.error({ err: error }, 'Failed to fetch user');
+    next(error);
   }
 });
 
-router.put('/email', authIpLimiter, authUserLimiter, requireAuth, async (req, res) => {
+router.put('/email', authIpLimiter, authUserLimiter, requireAuth, async (req, res, next) => {
   const { email } = req.body as { email?: string };
 
   if (!email) {
@@ -194,24 +193,25 @@ router.put('/email', authIpLimiter, authUserLimiter, requireAuth, async (req, re
       res.status(409).json({ error: 'Email already registered' });
       return;
     }
-    console.error(error);
-    res.status(500).json({ error: 'Failed to update email' });
+    req.log.error({ err: error }, 'Failed to update email');
+    next(error);
   }
 });
 
-router.delete('/account', requireAuth, async (req, res) => {
+router.delete('/account', requireAuth, async (req, res, next) => {
   try {
     await pool.query('DELETE FROM users WHERE id = $1', [req.session.userId]);
 
     req.session.destroy((err) => {
       if (err) {
-        console.error(err);
+        // Account is already deleted — log but still respond success.
+        req.log.warn({ err }, 'Failed to destroy session after account deletion');
       }
       res.json({ message: 'Account deleted' });
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to delete account' });
+    req.log.error({ err: error }, 'Failed to delete account');
+    next(error);
   }
 });
 

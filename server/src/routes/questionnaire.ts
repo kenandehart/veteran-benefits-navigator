@@ -5,7 +5,7 @@ import { readLimiter } from '../middleware/rateLimit.js';
 
 const router = Router();
 
-router.post('/questionnaire', readLimiter, async (req, res) => {
+router.post('/questionnaire', readLimiter, async (req, res, next) => {
   const answers = req.body;
 
   // Basic validation — does it have the shape we expect?
@@ -22,8 +22,8 @@ router.post('/questionnaire', readLimiter, async (req, res) => {
     );
     res.status(201).json({ eligibleBenefits: benefitsResult.rows });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Failed to process questionnaire' });
+    req.log.error({ err: error }, 'Failed to process questionnaire');
+    next(error);
   }
 });
 
