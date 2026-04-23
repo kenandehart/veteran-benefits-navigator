@@ -1,7 +1,10 @@
 import { Router } from 'express';
 import pool from '../db.js';
+import { checkEligibility } from '../eligibility.js';
 import { requireAuth } from '../middleware/auth.js';
 import { writeLimiter } from '../middleware/rateLimit.js';
+import { validateBody } from '../middleware/validateBody.js';
+import { UserResultsUpdateSchema, type UserResultsUpdate } from '../schemas.js';
 
 const router = Router();
 
@@ -51,16 +54,9 @@ router.get('/', requireAuth, async (req, res, next) => {
   }
 });
 
-router.put('/', writeLimiter, requireAuth, async (req, res, next) => {
-  const { answers, matchedBenefitIds } = req.body as {
-    answers?: unknown;
-    matchedBenefitIds?: unknown;
-  };
-
-  if (answers === undefined || matchedBenefitIds === undefined) {
-    res.status(400).json({ error: 'answers and matchedBenefitIds are required' });
-    return;
-  }
+router.put('/', writeLimiter, validateBody(UserResultsUpdateSchema), requireAuth, async (req, res, next) => {
+  const { answers } = req.body as UserResultsUpdate;
+  const matchedBenefitIds = checkEligibility(answers);
 
   try {
     await pool.query(

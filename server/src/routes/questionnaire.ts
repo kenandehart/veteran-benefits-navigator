@@ -2,17 +2,13 @@ import { Router } from 'express';
 import pool from '../db.js';
 import { checkEligibility } from '../eligibility.js';
 import { readLimiter } from '../middleware/rateLimit.js';
+import { validateBody } from '../middleware/validateBody.js';
+import { QuestionnaireAnswersSchema, type QuestionnaireAnswers } from '../schemas.js';
 
 const router = Router();
 
-router.post('/questionnaire', readLimiter, async (req, res, next) => {
-  const answers = req.body;
-
-  // Basic validation — does it have the shape we expect?
-  if (!answers || !Array.isArray(answers.servicePeriods)) {
-    res.status(400).json({ error: 'Invalid questionnaire data' });
-    return;
-  }
+router.post('/questionnaire', readLimiter, validateBody(QuestionnaireAnswersSchema), async (req, res, next) => {
+  const answers = req.body as QuestionnaireAnswers;
 
   try {
     const eligibleBenefitIds = checkEligibility(answers);

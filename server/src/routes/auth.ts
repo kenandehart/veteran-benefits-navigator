@@ -2,24 +2,23 @@ import { Router } from 'express';
 import bcrypt from 'bcrypt';
 import { DatabaseError } from 'pg';
 import pool from '../db.js';
+import { checkEligibility } from '../eligibility.js';
 import { requireAuth } from '../middleware/auth.js';
 import { authIpLimiter, authUserLimiter, readLimiter } from '../middleware/rateLimit.js';
+import { validateBody } from '../middleware/validateBody.js';
+import {
+  RegisterBodySchema,
+  LoginBodySchema,
+  EmailUpdateSchema,
+  type RegisterBody,
+  type LoginBody,
+  type EmailUpdate,
+} from '../schemas.js';
 
 const router = Router();
 
-router.post('/register', authIpLimiter, authUserLimiter, async (req, res, next) => {
-  const { username, password, email, answers, matchedBenefitIds } = req.body as {
-    username?: string;
-    password?: string;
-    email?: string;
-    answers?: unknown;
-    matchedBenefitIds?: unknown;
-  };
-
-  if (!username || !password) {
-    res.status(400).json({ error: 'username and password are required' });
-    return;
-  }
+router.post('/register', authIpLimiter, authUserLimiter, validateBody(RegisterBodySchema), async (req, res, next) => {
+  const { username, password, email, answers } = req.body as RegisterBody;
 
   const normalizedUsername = username.toLowerCase();
 
@@ -39,8 +38,9 @@ router.post('/register', authIpLimiter, authUserLimiter, async (req, res, next) 
 
     const user = result.rows[0];
 
-    const hasResults = answers !== undefined && matchedBenefitIds !== undefined;
+    const hasResults = answers !== undefined;
     if (hasResults) {
+      const matchedBenefitIds = checkEligibility(answers);
       await pool.query(
         `INSERT INTO user_questionnaire (user_id, answers, matched_benefit_ids)
          VALUES ($1, $2, $3)`,
@@ -69,16 +69,8 @@ router.post('/register', authIpLimiter, authUserLimiter, async (req, res, next) 
 
 const DUMMY_HASH = '$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012345';
 
-router.post('/login', authIpLimiter, authUserLimiter, async (req, res, next) => {
-  const { username, password } = req.body as {
-    username?: string;
-    password?: string;
-  };
-
-  if (!username || !password) {
-    res.status(400).json({ error: 'username and password are required' });
-    return;
-  }
+router.post('/login', authIpLimiter, authUserLimiter, validateBody(LoginBodySchema), async (req, res, next) => {
+  const { username, password } = req.body as LoginBody;
 
   const normalizedUsername = username.toLowerCase();
 
@@ -162,18 +154,8 @@ router.get('/me', readLimiter, async (req, res, next) => {
   }
 });
 
-router.put('/email', authIpLimiter, authUserLimiter, requireAuth, async (req, res, next) => {
-  const { email } = req.body as { email?: string };
-
-  if (!email) {
-    res.status(400).json({ error: 'email is required' });
-    return;
-  }
-
-  if (!/^.+@.+\..+$/.test(email)) {
-    res.status(400).json({ error: 'Invalid email format' });
-    return;
-  }
+router.put('/email', authIpLimiter, authUserLimiter, validateBody(EmailUpdateSchema), requireAuth, async (req, res, next) => {
+  const { email } = req.body as EmailUpdate;
 
   try {
     const result = await pool.query<{
