@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import pool from '../db.js';
 import { checkEligibility } from '../eligibility.js';
+import { readLimiter } from '../middleware/rateLimit.js';
 
 const router = Router();
 
-router.post('/questionnaire', async (req, res) => {
+router.post('/questionnaire', readLimiter, async (req, res) => {
   const answers = req.body;
 
   // Basic validation — does it have the shape we expect?

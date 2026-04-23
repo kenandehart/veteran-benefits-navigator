@@ -3,10 +3,11 @@ import bcrypt from 'bcrypt';
 import { DatabaseError } from 'pg';
 import pool from '../db.js';
 import { requireAuth } from '../middleware/auth.js';
+import { authIpLimiter, authUserLimiter, readLimiter } from '../middleware/rateLimit.js';
 
 const router = Router();
 
-router.post('/register', async (req, res) => {
+router.post('/register', authIpLimiter, authUserLimiter, async (req, res) => {
   const { username, password, email, answers, matchedBenefitIds } = req.body as {
     username?: string;
     password?: string;
@@ -68,7 +69,7 @@ router.post('/register', async (req, res) => {
 
 const DUMMY_HASH = '$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012345';
 
-router.post('/login', async (req, res) => {
+router.post('/login', authIpLimiter, authUserLimiter, async (req, res) => {
   const { username, password } = req.body as {
     username?: string;
     password?: string;
@@ -126,7 +127,7 @@ router.post('/logout', (req, res) => {
   });
 });
 
-router.get('/me', async (req, res) => {
+router.get('/me', readLimiter, async (req, res) => {
   if (!req.session.userId) {
     res.status(401).json({ error: 'Not authenticated' });
     return;
@@ -162,7 +163,7 @@ router.get('/me', async (req, res) => {
   }
 });
 
-router.put('/email', requireAuth, async (req, res) => {
+router.put('/email', authIpLimiter, authUserLimiter, requireAuth, async (req, res) => {
   const { email } = req.body as { email?: string };
 
   if (!email) {

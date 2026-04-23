@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import pool from '../db.js';
 import { requireAuth } from '../middleware/auth.js';
+import { writeLimiter } from '../middleware/rateLimit.js';
 
 const router = Router();
 
@@ -53,7 +54,7 @@ router.get('/', requireAuth, async (req, res) => {
   });
 });
 
-router.put('/', requireAuth, async (req, res) => {
+router.put('/', writeLimiter, requireAuth, async (req, res) => {
   const { answers, matchedBenefitIds } = req.body as {
     answers?: unknown;
     matchedBenefitIds?: unknown;
