@@ -28,9 +28,15 @@ router.post('/register', authIpLimiter, authUserLimiter, validateBody(RegisterBo
 
   const normalizedUsername = username.toLowerCase();
 
+  // Transactioned so that user + user_questionnaire + completion event all
+  // land (or none do). Previously users and user_questionnaire were two
+  // separate pool.query calls; this tightens that too as a side effect.
+  const client = await pool.connect();
   try {
     const passwordHash = await bcrypt.hash(password, 10);
-    const result = await pool.query<{
+    await client.query('BEGIN');
+
+    const result = await client.query<{
       id: number;
       username: string;
       email: string | null;
@@ -47,17 +53,21 @@ router.post('/register', authIpLimiter, authUserLimiter, validateBody(RegisterBo
     const hasResults = answers !== undefined;
     if (hasResults) {
       const matchedBenefitIds = checkEligibility(answers);
-      await pool.query(
+      await client.query(
         `INSERT INTO user_questionnaire (user_id, answers, matched_benefit_ids)
          VALUES ($1, $2, $3)`,
         [user.id, JSON.stringify(answers), JSON.stringify(matchedBenefitIds)]
       );
+      await client.query(`INSERT INTO questionnaire_completions DEFAULT VALUES`);
     }
+
+    await client.query('COMMIT');
 
     req.session.userId = user.id;
     req.session.username = user.username;
     res.status(201).json({ ...user, hasResults });
   } catch (error) {
+    await client.query('ROLLBACK').catch(() => {});
     if (error instanceof DatabaseError && error.code === '23505') {
       if (error.constraint === 'users_username_key') {
         res.status(409).json({ error: 'Username already taken' });
@@ -70,6 +80,8 @@ router.post('/register', authIpLimiter, authUserLimiter, validateBody(RegisterBo
     }
     req.log.error({ err: error }, 'Registration failed');
     next(error);
+  } finally {
+    client.release();
   }
 });
 

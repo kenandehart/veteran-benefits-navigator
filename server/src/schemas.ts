@@ -94,6 +94,13 @@ export const ResetPasswordSchema = z.object({
   newPassword: z.string().min(10).max(200),
 });
 
+// Pageview tracking is fire-and-forget from the client. z.object (not
+// strictObject) so a future additional field from an older client doesn't
+// 400 — we'd rather drop extras than fail the write.
+export const PageViewSchema = z.object({
+  path: z.string().min(1).max(500).regex(/^\//, 'must start with /'),
+});
+
 export type RegisterBody = z.infer<typeof RegisterBodySchema>;
 export type LoginBody = z.infer<typeof LoginBodySchema>;
 export type EmailUpdate = z.infer<typeof EmailUpdateSchema>;
@@ -102,3 +109,4 @@ export type UserResultsUpdate = z.infer<typeof UserResultsUpdateSchema>;
 export type FeedbackBody = z.infer<typeof FeedbackSchema>;
 export type RequestPasswordReset = z.infer<typeof RequestPasswordResetSchema>;
 export type ResetPassword = z.infer<typeof ResetPasswordSchema>;
+export type PageView = z.infer<typeof PageViewSchema>;

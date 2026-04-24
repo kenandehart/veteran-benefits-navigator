@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.tsx'
 import Footer from './Footer'
 import SiteHeader from './components/SiteHeader'
+import LoginModal from './components/LoginModal.tsx'
 
 interface Benefit {
   id: number
@@ -23,7 +24,7 @@ interface SavedResults {
 
 function DashboardPage() {
   const navigate = useNavigate()
-  const { user, clearUser } = useAuth()
+  const { user, isLoading, clearUser } = useAuth()
   const [results, setResults] = useState<SavedResults | null>(null)
   const [resultsLoading, setResultsLoading] = useState(true)
   const [selectedBenefit, setSelectedBenefit] = useState<Benefit | null>(null)
@@ -34,6 +35,7 @@ function DashboardPage() {
   const [showEmailForm, setShowEmailForm] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [showLoginModal, setShowLoginModal] = useState(false)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -97,6 +99,35 @@ function DashboardPage() {
   }
 
   const siteHeader = <SiteHeader />
+
+  // Auth gate: once auth state has resolved and there's no user, show a
+  // minimal prompt instead of the dashboard UI. Guarding on !isLoading
+  // prevents the prompt from flashing for logged-in users during the brief
+  // session-hydration window.
+  if (!isLoading && !user) {
+    return (
+      <div className="page">
+        {siteHeader}
+        <main className="dashboard-main">
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '24px',
+            padding: '80px 20px',
+            textAlign: 'center',
+          }}>
+            <p>Please log in to view your dashboard</p>
+            <button className="cta-button" onClick={() => setShowLoginModal(true)}>
+              Log in
+            </button>
+          </div>
+        </main>
+        {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
+        <Footer />
+      </div>
+    )
+  }
 
   if (selectedBenefit !== null) {
     return (

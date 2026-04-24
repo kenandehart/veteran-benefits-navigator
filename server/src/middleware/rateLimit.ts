@@ -98,3 +98,16 @@ export const resetRequestLimiter = rateLimit({
   keyGenerator: resetRequestKey,
   message: { error: 'Too many reset requests. Please try again later.' },
 });
+
+// Pageview writes are anonymous and cheap — one row per client-side route
+// change. Cap per IP to stop a single actor from filling the table. 100 per
+// 5 min is ~1 pageview every 3 seconds sustained, which comfortably exceeds
+// any real user's browsing cadence.
+export const pageviewLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  limit: 100,
+  standardHeaders: 'draft-6',
+  legacyHeaders: false,
+  keyGenerator: (req: Request) => ipKeyGenerator(req.ip ?? ''),
+  message: { error: 'Too many pageview events.' },
+});

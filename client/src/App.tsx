@@ -1,12 +1,13 @@
 import { useEffect } from 'react'
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.tsx'
+import { usePageViewTracking } from './hooks/usePageViewTracking'
 import LandingPage from './LandingPage'
 import Questionnaire from './Questionnaire'
 import ResultsPage from './ResultsPage'
 import CataloguePage from './CataloguePage'
 import DashboardPage from './DashboardPage'
-import AdminFeedbackPage from './AdminFeedbackPage'
+import AdminPage from './AdminPage'
 import PrivacyPage from './PrivacyPage'
 import AboutPage from './AboutPage'
 import ForgotPasswordPage from './ForgotPasswordPage'
@@ -16,6 +17,8 @@ function App() {
   const { user, isLoading } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
+
+  usePageViewTracking()
 
   useEffect(() => {
     if (!isLoading && user?.hasResults && location.pathname === '/') {
@@ -30,7 +33,8 @@ function App() {
       <Route path="/questionnaire" element={<Questionnaire />} />
       <Route path="/results" element={<ResultsPage />} />
       <Route path="/benefits" element={<CataloguePage />} />
-      <Route path="/admin/feedback" element={<AdminFeedbackPage />} />
+      <Route path="/admin" element={<AdminPage />} />
+      <Route path="/admin/feedback" element={<Navigate to="/admin" replace />} />
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />

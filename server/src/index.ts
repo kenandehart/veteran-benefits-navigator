@@ -11,7 +11,9 @@ import questionnaireRouter from './routes/questionnaire.js';
 import authRouter from './routes/auth.js';
 import userRouter from './routes/user.js';
 import feedbackRouter from './routes/feedback.js';
-import adminFeedbackRouter from './routes/adminFeedback.js';
+import adminRouter from './routes/admin.js';
+import trackRouter from './routes/track.js';
+import visitorCookie from './middleware/visitorCookie.js';
 
 const app = express();
 app.set('trust proxy', 1);
@@ -79,13 +81,18 @@ app.use(session({
   },
 }));
 
+// Sits between session and route handlers so req.visitorId is available to
+// every downstream handler without each route having to opt in.
+app.use(visitorCookie);
+
 app.use(healthRouter);
 app.use(benefitsRouter);
 app.use(questionnaireRouter);
 app.use('/auth', authRouter);
 app.use('/user/results', userRouter);
 app.use('/feedback', feedbackRouter);
-app.use('/admin/feedback', adminFeedbackRouter);
+app.use('/admin', adminRouter);
+app.use('/track', trackRouter);
 
 const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   const errLike = err as Error & { statusCode?: number; status?: number };
