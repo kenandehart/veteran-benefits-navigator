@@ -8,6 +8,7 @@ import CataloguePage from './CataloguePage'
 import DashboardPage from './DashboardPage'
 import AdminFeedbackPage from './AdminFeedbackPage'
 import PrivacyPage from './PrivacyPage'
+import AboutPage from './AboutPage'
 import ForgotPasswordPage from './ForgotPasswordPage'
 import ResetPasswordPage from './ResetPasswordPage'
 
@@ -31,6 +32,7 @@ function App() {
       <Route path="/benefits" element={<CataloguePage />} />
       <Route path="/admin/feedback" element={<AdminFeedbackPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/about" element={<AboutPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
     </Routes>

@@ -505,6 +505,10 @@ function Questionnaire() {
                 </button>
               )}
               <AuthMenuItems onNavigate={() => setShowMenu(false)} />
+              <hr style={{ border: 'none', borderTop: '1px solid var(--border-light)', margin: '4px 0' }} />
+              <button className="nav-dropdown__item" role="menuitem" onClick={() => handleNavTo('/about')}>
+                About
+              </button>
             </div>
           )}
         </div>

@@ -1,10 +1,7 @@
 import './App.css'
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from './context/AuthContext.tsx'
 import Footer from './Footer'
-import AuthButtons from './components/AuthButtons.tsx'
-import AuthMenuItems from './components/AuthMenuItems.tsx'
+import SiteHeader from './components/SiteHeader'
 
 interface Benefit {
   id: number
@@ -17,11 +14,8 @@ interface Benefit {
 }
 
 function CataloguePage() {
-  const navigate = useNavigate()
   const [benefits, setBenefits] = useState<Benefit[]>([])
-  const { user, logout } = useAuth()
   const [selectedBenefit, setSelectedBenefit] = useState<Benefit | null>(null)
-  const [showMenu, setShowMenu] = useState(false)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -34,43 +28,7 @@ function CataloguePage() {
       .catch(err => console.error('Failed to fetch benefits:', err))
   }, [])
 
-  const siteHeader = (
-    <>
-      {showMenu && <div className="menu-backdrop" onClick={() => setShowMenu(false)} />}
-      <header className="header">
-        <div className="header-menu">
-          <button
-            className="menu-btn"
-            onClick={() => setShowMenu(v => !v)}
-            aria-label="Open navigation menu"
-            aria-expanded={showMenu}
-          >
-            <span className="menu-btn__bar" />
-            <span className="menu-btn__bar" />
-            <span className="menu-btn__bar" />
-          </button>
-          {showMenu && (
-            <div className="nav-dropdown" role="menu">
-              <button className="nav-dropdown__item" role="menuitem" onClick={() => { setShowMenu(false); navigate(user ? '/dashboard' : '/') }}>
-                Home
-              </button>
-              <button className="nav-dropdown__item" role="menuitem" onClick={() => setShowMenu(false)}>
-                Benefits
-              </button>
-              {user && (
-                <button className="nav-dropdown__item" role="menuitem" onClick={() => { setShowMenu(false); logout().then(() => navigate('/')) }}>
-                  Sign out
-                </button>
-              )}
-              <AuthMenuItems onNavigate={() => setShowMenu(false)} />
-            </div>
-          )}
-        </div>
-        <span className="wordmark">Benefits Navigator</span>
-        <AuthButtons />
-      </header>
-    </>
-  )
+  const siteHeader = <SiteHeader />
 
   if (selectedBenefit !== null) {
     return (

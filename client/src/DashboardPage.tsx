@@ -4,7 +4,7 @@ import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.tsx'
 import Footer from './Footer'
-import AuthButtons from './components/AuthButtons.tsx'
+import SiteHeader from './components/SiteHeader'
 
 interface Benefit {
   id: number
@@ -23,8 +23,7 @@ interface SavedResults {
 
 function DashboardPage() {
   const navigate = useNavigate()
-  const { user, logout, clearUser } = useAuth()
-  const [showMenu, setShowMenu] = useState(false)
+  const { user, clearUser } = useAuth()
   const [results, setResults] = useState<SavedResults | null>(null)
   const [resultsLoading, setResultsLoading] = useState(true)
   const [selectedBenefit, setSelectedBenefit] = useState<Benefit | null>(null)
@@ -97,42 +96,7 @@ function DashboardPage() {
     }
   }
 
-  const siteHeader = (
-    <>
-      {showMenu && <div className="menu-backdrop" onClick={() => setShowMenu(false)} />}
-      <header className="header">
-        <div className="header-menu">
-          <button
-            className="menu-btn"
-            onClick={() => setShowMenu(v => !v)}
-            aria-label="Open navigation menu"
-            aria-expanded={showMenu}
-          >
-            <span className="menu-btn__bar" />
-            <span className="menu-btn__bar" />
-            <span className="menu-btn__bar" />
-          </button>
-          {showMenu && (
-            <div className="nav-dropdown" role="menu">
-              <button className="nav-dropdown__item" role="menuitem" onClick={() => setShowMenu(false)}>
-                Home
-              </button>
-              <button className="nav-dropdown__item" role="menuitem" onClick={() => { setShowMenu(false); navigate('/benefits') }}>
-                Benefits
-              </button>
-              {user && (
-                <button className="nav-dropdown__item" role="menuitem" onClick={() => { setShowMenu(false); logout().then(() => navigate('/')) }}>
-                  Sign out
-                </button>
-              )}
-            </div>
-          )}
-        </div>
-        <span className="wordmark">Benefits Navigator</span>
-        <AuthButtons />
-      </header>
-    </>
-  )
+  const siteHeader = <SiteHeader />
 
   if (selectedBenefit !== null) {
     return (
