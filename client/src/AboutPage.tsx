@@ -33,7 +33,7 @@ function AboutPage() {
         <h2 className="privacy-page__heading">Contact</h2>
         <p>My current professional goal is a career in software development / engineering. Are you hiring? Want to get ahold of me for anything else? Contact me at the email below.</p>
         <p style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', alignItems: 'center', marginTop: '18px' }}>
-          <a href="mailto:contact@vabenefits.app">contact@vabenefits.app</a>
+          <code>contact@vabenefits.app</code>
           <a
             href="https://github.com/kenandehart/veteran-benefits-navigator"
             target="_blank"

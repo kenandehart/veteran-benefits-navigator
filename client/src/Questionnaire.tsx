@@ -5,6 +5,7 @@ import { useAuth } from './context/AuthContext.tsx';
 import Footer from './Footer';
 import AuthButtons from './components/AuthButtons.tsx';
 import AuthMenuItems from './components/AuthMenuItems.tsx';
+import { ScrollableConditions } from './ScrollableConditions.tsx';
 
 function getStored<T>(key: string, fallback: T): T {
   try {
@@ -186,19 +187,8 @@ function isoToDisplay(iso: string): string {
 
 // Accepts value/onChange in ISO format (YYYY-MM-DD or '').
 function DateInput({ id, value, onChange }: { id: string; value: string; onChange: (v: string) => void }) {
-  const [mode, setMode] = useState<'picker' | 'text'>('picker');
-  const [textValue, setTextValue] = useState('');
+  const [textValue, setTextValue] = useState(value ? isoToDisplay(value) : '');
   const [touched, setTouched] = useState(false);
-
-  function switchToText() {
-    setTextValue(value ? isoToDisplay(value) : '');
-    setTouched(false);
-    setMode('text');
-  }
-
-  function switchToPicker() {
-    setMode('picker');
-  }
 
   function handleTextChange(raw: string) {
     // Strip non-digits, cap at 8, then re-insert slashes
@@ -216,46 +206,28 @@ function DateInput({ id, value, onChange }: { id: string; value: string; onChang
 
   const isInvalid = touched && textValue.length > 0 && !parseDateText(textValue);
 
-  if (mode === 'picker') {
-    return (
-      <div className="date-input-wrapper">
-        <input
-          id={id}
-          type="date"
-          className="q-input"
-          value={value}
-          onChange={e => onChange(e.target.value)}
-        />
-        <button type="button" className="date-mode-toggle" onClick={switchToText}>
-          Type date manually
-        </button>
-      </div>
-    );
-  }
-
   return (
     <div className="date-input-wrapper">
-      <input
-        id={id}
-        type="text"
-        inputMode="numeric"
-        className={`q-input${isInvalid ? ' q-input--error' : ''}`}
-        value={textValue}
-        placeholder="MM/DD/YYYY"
-        maxLength={10}
-        onChange={e => handleTextChange(e.target.value)}
-        onBlur={() => setTouched(true)}
-        aria-invalid={isInvalid}
-        aria-describedby={isInvalid ? `${id}-error` : undefined}
-      />
+      <div className={`date-input-field${isInvalid ? ' date-input-field--error' : ''}`}>
+        <input
+          id={id}
+          type="text"
+          inputMode="numeric"
+          className="date-input-text"
+          value={textValue}
+          placeholder="MM/DD/YYYY"
+          maxLength={10}
+          onChange={e => handleTextChange(e.target.value)}
+          onBlur={() => setTouched(true)}
+          aria-invalid={isInvalid}
+          aria-describedby={isInvalid ? `${id}-error` : undefined}
+        />
+      </div>
       {isInvalid && (
         <p id={`${id}-error`} className="date-input-error" role="alert">
           Please enter a valid date (MM/DD/YYYY).
         </p>
       )}
-      <button type="button" className="date-mode-toggle" onClick={switchToPicker}>
-        Use date picker instead
-      </button>
     </div>
   );
 }
@@ -293,6 +265,7 @@ function Questionnaire() {
   const serviceConnectedTooltipRef = useRef<HTMLDivElement>(null);
   const incomeLimitTooltipRef = useRef<HTMLDivElement>(null);
   const sgliTooltipRef = useRef<HTMLDivElement>(null);
+  const tdiuTooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { try { localStorage.setItem('vbn_step', JSON.stringify(currentStep)); } catch {} }, [currentStep]);
   useEffect(() => { try { localStorage.setItem('vbn_answers', JSON.stringify(answers)); } catch {} }, [answers]);
@@ -305,7 +278,8 @@ function Questionnaire() {
       if (
         !serviceConnectedTooltipRef.current?.contains(target) &&
         !incomeLimitTooltipRef.current?.contains(target) &&
-        !sgliTooltipRef.current?.contains(target)
+        !sgliTooltipRef.current?.contains(target) &&
+        !tdiuTooltipRef.current?.contains(target)
       ) {
         setShowTooltip(false);
       }
@@ -340,13 +314,9 @@ function Questionnaire() {
         case 'rating-value': {
           if (answers.disabilityRating !== null) {
             if (answers.disabilityRating === 100) {
-              advance('single-disability-tdiu', undefined, { ...answers, serviceConnectedCondition: true });
+              advance('currently-in-vre', undefined, { ...answers, serviceConnectedCondition: true, singleDisability100OrTDIU: true });
             } else if (answers.disabilityRating >= 10) {
-              advance('currently-in-vre', undefined, {
-                ...answers,
-                serviceConnectedCondition: true,
-                singleDisability100OrTDIU: false,
-              });
+              advance('single-disability-tdiu', undefined, { ...answers, serviceConnectedCondition: true });
             } else {
               advance('housing-condition', undefined, {
                 ...answers,
@@ -549,19 +519,7 @@ function Questionnaire() {
   const section = STEP_SECTIONS[currentStep];
 
   const backButton = (
-    <button
-      onClick={goBack}
-      style={{
-        background: 'none',
-        border: 'none',
-        color: 'var(--text-muted)',
-        cursor: 'pointer',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-        fontSize: '0.95rem',
-        padding: '14px 0',
-        width: 'fit-content',
-      }}
-    >
+    <button className="benefit-detail__back" onClick={goBack}>
       ← Back
     </button>
   );
@@ -571,14 +529,14 @@ function Questionnaire() {
   switch (currentStep) {
     case 'entry-date': {
       const label = isFirstPeriod
-        ? 'What is the date of entry for your first period of service?'
+        ? 'Date of entry for your first period of service?'
         : 'What is the date of entry for this period of service?';
       const entryDateError = validateEntryDate(currentServicePeriod.entryDate ?? '');
       stepContent = (
         <>
-          <label className="q-label" htmlFor="q-input">{label}</label>
+          <label className="q-label" htmlFor="entry-date">{label}</label>
           <DateInput
-            id="q-input"
+            id="entry-date"
             value={currentServicePeriod.entryDate ?? ''}
             onChange={v => setCurrentServicePeriod(p => ({ ...p, entryDate: v }))}
           />
@@ -588,14 +546,13 @@ function Questionnaire() {
             </p>
           )}
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-            {showBack && backButton}
             <button
               className="cta-button q-next-btn"
               onClick={() => advance('separation-date')}
               disabled={!currentServicePeriod.entryDate || !!entryDateError}
               style={{ marginLeft: 'auto' }}
             >
-              Next
+              Next →
             </button>
           </div>
         </>
@@ -610,11 +567,11 @@ function Questionnaire() {
       );
       stepContent = (
         <>
-          <label className="q-label" htmlFor="q-input">
+          <label className="q-label" htmlFor="separation-date">
             What is the date of separation for this period of service?
           </label>
           <DateInput
-            id="q-input"
+            id="separation-date"
             value={currentServicePeriod.separationDate ?? ''}
             onChange={v => setCurrentServicePeriod(p => ({ ...p, separationDate: v }))}
           />
@@ -624,14 +581,13 @@ function Questionnaire() {
             </p>
           )}
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-            {backButton}
             <button
               className="cta-button q-next-btn"
               onClick={() => advance('active-duty')}
               disabled={!currentServicePeriod.separationDate || !!sepDateError}
               style={{ marginLeft: 'auto' }}
             >
-              Next
+              Next →
             </button>
           </div>
         </>
@@ -657,7 +613,6 @@ function Questionnaire() {
               Yes
             </button>
           </div>
-          {backButton}
         </>
       );
       break;
@@ -681,7 +636,6 @@ function Questionnaire() {
               Officer
             </button>
           </div>
-          {backButton}
         </>
       );
       break;
@@ -705,14 +659,13 @@ function Questionnaire() {
             ))}
           </select>
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-            {backButton}
             <button
               className="cta-button q-next-btn"
               onClick={() => advance('completed-full-term')}
               disabled={!currentServicePeriod.dischargeLevel}
               style={{ marginLeft: 'auto' }}
             >
-              Next
+              Next →
             </button>
           </div>
         </>
@@ -740,7 +693,6 @@ function Questionnaire() {
               Yes
             </button>
           </div>
-          {backButton}
         </>
       );
       break;
@@ -766,7 +718,6 @@ function Questionnaire() {
               Yes
             </button>
           </div>
-          {backButton}
         </>
       );
       break;
@@ -792,7 +743,6 @@ function Questionnaire() {
               Yes
             </button>
           </div>
-          {backButton}
         </>
       );
       break;
@@ -818,7 +768,6 @@ function Questionnaire() {
               Yes
             </button>
           </div>
-          {backButton}
         </>
       );
       break;
@@ -831,7 +780,6 @@ function Questionnaire() {
             Please add each activation as a separate period of service when prompted. This helps us accurately determine your eligibility.
           </p>
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-            {backButton}
             <button
               className="cta-button q-next-btn"
               onClick={() => advance('add-another')}
@@ -889,7 +837,6 @@ function Questionnaire() {
               Yes
             </button>
           </div>
-          {backButton}
         </>
       );
       break;
@@ -928,7 +875,6 @@ function Questionnaire() {
               Yes
             </button>
           </div>
-          {backButton}
         </>
       );
       break;
@@ -939,7 +885,7 @@ function Questionnaire() {
         <>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
             <label className="q-label">
-              Do you have a current illness or injury that affects your mind or body and is related to your service?
+              Do you have a current illness, injury, or condition related to your service?
             </label>
             <div ref={serviceConnectedTooltipRef} style={{ position: 'relative', flexShrink: 0, marginTop: '4px' }}>
               <button
@@ -976,7 +922,7 @@ function Questionnaire() {
                     boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
                   }}
                 >
-                  This includes physical injuries, chronic conditions, and mental health conditions like PTSD, anxiety, or depression that began or worsened during your service. If you're unsure, that's okay — the VA can help determine this.
+                  This includes physical injuries, chronic conditions, and mental health issues like PTSD, anxiety, or depression. It might have started in service, gotten worse in service, or come up later from something tied to your service.
                 </div>
               )}
             </div>
@@ -1001,7 +947,6 @@ function Questionnaire() {
               Yes
             </button>
           </div>
-          {backButton}
         </>
       );
       break;
@@ -1025,7 +970,6 @@ function Questionnaire() {
               Yes
             </button>
           </div>
-          {backButton}
         </>
       );
       break;
@@ -1047,18 +991,13 @@ function Questionnaire() {
             ))}
           </select>
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-            {backButton}
             <button
               className="cta-button q-next-btn"
               onClick={() => {
                 if (answers.disabilityRating === 100) {
-                  advance('single-disability-tdiu', undefined, { ...answers, serviceConnectedCondition: true });
+                  advance('currently-in-vre', undefined, { ...answers, serviceConnectedCondition: true, singleDisability100OrTDIU: true });
                 } else if (answers.disabilityRating !== null && answers.disabilityRating >= 10) {
-                  advance('currently-in-vre', undefined, {
-                    ...answers,
-                    serviceConnectedCondition: true,
-                    singleDisability100OrTDIU: false,
-                  });
+                  advance('single-disability-tdiu', undefined, { ...answers, serviceConnectedCondition: true });
                 } else {
                   advance('housing-condition', undefined, {
                     ...answers,
@@ -1071,7 +1010,7 @@ function Questionnaire() {
               disabled={answers.disabilityRating === null}
               style={{ marginLeft: 'auto' }}
             >
-              Next
+              Next →
             </button>
           </div>
         </>
@@ -1082,9 +1021,50 @@ function Questionnaire() {
     case 'single-disability-tdiu': {
       stepContent = (
         <>
-          <label className="q-label">
-            Do you have any single service-connected disability rated 100% on its own, OR do you receive disability compensation at the 100% rate because you can't work due to your service-connected conditions (also known as TDIU)?
-          </label>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+            <label className="q-label">
+              Does the VA pay you at the 100% disability rate?
+            </label>
+            <div ref={tdiuTooltipRef} style={{ position: 'relative', flexShrink: 0, marginTop: '4px' }}>
+              <button
+                onClick={() => setShowTooltip(v => !v)}
+                aria-label="More information"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '1.1rem',
+                  color: 'var(--gold)',
+                  padding: '0',
+                  lineHeight: 1,
+                }}
+              >
+                ⓘ
+              </button>
+              {showTooltip && (
+                <div
+                  role="tooltip"
+                  style={{
+                    position: 'absolute',
+                    top: '1.6rem',
+                    right: 0,
+                    width: '280px',
+                    background: 'var(--navy)',
+                    color: '#fff',
+                    borderRadius: '4px',
+                    padding: '12px 16px',
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                    fontSize: '0.85rem',
+                    lineHeight: 1.5,
+                    zIndex: 10,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                  }}
+                >
+                  Your rating and your pay rate can differ. Through TDIU (Total Disability based on Individual Unemployability), the VA pays at 100% when service-connected conditions keep you from working, even if your rating is lower.
+                </div>
+              )}
+            </div>
+          </div>
           <div
             style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }}
             className="yn-row"
@@ -1102,7 +1082,6 @@ function Questionnaire() {
               Yes
             </button>
           </div>
-          {backButton}
         </>
       );
       break;
@@ -1131,7 +1110,6 @@ function Questionnaire() {
               Yes
             </button>
           </div>
-          {backButton}
         </>
       );
       break;
@@ -1199,7 +1177,6 @@ function Questionnaire() {
               Yes
             </button>
           </div>
-          {backButton}
         </>
       );
       break;
@@ -1211,20 +1188,14 @@ function Questionnaire() {
         'The loss or loss of use of both hands',
         'The loss, or loss of use, of a lower leg along with the residuals (lasting effects) of an organic (natural) disease or injury',
         'Blindness in both eyes (with 20/200 visual acuity or less)',
-        'Certain severe burns',
-        'Certain respiratory or breathing injuries',
+        'Severe burns that limit movement in your arms, legs, or trunk',
+        'Lasting breathing problems caused by inhaling smoke, fumes, or chemicals (such as COPD, asthma, or pulmonary fibrosis)',
         'The loss, or loss of use, of one lower extremity (foot or leg) after September 11, 2001, which makes it so you can\'t balance or walk without the help of braces, crutches, canes, or a wheelchair',
       ];
       stepContent = (
         <>
           <label className="q-label">Do your service-connected disabilities include any of the following?</label>
-          <div key={currentStep} className="conditions-wrapper">
-            <ul className="conditions-list">
-              {QUALIFYING_CONDITIONS.map((condition, i) => (
-                <li key={i} className="conditions-list__item">{condition}</li>
-              ))}
-            </ul>
-          </div>
+          <ScrollableConditions items={QUALIFYING_CONDITIONS} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
@@ -1239,7 +1210,6 @@ function Questionnaire() {
               Yes
             </button>
           </div>
-          {backButton}
         </>
       );
       break;
@@ -1263,7 +1233,6 @@ function Questionnaire() {
               Yes
             </button>
           </div>
-          {backButton}
         </>
       );
       break;
@@ -1287,7 +1256,6 @@ function Questionnaire() {
               Yes
             </button>
           </div>
-          {backButton}
         </>
       );
       break;
@@ -1313,7 +1281,6 @@ function Questionnaire() {
               Yes
             </button>
           </div>
-          {backButton}
         </>
       );
       break;
@@ -1331,13 +1298,7 @@ function Questionnaire() {
       stepContent = (
         <>
           <label className="q-label">Do you have any of the following service-connected conditions?</label>
-          <div key={currentStep} className="conditions-wrapper">
-            <ul className="conditions-list">
-              {AUTO_GRANT_CONDITIONS.map((condition, i) => (
-                <li key={i} className="conditions-list__item">{condition}</li>
-              ))}
-            </ul>
-          </div>
+          <ScrollableConditions items={AUTO_GRANT_CONDITIONS} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
@@ -1352,7 +1313,6 @@ function Questionnaire() {
               Yes
             </button>
           </div>
-          {backButton}
         </>
       );
       break;
@@ -1419,7 +1379,6 @@ function Questionnaire() {
               Yes
             </button>
           </div>
-          {backButton}
         </>
       );
       break;
@@ -1435,11 +1394,13 @@ function Questionnaire() {
       stepContent = (
         <>
           <label className="q-label">Are any of the following true?</label>
-          <ul style={{ fontFamily: 'system-ui, -apple-system, sans-serif', fontSize: '0.95rem', color: 'var(--text)', margin: '0 0 16px', paddingLeft: '1.25rem', lineHeight: 1.6 }}>
-            {AGE_DISABILITY_CONDITIONS.map((condition, i) => (
-              <li key={i}>{condition}</li>
-            ))}
-          </ul>
+          <div className="conditions-wrapper">
+            <ul className="conditions-list">
+              {AGE_DISABILITY_CONDITIONS.map((condition, i) => (
+                <li key={i} className="conditions-list__item">{condition}</li>
+              ))}
+            </ul>
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
@@ -1454,7 +1415,6 @@ function Questionnaire() {
               Yes
             </button>
           </div>
-          {backButton}
         </>
       );
       break;
@@ -1467,6 +1427,7 @@ function Questionnaire() {
 
       <main className="q-main">
         <div className="q-card">
+          {showBack && backButton}
           <div className="q-progress-text">{section}</div>
           {stepContent}
         </div>

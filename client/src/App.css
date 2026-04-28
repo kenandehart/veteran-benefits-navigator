@@ -252,6 +252,7 @@
 }
 
 .q-card {
+  position: relative;
   background-color: var(--surface);
   border-radius: 3px;
   box-shadow: var(--shadow-md);
@@ -265,6 +266,13 @@
   animation: fadeUp 0.3s ease both;
 }
 
+.q-card .benefit-detail__back {
+  position: absolute;
+  top: 26px;
+  left: 52px;
+  transform: translateY(-50%);
+}
+
 .q-progress-text {
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 0.72rem;
@@ -272,6 +280,7 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--gold);
+  text-align: center;
 }
 
 .q-label {
@@ -324,17 +333,42 @@
   color: #c0392b;
 }
 
-.date-mode-toggle {
-  all: unset;
-  font-size: 0.8125rem;
-  color: var(--text-muted);
-  text-decoration: underline;
-  cursor: pointer;
-  align-self: flex-start;
+.date-input-field {
+  display: flex;
+  align-items: stretch;
+  background-color: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 2px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
-.date-mode-toggle:hover {
-  color: var(--navy);
+.date-input-field:focus-within {
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(26, 40, 64, 0.1);
+}
+
+.date-input-field--error {
+  border-color: #c0392b;
+}
+
+.date-input-field--error:focus-within {
+  border-color: #c0392b;
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.15);
+}
+
+.date-input-text {
+  flex: 1;
+  min-width: 0;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 12px 16px;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .q-select {
@@ -581,17 +615,25 @@
   list-style: none;
   margin: 0;
   padding: 4px 0;
+}
+
+.conditions-list--scrollable {
   max-height: 188px;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
+  scroll-snap-type: y proximity;
 }
 
-.conditions-list::-webkit-scrollbar {
+.conditions-list--scrollable .conditions-list__item {
+  scroll-snap-align: start;
+}
+
+.conditions-list--scrollable::-webkit-scrollbar {
   width: 4px;
 }
 
-.conditions-list::-webkit-scrollbar-thumb {
+.conditions-list--scrollable::-webkit-scrollbar-thumb {
   background-color: var(--border);
   border-radius: 2px;
 }
@@ -1581,6 +1623,11 @@
 
   .q-next-btn {
     align-self: stretch;
+  }
+
+  .q-card .benefit-detail__back {
+    top: 18px;
+    left: 28px;
   }
 
   .results-main {

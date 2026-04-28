@@ -21,32 +21,28 @@ function LandingPage() {
             Find out which VA benefits you may qualify for in minutes.
           </h1>
           <p className="hero-body">
-            Answer a few questions about your service. We'll find which
-            benefits you might be eligible for, with links to apply at VA.gov.
+            Answer a few questions about your service. We'll suggest benefits you might be eligible for, with links to learn more and apply at VA.gov.
           </p>
           <button className="cta-button" onClick={() => navigate('/questionnaire')}>Find my benefits →</button>
         </section>
 
         <section className="features">
           <div className="feature">
-            <h2>Based on your answers</h2>
+            <h2>Personalized results</h2>
             <p>
-              We show the benefits you may be eligible for, not the full
-              list of every VA benefit.
+              We show the VA benefits relevant to your service history, not a list of every state and federal benefit.
             </p>
           </div>
           <div className="feature">
-            <h2>Where to apply</h2>
+            <h2>Official references</h2>
             <p>
-              Each benefit page summarizes who's eligible and links to
-              VA.gov to apply. The VA decides every claim.
+              Every benefit links to the official VA eligibility and application pages.
             </p>
           </div>
           <div className="feature">
-            <h2>No personal information required</h2>
+            <h2>Privacy focused</h2>
             <p>
-              The questionnaire doesn't ask for your name or address. You
-              don't need to create an account.
+              We'll never ask your name, address, or phone number. Account creation optional.
             </p>
           </div>
         </section>

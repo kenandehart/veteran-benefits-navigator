@@ -16,13 +16,13 @@ const benefits = [
     name: 'Disability Compensation',
     short_description: 'Monthly tax-free payment for service-connected conditions',
     description:
-      'Monthly tax free monetary benefit paid to Veterans with disabilities that are the result of a disease or injury incurred or aggravated during active military service.',
+      'Monthly tax-free payments for veterans with disabilities caused or worsened by active military service.',
     eligibility_summary:
-      'Veterans with an honorable or general discharge and a condition affecting the mind or body which can be connected to a period of active duty service may be eligible.',
+      'Veterans with an honorable or general discharge and a service-connected physical or mental condition may be eligible. Service-connected means the condition started during active service, was made worse by service, or developed afterward but can be linked to service.',
     url: 'https://www.va.gov/disability/',
     is_active: true,
     application_guidance:
-      "File your claim online at VA.gov, by mail using VA Form 21-526EZ, in person at a VA regional office, or with the help of an accredited representative. Starting your claim online automatically sets your effective date — the day benefits could begin — so don't delay even if you're still gathering evidence. After you file, the VA may schedule a Compensation & Pension (C&P) exam to evaluate your condition; attending is essential to keep your claim moving. A Veterans Service Organization (VSO) representative can help you prepare and submit at no cost.",
+      "File your claim online at VA.gov, by mail using VA Form 21-526EZ, in person at a VA regional office, or with the help of an accredited representative. Starting your claim online automatically sets your effective date, which is the day benefits could begin. Don’t delay filing even if you’re still gathering evidence. After you file, the VA may schedule a Compensation & Pension (C&P) exam to evaluate your condition; attending is essential to keep your claim moving. A Veterans Service Organization (VSO) representative can help you prepare and submit at no cost.",
     application_url: 'https://www.va.gov/disability/how-to-file-claim/',
     eligibility_url: 'https://www.va.gov/disability/eligibility/',
   },
@@ -34,7 +34,7 @@ const benefits = [
     name: 'Veteran Readiness and Employment (VR&E)',
     short_description: 'Career support for service-connected disabilites',
     description:
-      'Helps veterans with service-connected disabilities prepare for, find, and maintain suitable employment, or achieve independence in daily living.',
+      'Employment and career support for veterans with service-connected disabilities, or independent living services for veterans whose disabilities prevent them from working.',
     eligibility_summary:
       'Veterans with a service-connected disability rating of at least 10% may be eligible.',
     url: 'https://www.va.gov/careers-employment/vocational-rehabilitation/',
@@ -52,15 +52,15 @@ const benefits = [
     name: 'Adaptive Housing Grants',
     short_description: 'Funding to adapt a home for service-connected disabilites',
     description:
-      'Grants for veterans with certain service-connected disabilities to buy or modify a home to meet their needs and live more independently. Includes SAH, SHA, and TRA grants.',
+      'Grants for veterans with certain service-connected disabilities to buy or modify a home to meet their needs and live more independently. The program covers veterans with a range of disabilities in temporary or permanent housing.',
     eligibility_summary:
-      'Veterans with certain service-connected disabilities affecting mobility may be eligible.',
+      'Veterans with certain permanent service-connected disabilities may be eligible. Qualifying conditions include limb loss or paralysis, severe vision impairment in both eyes, severe burns, or certain respiratory or neurological conditions like ALS.',
     url: 'https://www.va.gov/housing-assistance/disability-housing-grants/',
     is_active: true,
     application_guidance:
       "Apply online at VA.gov, by mail using VA Form 26-4555, or in person at a VA regional office. Once approved, the VA assigns a Specially Adapted Housing agent who works with you and your contractor to plan and approve the modifications. Grants can be used up to six times over your lifetime, so you don't need to spend the full amount on a single project. If you live temporarily in a family member's home, ask about the Temporary Residence Adaptation (TRA) grant when you apply.",
     application_url: 'https://www.va.gov/housing-assistance/disability-housing-grants/how-to-apply/',
-    eligibility_url: 'https://www.va.gov/housing-assistance/disability-housing-grants/eligibility/',
+    eligibility_url: 'https://www.va.gov/housing-assistance/disability-housing-grants/#grant-eligibility-for-your-per',
   },
   {
     id: 4,
@@ -70,15 +70,15 @@ const benefits = [
     name: 'Post 9/11 GI Bill',
     short_description: 'Education and training benefits for post-9/11 veterans',
     description:
-      'Helps pay for college, graduate school, and training programs for veterans who served on active duty after September 10, 2001. Benefits include tuition and fees, a monthly housing allowance, and a books and supplies stipend. The amount of benefit depends on length of active duty service.',
+      'Education benefits for veterans who served on active duty after September 10, 2001. Coverage includes tuition and fees, a monthly housing allowance, and a stipend for books and supplies. The amount received depends on length of service.',
     eligibility_summary:
-      'Veterans with an honorable discharge who served at least 90 days of active duty after September 10, 2001, may be eligible. Veterans with fewer days of service may also qualify with a Purple Heart or a service-connected disability.',
+      'Veterans with an honorable discharge who served at least 90 days of active duty after September 10, 2001, may be eligible. Those with fewer days of service may also qualify if they received a Purple Heart or were discharged with a service-connected disability.',
     url: 'https://www.va.gov/education/about-gi-bill-benefits/post-9-11/',
     is_active: true,
     application_guidance:
-      "Apply online at VA.gov or by mailing VA Form 22-1990 to the regional processing office that serves your school. The VA typically issues a Certificate of Eligibility (COE) within 30 days; you'll give a copy to your school's VA certifying official to activate your benefits. Your benefit percentage depends on your qualifying active duty after September 10, 2001 and the type of program. If you've used another GI Bill benefit, switching to Post-9/11 may permanently change your remaining entitlement — review the tradeoffs before applying.",
+      "Apply online at VA.gov or by mailing VA Form 22-1990 to the regional processing office that serves your school. The VA typically issues a Certificate of Eligibility (COE) within 30 days; you’ll give a copy to your school’s VA certifying official to activate your benefits. Your benefit percentage depends on your qualifying active duty after September 10, 2001 and the type of program. If you’ve used another GI Bill benefit, switching to Post-9/11 may permanently change your remaining entitlement.",
     application_url: 'https://www.va.gov/education/how-to-apply/',
-    eligibility_url: 'https://www.va.gov/education/eligibility/',
+    eligibility_url: 'https://www.va.gov/education/about-gi-bill-benefits/post-9-11/#am-i-eligible-for-post-911-gi-',
   },
     {
     id: 5,
@@ -88,13 +88,13 @@ const benefits = [
     name: 'Veterans Pension',
     short_description: 'Tax-free monthly payments for wartime veterans with limited income',
     description:
-      'A tax-free monetary benefit for low-income wartime veterans who meet certain age or disability requirements. The benefit amount depends on the veteran’s income, number of dependents, and whether they need regular help with daily activities or are unable to leave the home.',
+      'A tax-free monthly payment for low-income wartime veterans who meet certain age or disability requirements. Payment amounts depend on income, dependents, and whether the veteran needs regular help with daily activities or is unable to leave the home.',
     eligibility_summary:
-      'Wartime veterans with a discharge better than dishonorable, who meet service time requirements, have limited income and net worth, and are 65 or older or have a permanent disability may be eligible.',
+      'Wartime veterans with a discharge other than dishonorable may be eligible if they meet service time requirements, have limited income and net worth, and are 65 or older or have a permanent disability.',
     url: 'https://www.va.gov/pension/',
     is_active: true,
     application_guidance:
-      "Apply online at VA.gov, by mail with VA Form 21P-527EZ to the Pension Management Center for your state, or in person at a VA regional office. Filing online automatically sets your effective date when you start the form, which can mean retroactive payments once your claim is approved. If you're not ready to file a complete claim, submit an intent to file (VA Form 21-0966) first to lock in a start date — you then have one year to complete the application. You'll need documentation of your income, assets, and military service; a VSO representative can help you prepare it all at no cost.",
+      "Apply online at VA.gov, by mail with VA Form 21P-527EZ to the Pension Management Center for your state, or in person at a VA regional office. Filing online automatically sets your effective date when you start the form, which can mean retroactive payments once your claim is approved. If you’re not ready to file a complete claim, submit an intent to file (VA Form 21-0966) first to lock in a start date. You then have one year to complete the application. You’ll need documentation of your income, assets, and military service; a VSO representative can help you prepare it all at no cost.",
     application_url: 'https://www.va.gov/pension/how-to-apply/',
     eligibility_url: 'https://www.va.gov/pension/eligibility/',
   },
@@ -106,13 +106,13 @@ const benefits = [
     name: 'VA Health Care',
     short_description: 'Comprehensive medical care for eligible veterans',
     description:
-      'VA health care provides eligible veterans with a range of medical, mental health, and specialty services including preventive care, primary care, mental health services, and more.',
+      'Medical and mental health care for eligible veterans, including primary care, prescriptions, hospital services, and specialty treatment.',
     eligibility_summary:
-      'Veterans who served on active duty with a discharge other than dishonorable may be eligible if they served for at least two continuous years, were discharged due to a service-connected disability, or began service before September 7, 1980.',
+      'Veterans with a discharge other than dishonorable may be eligible if they served at least two continuous years on active duty, were discharged due to a service-connected disability, or began service before September 8, 1980.',
     url: 'https://www.va.gov/health-care/',
     is_active: true,
     application_guidance:
-      "Apply online at VA.gov, by phone at 877-222-8387, by mail using VA Form 10-10EZ, or in person at a VA medical center. You'll need your DD-214 or other separation documents, plus information about any current health insurance. Once approved, the VA assigns you to one of eight priority groups and follows up with a welcome call to schedule your first appointment. Combat veterans returning from service after 9/11 have 10 years of enhanced eligibility for conditions related to that service, so applying soon after discharge is worthwhile.",
+      "Apply online at VA.gov, by phone at 877-222-8387, by mail using VA Form 10-10EZ, or in person at a VA medical center. You’ll need your DD-214 or other separation documents, plus information about any current health insurance. Once approved, the VA assigns you to one of eight priority groups and follows up with a welcome call to schedule your first appointment.",
     application_url: 'https://www.va.gov/health-care/how-to-apply/',
     eligibility_url: 'https://www.va.gov/health-care/eligibility/',
   },
@@ -124,13 +124,13 @@ const benefits = [
     name: 'VA Home Loan Guaranty',
     short_description: 'No down payment home loans backed by VA',
     description:
-      'The VA Home Loan Guaranty program helps veterans purchase homes with no down payment, no private mortgage insurance, and competitive interest rates. VA guarantees a portion of the loan, which allows lenders to offer more favorable terms.',
+      'The VA Home Loan Guaranty helps veterans purchase homes with no down payment, no private mortgage insurance, and competitive interest rates. The VA guarantees a portion of the loan, which lets lenders offer these terms.',
     eligibility_summary:
-      'Veterans who meet minimum active duty service requirements for their era of service and have a discharge that is not dishonorable may be eligible. National Guard and Reserve members with 6 creditable years of service may also qualify.',
+      'Veterans with a discharge other than dishonorable may be eligible if they meet the active duty service minimum for their era, were discharged due to a service-connected disability, or have at least six years of National Guard or Reserve service.',
     url: 'https://www.va.gov/housing-assistance/home-loans/',
     is_active: true,
     application_guidance:
-      "The VA's direct role in the home loan process is issuing your Certificate of Eligibility (COE), which proves to a lender that you qualify for a VA-backed loan. The fastest path is asking a VA-approved lender to pull your COE electronically; you can also request it yourself online at VA.gov or by mailing VA Form 26-1880. Once you have the COE, the rest of the process — appraisal, credit and income review, closing — happens between you and your chosen lender. The VA does not lend the money or set home price limits, but does require the property to meet minimum standards.",
+      "The VA’s direct role in the home loan process is issuing your Certificate of Eligibility (COE), which proves to a lender that you qualify for a VA-backed loan. The fastest path is asking a VA-approved lender to pull your COE electronically; you can also request it yourself online at VA.gov or by mailing VA Form 26-1880. Once you have the COE, the rest of the process happens between you and your chosen lender. The VA does not lend the money or set home price limits, but does require the property to meet minimum standards.",
     application_url: 'https://www.va.gov/housing-assistance/home-loans/how-to-request-coe/',
     eligibility_url: 'https://www.va.gov/housing-assistance/home-loans/eligibility/',
   },
@@ -142,15 +142,15 @@ const benefits = [
     name: "Veterans' Group Life Insurance (VGLI)",
     short_description: 'Convert your military life insurance to a civilian policy after separation',
     description:
-      "Veterans' Group Life Insurance allows veterans to convert their Servicemembers' Group Life Insurance (SGLI) coverage to a renewable term life insurance policy after leaving the military. Coverage is available in amounts up to the SGLI coverage amount held at separation. No health screening is required if you apply within 240 days of separation.",
+      "Renewable term life insurance for veterans converting from Servicemembers’ Group Life Insurance (SGLI) after leaving the military. Coverage is available in amounts up to the SGLI coverage held at separation.",
     eligibility_summary:
-      'Veterans who had SGLI coverage during service and are within 1 year and 120 days of separation may be eligible. Most service members are automatically enrolled in SGLI unless they specifically opted out.',
+      'Veterans who had SGLI coverage during service and are within 1 year and 120 days of separation may be eligible. Most service members are automatically enrolled in SGLI unless they opted out.',
     url: 'https://www.va.gov/life-insurance/options-eligibility/vgli/',
     is_active: true,
     application_guidance:
-      "VGLI is administered by the Office of Servicemembers' Group Life Insurance (OSGLI) through Prudential, not the VA directly. Apply online through the OSGLI portal or by submitting form SGLV 8714 by mail or fax. The window matters: applying within 240 days of separation requires no health questions, while applying between day 241 and 1 year + 120 days requires proof of good health. After that window closes you can no longer enroll, so don't wait if you may want the coverage.",
-    application_url: 'https://www.va.gov/life-insurance/options-eligibility/vgli/',
-    eligibility_url: 'https://www.va.gov/life-insurance/options-eligibility/vgli/',
+      "VGLI is administered by the Office of Servicemembers’ Group Life Insurance (OSGLI) through Prudential, not the VA directly. Apply online through the OSGLI portal or by submitting form SGLV 8714 by mail or fax. The window matters: applying within 240 days of separation requires no health questions, while applying after day 240 requires proof of good health. After 1 year and 120 days from separation, you can no longer enroll, so don’t wait if you may want the coverage.",
+    application_url: 'https://www.va.gov/life-insurance/options-eligibility/vgli/#how-do-i-get-these-benefits',
+    eligibility_url: 'https://www.va.gov/life-insurance/options-eligibility/vgli/#am-i-eligible-for-veterans-gro',
   },
   {
     id: 9,
@@ -160,15 +160,15 @@ const benefits = [
     name: 'Automobile Allowance and Adaptive Equipment',
     short_description: 'Financial help to buy or adapt a vehicle if you have a service-connected disability affecting mobility or vision',
     description:
-      'If you have a service-connected disability that prevents you from driving or limits your ability to get in and out of a vehicle, you may be eligible for a one-time grant toward the purchase of an automobile or other conveyance, adaptive equipment to modify a vehicle, or both. Adaptive equipment may include power steering, power brakes, power windows, power seats, wheelchair lifts, and other medically necessary modifications.',
+      'A one-time grant toward the purchase of a vehicle, adaptive equipment to modify a vehicle, or both, for veterans with service-connected disabilities affecting mobility or vision. Adaptive equipment can include power steering, power brakes, lifts, and other modifications.',
     eligibility_summary:
-      'You must have a service-connected disability resulting in the loss or permanent loss of use of one or both hands or feet, permanent vision impairment in both eyes, severe burn injuries limiting motion, ALS, or ankylosis of one or both knees or hips. You must have a VA disability rating.',
+      'Veterans with service-connected disabilities affecting mobility or vision may be eligible. Qualifying conditions include loss or loss of use of one or both hands or feet, permanent vision impairment in both eyes, severe burns that limit motion, ALS, or stiffened knees or hips.',
     url: 'https://www.va.gov/disability/eligibility/special-claims/automobile-allowance-adaptive-equipment/',
     is_active: true,
     application_guidance:
-      "Submit VA Form 21-4502 to apply for the automobile allowance plus adaptive equipment, or VA Form 10-1394 if you only need adaptive equipment. Get VA approval before buying anything — purchases made before approval may not be reimbursed. Once your seller completes their portion of the form and submits the invoice, the VA pays them directly. The vehicle allowance is a one-time lifetime benefit, but adaptive equipment can be approved repeatedly for repairs, replacements, and reinstallations.",
-    application_url: 'https://www.va.gov/disability/eligibility/special-claims/automobile-allowance-adaptive-equipment/',
-    eligibility_url: 'https://www.va.gov/disability/eligibility/special-claims/automobile-allowance-adaptive-equipment/',
+      "Submit VA Form 21-4502 to apply for the automobile allowance plus adaptive equipment, or VA Form 10-1394 if you only need adaptive equipment. Get VA approval before buying anything. Purchases made before approval may not be reimbursed. Once your seller completes their portion of the form and submits the invoice, the VA pays them directly. The vehicle allowance is a one-time lifetime benefit, but adaptive equipment can be approved repeatedly for repairs, replacements, and reinstallations.",
+    application_url: 'https://www.va.gov/disability/eligibility/special-claims/automobile-allowance-adaptive-equipment#how-do-i-get-these-benefits',
+    eligibility_url: 'https://www.va.gov/disability/eligibility/special-claims/automobile-allowance-adaptive-equipment/#am-i-eligible-for-these-benefi',
   },
   {
     id: 10,
@@ -178,15 +178,15 @@ const benefits = [
     name: 'Veterans Affairs Life Insurance (VALife)',
     short_description: 'Guaranteed acceptance life insurance for veterans with a service-connected disability',
     description:
-      'Veterans Affairs Life Insurance (VALife) is a guaranteed acceptance whole life insurance program for veterans with service-connected disabilities. Coverage is available in amounts up to $40,000 in $10,000 increments. If you meet the eligibility requirements, your application is automatically approved with no health screening required. Full coverage begins 2 years after you apply.',
+      'Guaranteed acceptance whole life insurance for veterans with service-connected disabilities. Coverage is available up to $40,000 in $10,000 increments. Full coverage begins two years after enrollment.',
     eligibility_summary:
-      'You must have a VA service-connected disability rating. Any rating from 0% to 100% qualifies. There is no time limit to apply after receiving your disability rating.',
+      'Veterans with a VA service-connected disability rating of any percentage may be eligible. There is no time limit to apply after receiving the rating.',
     url: 'https://www.va.gov/life-insurance/options-eligibility/valife/',
     is_active: true,
     application_guidance:
-      "Apply online through the VA Life Insurance portal at insurance.va.gov/VALIFE. Because VALife is guaranteed acceptance, you won't answer any health questions and approval is typically immediate. You'll need to submit your first premium payment when you apply, and your rate is locked in based on your age at enrollment. Full coverage begins two years after enrollment; if you die during that waiting period, your beneficiaries receive all premiums paid plus interest.",
-    application_url: 'https://www.va.gov/life-insurance/options-eligibility/valife/',
-    eligibility_url: 'https://www.va.gov/life-insurance/options-eligibility/valife/',
+      "Apply online through the VA Life Insurance portal at insurance.va.gov/VALIFE. Because VALife is guaranteed acceptance, you won’t answer any health questions and approval is typically immediate. You’ll need to submit your first premium payment when you apply, and your rate is locked in based on your age at enrollment. Full coverage begins two years after enrollment. If you die during that waiting period, your beneficiaries receive all premiums paid plus interest.",
+    application_url: 'https://www.va.gov/life-insurance/options-eligibility/valife/#apply-for-valife',
+    eligibility_url: 'https://www.va.gov/life-insurance/options-eligibility/valife/#eligibility-for-valife',
   },
   {
     id: 11,
@@ -196,15 +196,15 @@ const benefits = [
     name: 'VA Dental Care',
     short_description: 'Free dental care for veterans meeting specific eligibility criteria',
     description:
-      'VA provides comprehensive dental care to certain qualifying veterans, including services like cleanings, fillings, extractions, dentures, and oral surgery.',
+      'Dental care for qualifying veterans, including cleanings, fillings, extractions, dentures, and oral surgery.',
     eligibility_summary:
-      'Veterans may qualify based on a service-connected dental condition, a 100% service-connected disability rating (single condition or TDIU), former prisoner of war status, recent separation from 90+ days of active duty during the Persian Gulf War era, or active participation in a VR&E program.',
+      'Veterans may qualify if they have a service-connected dental condition, a 100% service-connected disability rating, former prisoner of war status, recent separation from 90 or more days of active duty during the Persian Gulf War era, or active enrollment in VR&E.',
     url: 'https://www.va.gov/health-care/about-va-health-benefits/dental-care/',
     is_active: true,
     application_guidance:
-      "There's no separate dental application — you become eligible by enrolling in VA Health Care, after which the VA determines your dental class based on your service history, disability rating, and current circumstances. Apply online at VA.gov or by submitting VA Form 10-10EZ if you're not already enrolled. Most enrolled veterans don't qualify for free dental care, so review the dental benefits classes before assuming coverage. If you don't qualify, the VA Dental Insurance Program (VADIP) offers discounted private dental insurance through Delta Dental or MetLife.",
-    application_url: 'https://www.va.gov/health-care/about-va-health-benefits/dental-care/',
-    eligibility_url: 'https://www.va.gov/health-care/about-va-health-benefits/dental-care/',
+      "There’s no separate dental application. You become eligible by enrolling in VA Health Care, after which the VA determines your dental class based on your service history, disability rating, and current circumstances. Apply online at VA.gov or by submitting VA Form 10-10EZ if you’re not already enrolled. Most enrolled veterans don’t qualify for free dental care, so review the dental benefits classes before assuming coverage. If you don’t qualify, the VA Dental Insurance Program (VADIP) offers discounted private dental insurance through Delta Dental or MetLife.",
+    application_url: 'https://www.va.gov/health-care/apply-for-health-care-form-10-10ez/introduction',
+    eligibility_url: 'https://www.va.gov/health-care/about-va-health-benefits/dental-care/#what-va-dental-care-benefits-d',
   }
 ];
 
