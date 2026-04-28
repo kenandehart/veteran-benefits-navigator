@@ -13,7 +13,7 @@ router.post('/questionnaire', readLimiter, validateBody(QuestionnaireAnswersSche
   try {
     const eligibleBenefitIds = checkEligibility(answers);
     const benefitsResult = await pool.query(
-      'SELECT id, name, category, short_description, description, eligibility_summary, url FROM benefits WHERE id = ANY($1)',
+      'SELECT id, name, category, short_description, description, eligibility_summary, url, application_guidance, application_url, eligibility_url FROM benefits WHERE id = ANY($1)',
       [eligibleBenefitIds]
     );
     res.status(201).json({ eligibleBenefits: benefitsResult.rows });

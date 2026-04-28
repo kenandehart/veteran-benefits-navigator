@@ -20,6 +20,9 @@ router.get('/', requireAuth, async (req, res, next) => {
       description: string;
       eligibility_summary: string;
       url: string;
+      application_guidance: string;
+      application_url: string;
+      eligibility_url: string;
     }>(
       `SELECT
          uq.answers,
@@ -30,7 +33,10 @@ router.get('/', requireAuth, async (req, res, next) => {
          b.short_description,
          b.description,
          b.eligibility_summary,
-         b.url
+         b.url,
+         b.application_guidance,
+         b.application_url,
+         b.eligibility_url
        FROM user_questionnaire uq
        JOIN benefits b
          ON b.id = ANY(ARRAY(SELECT jsonb_array_elements_text(uq.matched_benefit_ids)::integer))

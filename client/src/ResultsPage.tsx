@@ -15,6 +15,9 @@ interface Benefit {
   description: string
   eligibility_summary: string
   url: string
+  application_guidance: string
+  application_url: string
+  eligibility_url: string
 }
 
 function ResultsPage() {
