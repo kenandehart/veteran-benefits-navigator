@@ -6,6 +6,7 @@ import LandingPage from './LandingPage'
 import Questionnaire from './Questionnaire'
 import ResultsPage from './ResultsPage'
 import CataloguePage from './CataloguePage'
+import BenefitDetailPage from './BenefitDetailPage'
 import DashboardPage from './DashboardPage'
 import AdminPage from './AdminPage'
 import PrivacyPage from './PrivacyPage'
@@ -33,6 +34,7 @@ function App() {
       <Route path="/questionnaire" element={<Questionnaire />} />
       <Route path="/results" element={<ResultsPage />} />
       <Route path="/benefits" element={<CataloguePage />} />
+      <Route path="/benefits/:slug" element={<BenefitDetailPage />} />
       <Route path="/admin" element={<AdminPage />} />
       <Route path="/admin/feedback" element={<Navigate to="/admin" replace />} />
       <Route path="/privacy" element={<PrivacyPage />} />
