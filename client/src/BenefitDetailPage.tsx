@@ -102,8 +102,30 @@ function BenefitDetailPage() {
               <p className="benefit-detail__section-text">{benefit.description}</p>
             </div>
             <div className="benefit-detail__section">
-              <h2 className="benefit-detail__section-label">Who may be eligible</h2>
+              <h2 className="benefit-detail__section-label">
+                <a
+                  href={benefit.eligibility_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="benefit-detail__section-link"
+                >
+                  Who may be eligible →
+                </a>
+              </h2>
               <p className="benefit-detail__section-text">{benefit.eligibility_summary}</p>
+            </div>
+            <div className="benefit-detail__section">
+              <h2 className="benefit-detail__section-label">
+                <a
+                  href={benefit.application_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="benefit-detail__section-link"
+                >
+                  How to apply →
+                </a>
+              </h2>
+              <p className="benefit-detail__section-text">{benefit.application_guidance}</p>
             </div>
             <a
               href={benefit.url}

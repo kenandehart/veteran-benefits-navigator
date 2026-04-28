@@ -542,6 +542,15 @@
   text-align: center;
 }
 
+.benefit-detail__section-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.benefit-detail__section-link:hover {
+  text-decoration: underline;
+}
+
 .benefit-detail__section-text {
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 1.05rem;
