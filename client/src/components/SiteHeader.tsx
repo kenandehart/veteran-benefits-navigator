@@ -60,6 +60,15 @@ export default function SiteHeader() {
               >
                 About
               </Link>
+              <Link
+                to="/resources"
+                role="menuitem"
+                className="nav-dropdown__item"
+                style={{ textDecoration: 'none' }}
+                onClick={() => setShowMenu(false)}
+              >
+                Resources
+              </Link>
             </div>
           )}
         </div>

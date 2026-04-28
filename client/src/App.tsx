@@ -11,6 +11,7 @@ import DashboardPage from './DashboardPage'
 import AdminPage from './AdminPage'
 import PrivacyPage from './PrivacyPage'
 import AboutPage from './AboutPage'
+import ResourcesPage from './ResourcesPage'
 import ForgotPasswordPage from './ForgotPasswordPage'
 import ResetPasswordPage from './ResetPasswordPage'
 
@@ -39,6 +40,7 @@ function App() {
       <Route path="/admin/feedback" element={<Navigate to="/admin" replace />} />
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/about" element={<AboutPage />} />
+      <Route path="/resources" element={<ResourcesPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
     </Routes>
