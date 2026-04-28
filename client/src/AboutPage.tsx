@@ -1,5 +1,6 @@
 import './App.css'
 import { useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import Footer from './Footer'
 import SiteHeader from './components/SiteHeader'
 
@@ -22,15 +23,11 @@ function AboutPage() {
 
         <h2 className="privacy-page__heading">Who built it?</h2>
         <p>
-          Hello, my name is Kenan, I'm a 100% totally and permanently disabled US veteran studying software engineering as part of my participation in the{' '}
-          <a
-            href="https://www.va.gov/careers-employment/vocational-rehabilitation/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          Hello, my name is Kenan, I'm a disabled US Air Force veteran studying software engineering as part of my participation in the{' '}
+          <Link to="/benefits/veteran-readiness-employment">
             Chapter 31 Veteran Readiness and Employment
-          </a>{' '}
-          program. When I was discharged from the Air Force, I was lost, and struggling with severe mental health issues. I wanted to build something that would've been helpful to me in this state, and got started with vabenefits.app.
+          </Link>{' '}
+          program. After my discharge from the Air Force, I struggled to get connected with VA resources. My goal with this website is to build something that would have been helpful to me in that time.
         </p>
 
         <h2 className="privacy-page__heading">Contact</h2>
