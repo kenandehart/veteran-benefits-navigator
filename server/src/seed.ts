@@ -10,6 +10,7 @@ const pool = new Pool({
 const benefits = [
     {
     id: 1,
+    slug: 'disability-compensation',
     type: 'benefit',
     category: 'disability compensation',
     name: 'Disability Compensation',
@@ -27,6 +28,7 @@ const benefits = [
   },
   {
     id: 2,
+    slug: 'veteran-readiness-employment',
     type: 'benefit',
     category: 'employment',
     name: 'Veteran Readiness and Employment (VR&E)',
@@ -44,6 +46,7 @@ const benefits = [
   },
   {
     id: 3,
+    slug: 'adaptive-housing-grants',
     type: 'benefit',
     category: 'housing',
     name: 'Adaptive Housing Grants',
@@ -61,6 +64,7 @@ const benefits = [
   },
   {
     id: 4,
+    slug: 'post-9-11-gi-bill',
     type: 'benefit',
     category: 'education',
     name: 'Post 9/11 GI Bill',
@@ -78,6 +82,7 @@ const benefits = [
   },
     {
     id: 5,
+    slug: 'veterans-pension',
     type: 'benefit',
     category: 'pension',
     name: 'Veterans Pension',
@@ -95,6 +100,7 @@ const benefits = [
   },
   {
     id: 6,
+    slug: 'va-health-care',
     type: 'benefit',
     category: 'health care',
     name: 'VA Health Care',
@@ -112,6 +118,7 @@ const benefits = [
   },
   {
     id: 7,
+    slug: 'va-home-loan-guaranty',
     type: 'benefit',
     category: 'housing',
     name: 'VA Home Loan Guaranty',
@@ -129,6 +136,7 @@ const benefits = [
   },
   {
     id: 8,
+    slug: 'vgli',
     type: 'benefit',
     category: 'insurance',
     name: "Veterans' Group Life Insurance (VGLI)",
@@ -146,6 +154,7 @@ const benefits = [
   },
   {
     id: 9,
+    slug: 'automobile-allowance',
     type: 'benefit',
     category: 'disability',
     name: 'Automobile Allowance and Adaptive Equipment',
@@ -163,6 +172,7 @@ const benefits = [
   },
   {
     id: 10,
+    slug: 'valife',
     type: 'benefit',
     category: 'insurance',
     name: 'Veterans Affairs Life Insurance (VALife)',
@@ -180,6 +190,7 @@ const benefits = [
   },
   {
     id: 11,
+    slug: 'va-dental-care',
     type: 'benefit',
     category: 'health care',
     name: 'VA Dental Care',
@@ -202,10 +213,11 @@ async function seed() {
   try {
     for (const benefit of benefits) {
       await client.query(
-        `INSERT INTO benefits (id, type, category, name, short_description, description, eligibility_summary, url, is_active, application_guidance, application_url, eligibility_url)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        `INSERT INTO benefits (id, slug, type, category, name, short_description, description, eligibility_summary, url, is_active, application_guidance, application_url, eligibility_url)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
          ON CONFLICT (name) DO UPDATE SET
            id = EXCLUDED.id,
+           slug = EXCLUDED.slug,
            type = EXCLUDED.type,
            category = EXCLUDED.category,
            short_description = EXCLUDED.short_description,
@@ -218,6 +230,7 @@ async function seed() {
            eligibility_url = EXCLUDED.eligibility_url`,
         [
           benefit.id,
+          benefit.slug,
           benefit.type,
           benefit.category,
           benefit.name,
