@@ -1,7 +1,7 @@
 import './App.css'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import Footer from './Footer'
 import SiteHeader from './components/SiteHeader'
 
@@ -15,18 +15,10 @@ const pageMainStyle: React.CSSProperties = {
   width: '100%',
 }
 
-const linkStyle: React.CSSProperties = {
-  display: 'inline-block',
-  marginTop: '24px',
-  color: 'var(--navy)',
-  textDecoration: 'underline',
-  fontFamily: "'Source Sans 3', system-ui, sans-serif",
-  fontSize: '0.9rem',
-}
-
 function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<Status>('idle')
+  const navigate = useNavigate()
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -57,7 +49,22 @@ function ForgotPasswordPage() {
       <SiteHeader />
 
       <main style={pageMainStyle}>
-        <h1 className="modal-title">Forgot your password?</h1>
+        <div className="benefit-detail__header">
+          <button
+            className="benefit-detail__back"
+            onClick={() => {
+              window.scrollTo(0, 0)
+              if (window.history.length <= 1) {
+                navigate('/')
+              } else {
+                navigate(-1)
+              }
+            }}
+          >
+            ← Back
+          </button>
+          <h1 className="modal-title">Forgot your password?</h1>
+        </div>
 
         {status === 'submitted' ? (
           <p className="modal-helper" aria-live="polite">
@@ -94,8 +101,6 @@ function ForgotPasswordPage() {
             </button>
           </form>
         )}
-
-        <Link to="/" style={linkStyle}>Back to homepage</Link>
       </main>
       <Footer />
     </div>

@@ -18,39 +18,35 @@ function LandingPage() {
       <main>
         <section className="hero">
           <h1 className="hero-headline">
-            You've earned these benefits.<br />
-            Let's make sure you get them.
+            Find out which VA benefits you may qualify for in minutes.
           </h1>
           <p className="hero-body">
-            Benefits Navigator helps veterans find the benefits they qualify for
-            and walks them through the process of actually claiming them —
-            step by step, at their own pace.
+            Answer a few questions about your service. We'll find which
+            benefits you might be eligible for, with links to apply at VA.gov.
           </p>
-          <button className="cta-button" onClick={() => navigate('/questionnaire')}>Get Started</button>
+          <button className="cta-button" onClick={() => navigate('/questionnaire')}>Find my benefits →</button>
         </section>
 
         <section className="features">
           <div className="feature">
-            <h2>Personalized to you</h2>
+            <h2>Based on your answers</h2>
             <p>
-              A short questionnaire builds your profile. We use it to surface
-              the benefits most relevant to your situation — not an overwhelming
-              list of everything that exists.
+              We show the benefits you may be eligible for, not the full
+              list of every VA benefit.
             </p>
           </div>
           <div className="feature">
-            <h2>From discovery to claim</h2>
+            <h2>Where to apply</h2>
             <p>
-              Knowing a benefit exists and knowing how to claim it are two
-              different problems. This app addresses both. Each benefit comes
-              with clear, plain-English next steps.
+              Each benefit page summarizes who's eligible and links to
+              VA.gov to apply. The VA decides every claim.
             </p>
           </div>
           <div className="feature">
-            <h2>Your information, your control</h2>
+            <h2>No personal information required</h2>
             <p>
-              No personally identifiable information required. We collect only
-              what we need to help you, and nothing more.
+              The questionnaire doesn't ask for your name or address. You
+              don't need to create an account.
             </p>
           </div>
         </section>

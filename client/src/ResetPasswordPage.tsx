@@ -15,15 +15,6 @@ const pageMainStyle: React.CSSProperties = {
   width: '100%',
 }
 
-const linkStyle: React.CSSProperties = {
-  display: 'inline-block',
-  marginTop: '24px',
-  color: 'var(--navy)',
-  textDecoration: 'underline',
-  fontFamily: "'Source Sans 3', system-ui, sans-serif",
-  fontSize: '0.9rem',
-}
-
 const inlineLinkStyle: React.CSSProperties = {
   color: 'var(--navy)',
   textDecoration: 'underline',
@@ -83,7 +74,22 @@ function ResetPasswordPage() {
       <div className="page">
         {siteHeader}
         <main style={pageMainStyle}>
-          <h1 className="modal-title">Invalid link</h1>
+          <div className="benefit-detail__header">
+            <button
+              className="benefit-detail__back"
+              onClick={() => {
+                window.scrollTo(0, 0)
+                if (window.history.length <= 1) {
+                  navigate('/')
+                } else {
+                  navigate(-1)
+                }
+              }}
+            >
+              ← Back
+            </button>
+            <h1 className="modal-title">Invalid link</h1>
+          </div>
           <p className="modal-helper" aria-live="polite" style={{ marginBottom: '24px' }}>
             This link is invalid. Please request a new password reset.
           </p>
@@ -94,7 +100,6 @@ function ResetPasswordPage() {
           >
             Request a new reset link
           </button>
-          <Link to="/" style={linkStyle}>Back to homepage</Link>
         </main>
         <Footer />
       </div>
@@ -106,7 +111,22 @@ function ResetPasswordPage() {
       <div className="page">
         {siteHeader}
         <main style={{ ...pageMainStyle, textAlign: 'center' }}>
-          <h1 className="modal-title">Password reset</h1>
+          <div className="benefit-detail__header">
+            <button
+              className="benefit-detail__back"
+              onClick={() => {
+                window.scrollTo(0, 0)
+                if (window.history.length <= 1) {
+                  navigate('/')
+                } else {
+                  navigate(-1)
+                }
+              }}
+            >
+              ← Back
+            </button>
+            <h1 className="modal-title">Password reset</h1>
+          </div>
           <p className="modal-helper" aria-live="polite" style={{ marginBottom: '24px' }}>
             Your password has been reset. Click 'Log in' in the top-right to
             sign in with your new password.
@@ -128,7 +148,22 @@ function ResetPasswordPage() {
     <div className="page">
       {siteHeader}
       <main style={pageMainStyle}>
-        <h1 className="modal-title">Reset your password</h1>
+        <div className="benefit-detail__header">
+          <button
+            className="benefit-detail__back"
+            onClick={() => {
+              window.scrollTo(0, 0)
+              if (window.history.length <= 1) {
+                navigate('/')
+              } else {
+                navigate(-1)
+              }
+            }}
+          >
+            ← Back
+          </button>
+          <h1 className="modal-title">Reset your password</h1>
+        </div>
         <form className="modal-form" onSubmit={handleSubmit} noValidate>
           <label className="modal-label" htmlFor="reset-new-password">
             New password
@@ -185,8 +220,6 @@ function ResetPasswordPage() {
             {status === 'submitting' ? 'Resetting...' : 'Reset password'}
           </button>
         </form>
-
-        <Link to="/" style={linkStyle}>Back to homepage</Link>
       </main>
       <Footer />
     </div>
