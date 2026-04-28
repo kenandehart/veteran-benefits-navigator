@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { clearAnonResults } from '../anonResults'
 
 const POST_LOGIN_REDIRECT_FROM: string[] = ['/reset-password', '/forgot-password']
 
@@ -44,6 +45,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .catch(() => setUser(null))
       .finally(() => setIsLoading(false))
   }, [])
+
+  useEffect(() => {
+    if (user) clearAnonResults()
+  }, [user])
 
   const login = useCallback(async (username: string, password: string): Promise<User> => {
     const res = await fetch('/api/auth/login', {

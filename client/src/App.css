@@ -485,6 +485,27 @@
   margin: 0;
 }
 
+.results-retake-row {
+  margin-top: 24px;
+  text-align: center;
+}
+
+.results-retake-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.95rem;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.results-retake-btn:hover {
+  color: var(--navy);
+}
+
 /* No results */
 
 .no-results {
@@ -1047,9 +1068,7 @@
    ============================================================ */
 
 .results-feedback {
-  margin-top: 56px;
-  padding-top: 40px;
-  border-top: 1px solid var(--border);
+  margin-top: 24px;
   max-width: 560px;
   margin-left: auto;
   margin-right: auto;

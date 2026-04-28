@@ -6,6 +6,7 @@ import Footer from './Footer'
 import SiteHeader from './components/SiteHeader'
 import RegisterModal from './components/RegisterModal.tsx'
 import FeedbackWidget from './components/FeedbackWidget.tsx'
+import { clearAnonResults, readAnonResults } from './anonResults'
 
 interface Benefit {
   id: number
@@ -24,10 +25,16 @@ interface Benefit {
 function ResultsPage() {
   const location = useLocation()
   const navigate = useNavigate()
-  const state = location.state as { eligibleBenefits: Benefit[]; answers?: unknown } | null
-  const eligibleBenefits: Benefit[] | null = state?.eligibleBenefits ?? null
-  const answers: unknown = state?.answers ?? null
   const { user } = useAuth()
+  const initialState = location.state as {
+    eligibleBenefits?: Benefit[]
+    answers?: unknown
+    fromAnonSnapshot?: boolean
+  } | null
+  const [eligibleBenefits, setEligibleBenefits] = useState<Benefit[] | null>(
+    initialState?.eligibleBenefits ?? null,
+  )
+  const [answers, setAnswers] = useState<unknown>(initialState?.answers ?? null)
   const [showRegister, setShowRegister] = useState(false)
 
   useEffect(() => {
@@ -35,10 +42,50 @@ function ResultsPage() {
   }, [])
 
   useEffect(() => {
-    if (!eligibleBenefits) navigate('/')
-  }, [eligibleBenefits, navigate])
+    if (eligibleBenefits !== null) return
+    if (user) {
+      navigate('/')
+      return
+    }
+    const snapshot = readAnonResults()
+    if (!snapshot) {
+      navigate('/')
+      return
+    }
+    let cancelled = false
+    fetch('/api/questionnaire', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(snapshot.answers),
+    })
+      .then(res => {
+        if (!res.ok) throw new Error(`status ${res.status}`)
+        return res.json()
+      })
+      .then((data: { eligibleBenefits: Benefit[] }) => {
+        if (cancelled) return
+        setEligibleBenefits(data.eligibleBenefits)
+        setAnswers(snapshot.answers)
+      })
+      .catch(() => {
+        if (cancelled) return
+        clearAnonResults()
+        navigate('/')
+      })
+    return () => { cancelled = true }
+  }, [eligibleBenefits, user, navigate])
 
-  if (!eligibleBenefits) return null
+  if (eligibleBenefits === null) {
+    return (
+      <div className="page">
+        <SiteHeader />
+        <main className="results-main">
+          <p style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Loading your results...</p>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
 
   const siteHeader = <SiteHeader />
 
@@ -74,6 +121,19 @@ function ResultsPage() {
                   </Link>
                 ))}
             </div>
+            {!user && (
+              <div className="results-retake-row">
+                <button
+                  className="results-retake-btn"
+                  onClick={() => {
+                    clearAnonResults()
+                    navigate('/questionnaire')
+                  }}
+                >
+                  Retake questionnaire
+                </button>
+              </div>
+            )}
             {!user && (
               <div className="results-save-cta">
                 <p className="results-save-cta__text">

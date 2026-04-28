@@ -6,6 +6,7 @@ import Footer from './Footer';
 import AuthButtons from './components/AuthButtons.tsx';
 import AuthMenuItems from './components/AuthMenuItems.tsx';
 import { ScrollableConditions } from './ScrollableConditions.tsx';
+import { writeAnonResults } from './anonResults';
 
 function getStored<T>(key: string, fallback: T): T {
   try {
@@ -437,6 +438,8 @@ function Questionnaire() {
           credentials: 'include',
           body: JSON.stringify({ answers: finalAnswers, matchedBenefitIds: benefitIds }),
         }).catch(err => console.error('Failed to save results:', err));
+      } else {
+        writeAnonResults(finalAnswers);
       }
 
       clearQuestionnaireStorage();

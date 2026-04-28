@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.tsx'
 import AuthButtons from './AuthButtons.tsx'
 import AuthMenuItems from './AuthMenuItems.tsx'
+import { hasAnonResults } from '../anonResults'
 
 export default function SiteHeader() {
   const navigate = useNavigate()
@@ -29,7 +30,12 @@ export default function SiteHeader() {
               <button
                 className="nav-dropdown__item"
                 role="menuitem"
-                onClick={() => { setShowMenu(false); navigate(user ? '/dashboard' : '/') }}
+                onClick={() => {
+                  setShowMenu(false)
+                  if (user) navigate('/dashboard')
+                  else if (hasAnonResults()) navigate('/results')
+                  else navigate('/')
+                }}
               >
                 Home
               </button>
