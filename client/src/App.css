@@ -393,6 +393,8 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.18s ease;
   font-family: inherit;
   width: 100%;
+  text-decoration: none;
+  color: inherit;
 }
 
 .benefit-tile:hover {

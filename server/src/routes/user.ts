@@ -14,6 +14,7 @@ router.get('/', requireAuth, async (req, res, next) => {
       answers: unknown;
       updated_at: string;
       id: number;
+      slug: string;
       name: string;
       category: string;
       short_description: string;
@@ -28,6 +29,7 @@ router.get('/', requireAuth, async (req, res, next) => {
          uq.answers,
          uq.updated_at,
          b.id,
+         b.slug,
          b.name,
          b.category,
          b.short_description,

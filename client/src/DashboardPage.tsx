@@ -1,7 +1,7 @@
 import './App.css'
 import { useState, useEffect } from 'react'
 import type { FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.tsx'
 import Footer from './Footer'
 import SiteHeader from './components/SiteHeader'
@@ -9,6 +9,7 @@ import LoginModal from './components/LoginModal.tsx'
 
 interface Benefit {
   id: number
+  slug: string
   name: string
   category: string
   short_description: string
@@ -30,7 +31,6 @@ function DashboardPage() {
   const { user, isLoading, clearUser } = useAuth()
   const [results, setResults] = useState<SavedResults | null>(null)
   const [resultsLoading, setResultsLoading] = useState(true)
-  const [selectedBenefit, setSelectedBenefit] = useState<Benefit | null>(null)
   const [email, setEmail] = useState('')
   const [emailError, setEmailError] = useState('')
   const [emailSaving, setEmailSaving] = useState(false)
@@ -132,41 +132,6 @@ function DashboardPage() {
     )
   }
 
-  if (selectedBenefit !== null) {
-    return (
-      <div className="page">
-        {siteHeader}
-        <main className="detail-main">
-          <div className="benefit-detail">
-            <div className="benefit-detail__header">
-              <button className="benefit-detail__back" onClick={() => { setSelectedBenefit(null); window.scrollTo(0, 0) }}>
-                ← Back
-              </button>
-              <h1 className="benefit-detail__name">{selectedBenefit.name}</h1>
-            </div>
-            <div className="benefit-detail__section">
-              <h2 className="benefit-detail__section-label">About this benefit</h2>
-              <p className="benefit-detail__section-text">{selectedBenefit.description}</p>
-            </div>
-            <div className="benefit-detail__section">
-              <h2 className="benefit-detail__section-label">Who may be eligible</h2>
-              <p className="benefit-detail__section-text">{selectedBenefit.eligibility_summary}</p>
-            </div>
-            <a
-              href={selectedBenefit.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="cta-button benefit-detail__link"
-            >
-              Visit official resource →
-            </a>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    )
-  }
-
   return (
     <div className="page">
       {siteHeader}
@@ -185,16 +150,16 @@ function DashboardPage() {
                 {[...results.matchedBenefits]
                   .sort((a, b) => a.name.localeCompare(b.name))
                   .map(benefit => (
-                    <button
+                    <Link
                       key={benefit.id}
+                      to={`/benefits/${benefit.slug}`}
                       className="benefit-tile"
-                      onClick={() => { setSelectedBenefit(benefit); window.scrollTo(0, 0) }}
                     >
                       <span className="benefit-tile__name">{benefit.name}</span>
                       {benefit.short_description && (
                         <span className="benefit-tile__desc">{benefit.short_description}</span>
                       )}
-                    </button>
+                    </Link>
                   ))}
               </div>
               <button className="cta-button dashboard-retake" onClick={() => navigate('/questionnaire')}>
