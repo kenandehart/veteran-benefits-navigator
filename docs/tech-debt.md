@@ -181,3 +181,47 @@ work to do today.
 in isolation but easy to under-scope, since "we already collect that, right?"
 is the kind of assumption that bites. Probably half a day if the rule is
 clear.
+
+---
+
+## 7. Guard/Reserve service representation in QuestionnaireAnswers
+
+**Problem.** The VA Home Loan Guaranty has a 6-year Guard/Reserve path: 6
+creditable years in the Selected Reserve or National Guard plus continued
+service or honorable discharge/retirement. The seed text references it ("at
+least six years of National Guard or Reserve service"). The
+`QuestionnaireAnswers` schema has no dedicated field for that — service is
+only modeled as discrete `ServicePeriod` entries with a per-period
+`activeDuty` boolean. `checkHomeLoanServiceReq` in
+`server/src/eligibility.ts` reaches the path by summing `periodDays` across
+`activeDuty: false` periods and requiring at least one with
+`dischargeLevel === 1`. That works for the engine, but a test would have to
+construct a multi-period fixture spanning 6+ years to exercise it — awkward
+enough that the VA Home Loan test pass on 2026-04-29 deliberately skipped
+it. The path is not currently covered by tests.
+
+**Recommended approach.** A product/UX call, not a code call: how should the
+questionnaire actually ask about Guard/Reserve service?
+
+- **(a) Add a top-level field** — `guardOrReserveYears: number` (or a richer
+  object covering "currently serving" vs "honorably discharged/retired") on
+  `QuestionnaireAnswersSchema`, wired through the client questionnaire and
+  `checkHomeLoanServiceReq`. Tests then probe the path with a single field
+  override, matching how every other path is tested.
+- **(b) Accept the current shape** — leave the path implicit in
+  `servicePeriods` and write the test by constructing the multi-period
+  fixture. Document the expected shape (number of periods,
+  `activeDuty: false`, total day-count threshold, honorable on at least one)
+  in a fixture-builder comment so future readers don't have to
+  reverse-engineer it.
+
+If the existing service-periods step is the only intake the questionnaire
+offers for Guard/Reserve service, (b) is the closest match. If the product
+wants a separate "have you served in the Guard/Reserve for X years?"
+question, (a) is the right fix.
+
+**Cost.** Option (a): schema + client + server + spec doc, similar in scope
+to item #1 — a focused day or two. Option (b): an afternoon for a thoughtful
+fixture and comment, but bakes implementation details into the test, so any
+future change to how Guard/Reserve service is modeled will also require
+touching the test.

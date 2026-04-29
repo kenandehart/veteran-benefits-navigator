@@ -220,7 +220,9 @@ function checkPension(answers: QuestionnaireAnswers): boolean {
 
 function checkVGLI(answers: QuestionnaireAnswers): boolean {
   if (!answers.hadSGLI) return false;
-  return inVGLIConversionWindow(answers.servicePeriods);
+  const qualifyingPeriods = answers.servicePeriods.filter(p => p.dischargeLevel <= 2);
+  if (qualifyingPeriods.length === 0) return false;
+  return inVGLIConversionWindow(qualifyingPeriods);
 }
 
 function checkHousingGrant(answers: QuestionnaireAnswers): boolean {
