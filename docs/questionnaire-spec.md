@@ -57,10 +57,10 @@ nullable fields have meaningful sentinel semantics described below.
 
 | Field | Type | Allowed values | Sentinels | Description |
 |---|---|---|---|---|
-| `servicePeriods` | array of ServicePeriod | length 1–20 | — | Ordered list of service periods. Schema enforces `min(1)` and `max(20)`; the client UI does not enforce the upper bound. |
+| `servicePeriods` | array of ServicePeriod | length 1–20 | — | Ordered list of service periods. Schema enforces `min(1)` and `max(20)`; the client UI mirrors the cap by disabling the `add-another` Yes button once 19 periods are saved (the in-progress period brings the total to 20 on commit). |
 | `serviceConnectedCondition` | boolean \| null | `true`, `false`, `null` | `null` = "I'm not sure" (only reachable via the `service-connected` step) | Whether the veteran reports a current service-connected illness, injury, or condition. Auto-set to `true` whenever the veteran provides any disability rating value, including 0%: a 0% rating is an active VA decision acknowledging service connection at a non-compensable level, not the absence of a condition. |
 | `hasDisabilityRating` | boolean \| null | `true`, `false`, `null` | `null` = initial/unset | Whether the veteran reports having a current VA disability rating. Set explicitly by the `has-rating` step. The flow always passes through `has-rating`, so `null` should not occur at submission in normal use. |
-| `disabilityRating` | integer \| null | `0`–`100`; the UI offers only multiples of 10 | `null` = veteran has no rating (the `rating-value` step was skipped) | The veteran's current VA disability rating percentage. The schema accepts any integer 0–100; the UI restricts to `{0, 10, 20, …, 100}`. |
+| `disabilityRating` | integer \| null | `{0, 10, 20, …, 100}` | `null` = veteran has no rating (the `rating-value` step was skipped) | The veteran's current VA disability rating percentage. Both the schema and the UI restrict to multiples of 10 (VA combined ratings are always multiples of 10). |
 | `adaptiveHousingCondition` | boolean | `true`, `false` | initial value `false` | `true` only when the veteran answered Yes to BOTH `housing-condition` (qualifying-conditions list) AND `housing-ownership`. Reset to `false` on every reachable path that skips the housing branch. |
 | `hasAutoGrantCondition` | boolean | `true`, `false` | initial value `false` | Veteran reports at least one of the conditions listed in the `auto-grant-condition` step. Stays `false` if that step is skipped. |
 | `incomeBelowLimit` | boolean | `true`, `false` | initial value `false` | Whether the veteran's combined net worth and annual income are below the displayed threshold ($163,699 as currently hard-coded). |
@@ -243,7 +243,10 @@ Steps that affect flow but write nothing are noted explicitly.
 - **Trigger:** Always shown after the rest of the service-period loop has
   completed for the current period.
 - **Question text:** "Would you like to add another period of service?"
-- **Input type:** Two-button choice — **No** (left) / **Yes** (right).
+- **Input type:** Two-button choice — **No** (left) / **Yes** (right). The
+  Yes button is disabled once `answers.servicePeriods.length >= 19`, since
+  committing the in-progress period would bring the total to the schema's
+  `max(20)`; an explanatory note is shown directing the user to choose No.
 - **Writes:** On either choice, the current
   `currentServicePeriod` (now fully populated) is appended to
   `answers.servicePeriods`.
@@ -261,7 +264,7 @@ Steps that affect flow but write nothing are noted explicitly.
     3. **Neither** — continue to question 14, `has-rating`, and explicitly
        set `hadSGLI = false`.
 
-> **VGLI date-window predicate** (`meetsVGLIDateWindow`): returns `true` if
+> **VGLI date-window predicate** (`inVGLIConversionWindow`): returns `true` if
 > ANY service period satisfies either:
 > - **Active-duty branch:** the period is active duty, the absolute
 >   difference between today and `separationDate` is ≤ 485 days, AND the
@@ -584,16 +587,7 @@ review rather than guessed at.
    legacy clients), the rationale is not visible in code; if it is
    defensive, the schema may be tighter than it looks.
 
-2. **Naming mismatch: VGLI predicate gates the SGLI question.** The
-   `meetsVGLIDateWindow` helper is used to decide whether to ask
-   `sgli-coverage` (an SGLI question). Presumably this is because SGLI is a
-   prerequisite for VGLI and the flow only asks about SGLI when VGLI may
-   be applicable. The intent is plausible but the naming and the logic
-   should be confirmed: in particular, the 31-day minimum is an active-duty
-   prerequisite for VGLI conversion, but the question text itself just
-   asks about SGLI coverage in general.
-
-3. **`paidAtTotalDisabilityRate` semantics differ from the question text.**
+2. **`paidAtTotalDisabilityRate` semantics differ from the question text.**
    The question asks "Does the VA pay you at the 100% disability rate?",
    which can be true via a 100% rating, via TDIU, or via other VA pay
    mechanisms. The field name suggests "100% single-disability rating OR
@@ -601,7 +595,7 @@ review rather than guessed at.
    the field as the question (any 100% pay rate) or as the name (rating
    100% or TDIU only).
 
-4. **Section labels jump non-monotonically.** The progress indicator's
+3. **Section labels jump non-monotonically.** The progress indicator's
    section label moves through: Service History → (Insurance) → Health &
    Disability → Housing → Health & Disability → Financial → Health &
    Disability → Service History (final POW question). This is not strictly
@@ -609,19 +603,7 @@ review rather than guessed at.
    The POW question is also the only final-section step that returns to
    "Service History" after several sections away.
 
-5. **Schema permits `disabilityRating` values that the UI cannot produce.**
-   `RATING_OPTIONS` is `{0, 10, …, 100}` (multiples of 10), but the schema
-   accepts any integer 0–100. Either the schema should restrict to
-   multiples of 10, or the UI should expose all integer values (the
-   official VA combined ratings are always multiples of 10, so the schema
-   is broader than necessary).
-
-6. **Schema permits up to 20 service periods, but the UI does not cap.**
-   The `add-another` Yes button has no guard against the schema's
-   `max(20)`. A user adding a 21st period would fail validation only at
-   submit. Consider either capping in the UI or relaxing the schema.
-
-7. **`adaptiveHousingCondition` collapses two questions into a single
+4. **`adaptiveHousingCondition` collapses two questions into a single
    boolean.** A veteran who has a qualifying housing condition but does
    NOT live in / plan to live in an owned home will end up with
    `adaptiveHousingCondition = false`, identical to a veteran who has no
@@ -630,12 +612,12 @@ review rather than guessed at.
    these cases (e.g., for a benefit that ignores ownership), the field
    is too coarse.
 
-8. **"I'm not sure" only exists for `service-connected`.** Several other
+5. **"I'm not sure" only exists for `service-connected`.** Several other
    questions (SGLI, Purple Heart, POW) plausibly have uncertain answers
    but offer only Yes/No. This is a UX consistency question rather than
    a code defect.
 
-9. **The `service-connected` step explicitly resets
+6. **The `service-connected` step explicitly resets
    `adaptiveHousingCondition = false`.** Since this step is only reached
    on the `has-rating = No` path — and the only writers of
    `adaptiveHousingCondition` are reached via `has-rating = Yes` — the

@@ -163,7 +163,7 @@ function checkHomeLoan(answers: QuestionnaireAnswers): boolean {
   return checkHomeLoanServiceReq(answers);
 }
 
-function meetsVGLIDateWindow(periods: ServicePeriod[]): boolean {
+function inVGLIConversionWindow(periods: ServicePeriod[]): boolean {
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
   const WINDOW_MS = 485 * 24 * 60 * 60 * 1000;
@@ -190,7 +190,7 @@ function checkPension(answers: QuestionnaireAnswers): boolean {
 
 function checkVGLI(answers: QuestionnaireAnswers): boolean {
   if (!answers.hadSGLI) return false;
-  return meetsVGLIDateWindow(answers.servicePeriods);
+  return inVGLIConversionWindow(answers.servicePeriods);
 }
 
 function checkHousingGrant(answers: QuestionnaireAnswers): boolean {

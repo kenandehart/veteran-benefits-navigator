@@ -163,7 +163,13 @@ function validateSeparationDate(iso: string, entryIso: string): string {
   return '';
 }
 
-function meetsVGLIDateWindow(periods: ServicePeriod[]): boolean {
+// True when the veteran could plausibly be inside the VGLI conversion window:
+// any service period whose separation date falls within the 485-day post-separation
+// window (i.e., the separation is in the past, no more than 485 days ago) and,
+// for active-duty periods, has the 31-day minimum length VGLI conversion requires.
+// Used to gate whether the SGLI question is asked — SGLI coverage is a
+// prerequisite for VGLI conversion, so we only ask when conversion may apply.
+function inVGLIConversionWindow(periods: ServicePeriod[]): boolean {
   const today = new Date();
   const WINDOW_MS = 485 * 24 * 60 * 60 * 1000;
   return periods.some(period => {
@@ -806,6 +812,10 @@ function Questionnaire() {
 
     case 'add-another': {
       const completedPeriod = currentServicePeriod as ServicePeriod;
+      // Both branches append completedPeriod, so length 19 means committing
+      // brings the total to 20 — the schema's max. Disable Yes at that point
+      // to prevent starting a 21st period that would fail validation at submit.
+      const atServicePeriodLimit = answers.servicePeriods.length >= 19;
       stepContent = (
         <>
           <label className="q-label">Would you like to add another period of service?</label>
@@ -824,7 +834,7 @@ function Questionnaire() {
                 if (hasVietnamEra) {
                   advance('vietnam-service', {}, updatedAnswers);
                 } else {
-                  const showSGLI = meetsVGLIDateWindow(updatedAnswers.servicePeriods);
+                  const showSGLI = inVGLIConversionWindow(updatedAnswers.servicePeriods);
                   advance(
                     showSGLI ? 'sgli-coverage' : 'has-rating',
                     {},
@@ -844,10 +854,16 @@ function Questionnaire() {
                 };
                 advance('entry-date', {}, updatedAnswers);
               }}
+              disabled={atServicePeriodLimit}
             >
               Yes
             </button>
           </div>
+          {atServicePeriodLimit && (
+            <p style={{ fontSize: '0.9em', fontStyle: 'italic', marginTop: '8px' }}>
+              You've reached the maximum of 20 service periods. Choose No to continue.
+            </p>
+          )}
         </>
       );
       break;
@@ -862,7 +878,7 @@ function Questionnaire() {
               className="cta-button"
               onClick={() => {
                 const updatedAnswers = { ...answers, servedInVietnam: false };
-                const showSGLI = meetsVGLIDateWindow(answers.servicePeriods);
+                const showSGLI = inVGLIConversionWindow(answers.servicePeriods);
                 advance(
                   showSGLI ? 'sgli-coverage' : 'has-rating',
                   {},
@@ -876,7 +892,7 @@ function Questionnaire() {
               className="cta-button"
               onClick={() => {
                 const updatedAnswers = { ...answers, servedInVietnam: true };
-                const showSGLI = meetsVGLIDateWindow(answers.servicePeriods);
+                const showSGLI = inVGLIConversionWindow(answers.servicePeriods);
                 advance(
                   showSGLI ? 'sgli-coverage' : 'has-rating',
                   {},

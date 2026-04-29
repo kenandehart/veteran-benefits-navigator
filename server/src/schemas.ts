@@ -28,7 +28,15 @@ export const QuestionnaireAnswersSchema = z.strictObject({
   servicePeriods: z.array(ServicePeriodSchema).min(1).max(20),
   serviceConnectedCondition: z.boolean().nullable(),
   hasDisabilityRating: z.boolean().nullable(),
-  disabilityRating: z.number().int().min(0).max(100).nullable(),
+  // RATING_OPTIONS in the client only offers multiples of 10; mirror that
+  // here so the schema and UI agree (VA combined ratings are always 0/10/…/100).
+  disabilityRating: z
+    .number()
+    .int()
+    .min(0)
+    .max(100)
+    .refine(n => n % 10 === 0, { message: 'must be a multiple of 10' })
+    .nullable(),
   adaptiveHousingCondition: z.boolean(),
   hasAutoGrantCondition: z.boolean(),
   incomeBelowLimit: z.boolean(),
