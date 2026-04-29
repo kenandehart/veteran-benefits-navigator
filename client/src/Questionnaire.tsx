@@ -994,6 +994,11 @@ function Questionnaire() {
             ))}
           </select>
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            {/*
+              Any rating value, including 0%, sets serviceConnectedCondition = true:
+              a 0% rating is an active VA decision acknowledging service connection at a
+              non-compensable level, not the absence of a condition.
+            */}
             <button
               className="cta-button q-next-btn"
               onClick={() => {
