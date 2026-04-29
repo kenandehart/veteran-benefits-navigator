@@ -42,7 +42,7 @@ interface QuestionnaireAnswers {
   servedInVietnam: boolean;
   currentlyInVRE: boolean;
   formerPOW: boolean;
-  singleDisability100OrTDIU: boolean;
+  paidAtTotalDisabilityRate: boolean;
 }
 
 const DENTAL_ID = 11;
@@ -64,7 +64,7 @@ const DEFAULT_ANSWERS: QuestionnaireAnswers = {
   servedInVietnam: false,
   currentlyInVRE: false,
   formerPOW: false,
-  singleDisability100OrTDIU: false,
+  paidAtTotalDisabilityRate: false,
 };
 
 interface TestCase {
@@ -110,7 +110,7 @@ const tests: TestCase[] = [
         completedFullTerm: true,
         hardshipOrEarlyOut: false,
       }],
-      singleDisability100OrTDIU: true,
+      paidAtTotalDisabilityRate: true,
     },
   },
 
@@ -263,7 +263,7 @@ const tests: TestCase[] = [
         hardshipOrEarlyOut: false,
       }],
       formerPOW: true,
-      singleDisability100OrTDIU: true,
+      paidAtTotalDisabilityRate: true,
       currentlyInVRE: true,
     },
   },

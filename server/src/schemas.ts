@@ -36,7 +36,7 @@ export const QuestionnaireAnswersSchema = z.strictObject({
   purpleHeartPost911: z.boolean(),
   hadSGLI: z.boolean(),
   currentlyInVRE: z.boolean(),
-  singleDisability100OrTDIU: z.boolean(),
+  paidAtTotalDisabilityRate: z.boolean(),
   formerPOW: z.boolean(),
   servedInVietnam: z.boolean(),
 });

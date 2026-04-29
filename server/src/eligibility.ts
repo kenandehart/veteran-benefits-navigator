@@ -21,7 +21,7 @@ interface QuestionnaireAnswers {
   purpleHeartPost911: boolean;
   hadSGLI: boolean;
   currentlyInVRE: boolean;
-  singleDisability100OrTDIU: boolean;
+  paidAtTotalDisabilityRate: boolean;
   formerPOW: boolean;
   servedInVietnam: boolean;
 }
@@ -290,7 +290,7 @@ function checkDental(answers: QuestionnaireAnswers): boolean {
   if (!hasValidDischarge) return false;
 
   if (answers.formerPOW) return true;
-  if (answers.singleDisability100OrTDIU) return true;
+  if (answers.paidAtTotalDisabilityRate) return true;
   if (answers.currentlyInVRE) return true;
 
   const today = new Date();

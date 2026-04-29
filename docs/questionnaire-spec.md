@@ -68,7 +68,7 @@ nullable fields have meaningful sentinel semantics described below.
 | `purpleHeartPost911` | boolean | `true`, `false` | initial value `false` | Whether the veteran was awarded a Purple Heart on or after 2001-09-11. |
 | `hadSGLI` | boolean | `true`, `false` | initial value `false` | Whether the veteran had Servicemembers' Group Life Insurance during service. The `sgli-coverage` step is conditional; on every path that skips it, the field is explicitly set to `false`. |
 | `currentlyInVRE` | boolean | `true`, `false` | initial value `false` | Whether the veteran is currently participating in Veteran Readiness and Employment (Chapter 31). The `currently-in-vre` step is only reached when the rating is ≥ 10%; on the rating-0% and no-rating paths, this is explicitly set to `false`. |
-| `singleDisability100OrTDIU` | boolean | `true`, `false` | initial value `false` | Whether the VA pays the veteran at the 100% disability rate. Auto-set `true` when the rating is 100%; set by the `single-disability-tdiu` step when the rating is 10–90%; otherwise `false`. |
+| `paidAtTotalDisabilityRate` | boolean | `true`, `false` | initial value `false` | Whether the VA pays the veteran at the 100% disability rate. Auto-set `true` when the rating is 100%; set by the `single-disability-tdiu` step when the rating is 10–90%; otherwise `false`. |
 | `formerPOW` | boolean | `true`, `false` | initial value `false` | Whether the veteran was ever a prisoner of war. |
 | `servedInVietnam` | boolean | `true`, `false` | initial value `false` | Whether the veteran served in the Republic of Vietnam. The `vietnam-service` step is only reached if at least one collected service period overlaps the Vietnam-era date window; on the No branch and on every path that skips the step, the field is left at its initial `false` (never explicitly written on the No branch — see Open Questions). |
 
@@ -327,11 +327,11 @@ Steps that affect flow but write nothing are noted explicitly.
 - **Writes (always):** `disabilityRating` = the selected integer; AND
   `serviceConnectedCondition = true`.
 - **Branching by chosen rating:**
-  - **`100`:** also set `singleDisability100OrTDIU = true`. Skip question 16
+  - **`100`:** also set `paidAtTotalDisabilityRate = true`. Skip question 16
     and continue to question 17, `currently-in-vre`.
   - **`10`–`90`:** continue to question 16, `single-disability-tdiu`.
   - **`0`:** also set `currentlyInVRE = false` AND
-    `singleDisability100OrTDIU = false`. Skip questions 16 and 17 and
+    `paidAtTotalDisabilityRate = false`. Skip questions 16 and 17 and
     continue to question 19, `housing-condition`.
 
 #### 16. `single-disability-tdiu`
@@ -345,7 +345,7 @@ Steps that affect flow but write nothing are noted explicitly.
   100% when service-connected conditions keep you from working, even if
   your rating is lower."
 - **Input type:** Two-button choice — **No** (left) / **Yes** (right).
-- **Writes:** `singleDisability100OrTDIU` (`false` or `true`).
+- **Writes:** `paidAtTotalDisabilityRate` (`false` or `true`).
 - **Continues to:** question 17, `currently-in-vre`.
 
 #### 17. `currently-in-vre`
@@ -535,14 +535,14 @@ The following statements enumerate every conditional branch in the flow.
   `single-disability-tdiu`, `currently-in-vre`, `housing-condition`,
   `housing-ownership`, AND `auto-grant-condition`.
 - **B8 (rating value 100%).** If `disabilityRating == 100`, then
-  `single-disability-tdiu` is skipped, `singleDisability100OrTDIU` is
+  `single-disability-tdiu` is skipped, `paidAtTotalDisabilityRate` is
   auto-set to `true`, and the flow goes to `currently-in-vre`.
 - **B9 (rating value 10–90%).** If `disabilityRating ∈ {10, …, 90}`,
   `single-disability-tdiu` is shown, and after it the flow goes to
   `currently-in-vre`.
 - **B10 (rating value 0%).** If `disabilityRating == 0`, then
   `single-disability-tdiu` and `currently-in-vre` are skipped,
-  `singleDisability100OrTDIU` and `currentlyInVRE` are explicitly set to
+  `paidAtTotalDisabilityRate` and `currentlyInVRE` are explicitly set to
   `false`, and the flow goes directly to `housing-condition`.
 
 ### Branches in the housing sub-flow
@@ -622,7 +622,7 @@ review rather than guessed at.
    The predicate either should drop `Math.abs` or document why future
    separations are acceptable.
 
-7. **`singleDisability100OrTDIU` semantics differ from the question text.**
+7. **`paidAtTotalDisabilityRate` semantics differ from the question text.**
    The question asks "Does the VA pay you at the 100% disability rate?",
    which can be true via a 100% rating, via TDIU, or via other VA pay
    mechanisms. The field name suggests "100% single-disability rating OR

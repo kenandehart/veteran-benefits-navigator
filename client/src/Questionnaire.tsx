@@ -17,7 +17,7 @@ function getStored<T>(key: string, fallback: T): T {
   }
 }
 
-const STORAGE_KEYS = ['vbn_step', 'vbn_answers', 'vbn_history'];
+const STORAGE_KEYS = ['vbn_step_v2', 'vbn_answers_v2', 'vbn_history_v2'];
 
 function clearQuestionnaireStorage() {
   STORAGE_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch {} });
@@ -46,7 +46,7 @@ interface QuestionnaireAnswers {
   purpleHeartPost911: boolean;
   hadSGLI: boolean;
   currentlyInVRE: boolean;
-  singleDisability100OrTDIU: boolean;
+  paidAtTotalDisabilityRate: boolean;
   formerPOW: boolean;
   servedInVietnam: boolean;
 }
@@ -245,17 +245,17 @@ const INITIAL_ANSWERS: QuestionnaireAnswers = {
   purpleHeartPost911: false,
   hadSGLI: false,
   currentlyInVRE: false,
-  singleDisability100OrTDIU: false,
+  paidAtTotalDisabilityRate: false,
   formerPOW: false,
   servedInVietnam: false,
 };
 
 function Questionnaire() {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState<Step>(() => getStored('vbn_step', 'entry-date'));
+  const [currentStep, setCurrentStep] = useState<Step>(() => getStored('vbn_step_v2', 'entry-date'));
   const [currentServicePeriod, setCurrentServicePeriod] = useState<Partial<ServicePeriod>>({});
-  const [answers, setAnswers] = useState<QuestionnaireAnswers>(() => getStored('vbn_answers', INITIAL_ANSWERS));
-  const [history, setHistory] = useState<Snapshot[]>(() => getStored('vbn_history', []));
+  const [answers, setAnswers] = useState<QuestionnaireAnswers>(() => getStored('vbn_answers_v2', INITIAL_ANSWERS));
+  const [history, setHistory] = useState<Snapshot[]>(() => getStored('vbn_history_v2', []));
   const [showTooltip, setShowTooltip] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const { user, logout } = useAuth();
@@ -268,9 +268,9 @@ function Questionnaire() {
   const sgliTooltipRef = useRef<HTMLDivElement>(null);
   const tdiuTooltipRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => { try { localStorage.setItem('vbn_step', JSON.stringify(currentStep)); } catch {} }, [currentStep]);
-  useEffect(() => { try { localStorage.setItem('vbn_answers', JSON.stringify(answers)); } catch {} }, [answers]);
-  useEffect(() => { try { localStorage.setItem('vbn_history', JSON.stringify(history)); } catch {} }, [history]);
+  useEffect(() => { try { localStorage.setItem('vbn_step_v2', JSON.stringify(currentStep)); } catch {} }, [currentStep]);
+  useEffect(() => { try { localStorage.setItem('vbn_answers_v2', JSON.stringify(answers)); } catch {} }, [answers]);
+  useEffect(() => { try { localStorage.setItem('vbn_history_v2', JSON.stringify(history)); } catch {} }, [history]);
 
   useEffect(() => {
     if (!showTooltip) return;
@@ -315,7 +315,7 @@ function Questionnaire() {
         case 'rating-value': {
           if (answers.disabilityRating !== null) {
             if (answers.disabilityRating === 100) {
-              advance('currently-in-vre', undefined, { ...answers, serviceConnectedCondition: true, singleDisability100OrTDIU: true });
+              advance('currently-in-vre', undefined, { ...answers, serviceConnectedCondition: true, paidAtTotalDisabilityRate: true });
             } else if (answers.disabilityRating >= 10) {
               advance('single-disability-tdiu', undefined, { ...answers, serviceConnectedCondition: true });
             } else {
@@ -323,7 +323,7 @@ function Questionnaire() {
                 ...answers,
                 serviceConnectedCondition: true,
                 currentlyInVRE: false,
-                singleDisability100OrTDIU: false,
+                paidAtTotalDisabilityRate: false,
               });
             }
           }
@@ -998,7 +998,7 @@ function Questionnaire() {
               className="cta-button q-next-btn"
               onClick={() => {
                 if (answers.disabilityRating === 100) {
-                  advance('currently-in-vre', undefined, { ...answers, serviceConnectedCondition: true, singleDisability100OrTDIU: true });
+                  advance('currently-in-vre', undefined, { ...answers, serviceConnectedCondition: true, paidAtTotalDisabilityRate: true });
                 } else if (answers.disabilityRating !== null && answers.disabilityRating >= 10) {
                   advance('single-disability-tdiu', undefined, { ...answers, serviceConnectedCondition: true });
                 } else {
@@ -1006,7 +1006,7 @@ function Questionnaire() {
                     ...answers,
                     serviceConnectedCondition: true,
                     currentlyInVRE: false,
-                    singleDisability100OrTDIU: false,
+                    paidAtTotalDisabilityRate: false,
                   });
                 }
               }}
@@ -1074,13 +1074,13 @@ function Questionnaire() {
           >
             <button
               className="cta-button"
-              onClick={() => advance('currently-in-vre', undefined, { ...answers, singleDisability100OrTDIU: false })}
+              onClick={() => advance('currently-in-vre', undefined, { ...answers, paidAtTotalDisabilityRate: false })}
             >
               No
             </button>
             <button
               className="cta-button"
-              onClick={() => advance('currently-in-vre', undefined, { ...answers, singleDisability100OrTDIU: true })}
+              onClick={() => advance('currently-in-vre', undefined, { ...answers, paidAtTotalDisabilityRate: true })}
             >
               Yes
             </button>

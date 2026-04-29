@@ -1,4 +1,4 @@
-const RESULTS_KEY = 'vbn_results_v1';
+const RESULTS_KEY = 'vbn_results_v2';
 
 export interface AnonResultsSnapshot {
   answers: unknown;

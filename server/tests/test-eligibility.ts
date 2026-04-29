@@ -38,7 +38,7 @@ const testAnswers = {
   servedInVietnam: true,
   currentlyInVRE: false,
   formerPOW: false,
-  singleDisability100OrTDIU: false
+  paidAtTotalDisabilityRate: false
 };
 
 const results = checkEligibility(testAnswers);
