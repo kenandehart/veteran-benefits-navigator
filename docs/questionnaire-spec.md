@@ -70,7 +70,7 @@ nullable fields have meaningful sentinel semantics described below.
 | `currentlyInVRE` | boolean | `true`, `false` | initial value `false` | Whether the veteran is currently participating in Veteran Readiness and Employment (Chapter 31). The `currently-in-vre` step is only reached when the rating is ≥ 10%; on the rating-0% and no-rating paths, this is explicitly set to `false`. |
 | `paidAtTotalDisabilityRate` | boolean | `true`, `false` | initial value `false` | Whether the VA pays the veteran at the 100% disability rate. Auto-set `true` when the rating is 100%; set by the `single-disability-tdiu` step when the rating is 10–90%; otherwise `false`. |
 | `formerPOW` | boolean | `true`, `false` | initial value `false` | Whether the veteran was ever a prisoner of war. |
-| `servedInVietnam` | boolean | `true`, `false` | initial value `false` | Whether the veteran served in the Republic of Vietnam. The `vietnam-service` step is only reached if at least one collected service period overlaps the Vietnam-era date window; on the No branch and on every path that skips the step, the field is left at its initial `false` (never explicitly written on the No branch — see Open Questions). |
+| `servedInVietnam` | boolean | `true`, `false` | initial value `false` | Whether the veteran served in the Republic of Vietnam. The `vietnam-service` step is only reached if at least one collected service period overlaps the Vietnam-era date window; on every path that skips the step, the field is left at its initial `false`. |
 
 ### 2.2 ServicePeriod (one entry per `servicePeriods[]`)
 
@@ -277,10 +277,7 @@ Steps that affect flow but write nothing are noted explicitly.
   (entry < 1975-05-07 and separation > 1955-11-01).
 - **Question text:** "Did you serve in the Republic of Vietnam?"
 - **Input type:** Two-button choice — **No** (left) / **Yes** (right).
-- **Writes:**
-  - **Yes:** `servedInVietnam = true`.
-  - **No:** *No write occurs.* The field remains at its initial value,
-    which is `false`. (See Open Questions about the asymmetry.)
+- **Writes:** `servedInVietnam` (`true` or `false`).
 - **Branching:** On either answer, evaluate the VGLI date-window predicate
   again. If it matches, continue to question 13, `sgli-coverage`. Otherwise
   continue to question 14, `has-rating`, and explicitly set `hadSGLI = false`.
@@ -584,21 +581,14 @@ review rather than guessed at.
    legacy clients), the rationale is not visible in code; if it is
    defensive, the schema may be tighter than it looks.
 
-2. **`servedInVietnam` is never explicitly written on the No branch of
-   `vietnam-service`.** The Yes branch sets `servedInVietnam = true`; the No
-   branch leaves the field at its initial `false`. This is functionally
-   equivalent given the initial value, but creates an asymmetry that could
-   silently break if the initial value is changed or if the user navigates
-   back and forward through the step. Worth normalizing.
-
-3. **`activation-periods` answer is not stored anywhere.** The Yes/No
+2. **`activation-periods` answer is not stored anywhere.** The Yes/No
    answer affects only whether the `activation-guidance` informational step
    is shown. No field on the service period or the answers object captures
    whether the veteran was activated, so eligibility cannot reference it.
    If activation status is meaningful for any benefit, this field is
    missing from the answer schema.
 
-4. **Naming mismatch: VGLI predicate gates the SGLI question.** The
+3. **Naming mismatch: VGLI predicate gates the SGLI question.** The
    `meetsVGLIDateWindow` helper is used to decide whether to ask
    `sgli-coverage` (an SGLI question). Presumably this is because SGLI is a
    prerequisite for VGLI and the flow only asks about SGLI when VGLI may
@@ -607,14 +597,7 @@ review rather than guessed at.
    prerequisite for VGLI conversion, but the question text itself just
    asks about SGLI coverage in general.
 
-5. **`meetsVGLIDateWindow` uses `Math.abs` over the time difference.** A
-   `separationDate` in the future (within 485 days) would also satisfy the
-   predicate. Client-side `validateSeparationDate` rejects future
-   separation dates, but a tampered `localStorage` could carry one through.
-   The predicate either should drop `Math.abs` or document why future
-   separations are acceptable.
-
-6. **`paidAtTotalDisabilityRate` semantics differ from the question text.**
+4. **`paidAtTotalDisabilityRate` semantics differ from the question text.**
    The question asks "Does the VA pay you at the 100% disability rate?",
    which can be true via a 100% rating, via TDIU, or via other VA pay
    mechanisms. The field name suggests "100% single-disability rating OR
@@ -622,7 +605,7 @@ review rather than guessed at.
    the field as the question (any 100% pay rate) or as the name (rating
    100% or TDIU only).
 
-7. **Section labels jump non-monotonically.** The progress indicator's
+5. **Section labels jump non-monotonically.** The progress indicator's
    section label moves through: Service History → (Insurance) → Health &
    Disability → Housing → Health & Disability → Financial → Health &
    Disability → Service History (final POW question). This is not strictly
@@ -630,33 +613,33 @@ review rather than guessed at.
    The POW question is also the only final-section step that returns to
    "Service History" after several sections away.
 
-8. **Schema permits `disabilityRating` values that the UI cannot produce.**
+6. **Schema permits `disabilityRating` values that the UI cannot produce.**
    `RATING_OPTIONS` is `{0, 10, …, 100}` (multiples of 10), but the schema
    accepts any integer 0–100. Either the schema should restrict to
    multiples of 10, or the UI should expose all integer values (the
    official VA combined ratings are always multiples of 10, so the schema
    is broader than necessary).
 
-9. **Schema permits up to 20 service periods, but the UI does not cap.**
-    The `add-another` Yes button has no guard against the schema's
-    `max(20)`. A user adding a 21st period would fail validation only at
-    submit. Consider either capping in the UI or relaxing the schema.
+7. **Schema permits up to 20 service periods, but the UI does not cap.**
+   The `add-another` Yes button has no guard against the schema's
+   `max(20)`. A user adding a 21st period would fail validation only at
+   submit. Consider either capping in the UI or relaxing the schema.
 
-10. **`adaptiveHousingCondition` collapses two questions into a single
-    boolean.** A veteran who has a qualifying housing condition but does
-    NOT live in / plan to live in an owned home will end up with
-    `adaptiveHousingCondition = false`, identical to a veteran who has no
-    qualifying condition at all. The qualifying-condition fact is not
-    preserved separately. If the eligibility engine needs to distinguish
-    these cases (e.g., for a benefit that ignores ownership), the field
-    is too coarse.
+8. **`adaptiveHousingCondition` collapses two questions into a single
+   boolean.** A veteran who has a qualifying housing condition but does
+   NOT live in / plan to live in an owned home will end up with
+   `adaptiveHousingCondition = false`, identical to a veteran who has no
+   qualifying condition at all. The qualifying-condition fact is not
+   preserved separately. If the eligibility engine needs to distinguish
+   these cases (e.g., for a benefit that ignores ownership), the field
+   is too coarse.
 
-11. **"I'm not sure" only exists for `service-connected`.** Several other
-    questions (SGLI, Purple Heart, POW) plausibly have uncertain answers
-    but offer only Yes/No. This is a UX consistency question rather than
-    a code defect.
+9. **"I'm not sure" only exists for `service-connected`.** Several other
+   questions (SGLI, Purple Heart, POW) plausibly have uncertain answers
+   but offer only Yes/No. This is a UX consistency question rather than
+   a code defect.
 
-12. **The `service-connected` step explicitly resets
+10. **The `service-connected` step explicitly resets
     `adaptiveHousingCondition = false`.** Since this step is only reached
     on the `has-rating = No` path — and the only writers of
     `adaptiveHousingCondition` are reached via `has-rating = Yes` — the

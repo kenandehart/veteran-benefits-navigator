@@ -168,8 +168,11 @@ function meetsVGLIDateWindow(periods: ServicePeriod[]): boolean {
   const WINDOW_MS = 485 * 24 * 60 * 60 * 1000;
   return periods.some(period => {
     const sepDate = new Date(period.separationDate);
-    const diff = Math.abs(today.getTime() - sepDate.getTime());
-    if (diff > WINDOW_MS) return false;
+    // Require a non-negative gap: a future-dated separation should not satisfy
+    // the window. The UI rejects future separations, but a tampered
+    // localStorage could otherwise carry one through.
+    const diff = today.getTime() - sepDate.getTime();
+    if (diff < 0 || diff > WINDOW_MS) return false;
     const entryDate = new Date(period.entryDate);
     const days = Math.floor((sepDate.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
     if (period.activeDuty) return days >= 31;
@@ -853,11 +856,12 @@ function Questionnaire() {
             <button
               className="cta-button"
               onClick={() => {
+                const updatedAnswers = { ...answers, servedInVietnam: false };
                 const showSGLI = meetsVGLIDateWindow(answers.servicePeriods);
                 advance(
                   showSGLI ? 'sgli-coverage' : 'has-rating',
                   {},
-                  showSGLI ? answers : { ...answers, hadSGLI: false }
+                  showSGLI ? updatedAnswers : { ...updatedAnswers, hadSGLI: false }
                 );
               }}
             >
