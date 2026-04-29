@@ -89,15 +89,54 @@ function ResultsPage() {
 
   const siteHeader = <SiteHeader />
 
+  // Show a discharge-upgrade pointer when every service period the user
+  // entered is stricter than General. Those veterans are excluded from every
+  // benefit in the app per the false-hope principle, so without this nudge
+  // they hit a results page with no matches and no path forward.
+  const a = answers as { servicePeriods?: Array<{ dischargeLevel?: number }> } | null
+  const showDischargeUpgradeMessage =
+    !!a &&
+    Array.isArray(a.servicePeriods) &&
+    a.servicePeriods.length > 0 &&
+    a.servicePeriods.every(p => typeof p?.dischargeLevel === 'number' && p.dischargeLevel >= 3)
+
   return (
     <div className="page">
       {siteHeader}
       <main className="results-main">
+        {showDischargeUpgradeMessage && (
+          <p style={{
+            background: 'var(--bg)',
+            borderLeft: '3px solid #b8860b',
+            borderRadius: '2px',
+            padding: '14px 18px 14px 20px',
+            fontSize: '0.88rem',
+            lineHeight: 1.55,
+            color: 'var(--text)',
+          }}>
+            Some VA benefits may require a different discharge characterization. If you received an Other Than Honorable, Bad Conduct, or Dishonorable discharge, you may be able to apply for a discharge upgrade or request a Character of Discharge review.{' '}
+            <a
+              href="https://www.va.gov/discharge-upgrade-instructions/introduction/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Learn more at VA.gov
+            </a>.
+          </p>
+        )}
         {eligibleBenefits.length === 0 ? (
-          <div className="no-results">
+          <div className="no-results" style={showDischargeUpgradeMessage ? { paddingTop: '24px' } : undefined}>
             <p>We weren't able to find any matching benefits based on your answers.</p>
             <p>Your situation may still qualify you for benefits not yet covered by this tool. Consider reaching out to a VA-accredited representative for a full review.</p>
-            <button className="cta-button" onClick={() => navigate('/')}>Return to home page</button>
+            <button
+              className="results-retake-btn"
+              onClick={() => {
+                clearAnonResults()
+                navigate('/questionnaire')
+              }}
+            >
+              Retake questionnaire
+            </button>
           </div>
         ) : (
           <>

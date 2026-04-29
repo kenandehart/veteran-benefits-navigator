@@ -225,3 +225,41 @@ to item #1 — a focused day or two. Option (b): an afternoon for a thoughtful
 fixture and comment, but bakes implementation details into the test, so any
 future change to how Guard/Reserve service is modeled will also require
 touching the test.
+
+---
+
+## 8. Age and rating-notification-date representation in QuestionnaireAnswers
+
+**Problem.** VALife has a separate eligibility path for veterans 81 or
+older: they must have applied for disability compensation before turning
+81, received the rating after turning 81, and apply for VALife within 2
+years of the rating notification. The `QuestionnaireAnswers` schema has no
+date-of-birth, age, or rating-notification-date field — the only
+age-adjacent field is `ageOrDisability: boolean`, a Pension composite for
+"65+ OR has a disability" that is too coarse to express an 81 threshold or
+a 2-year window from a specific date. `checkVALife` in
+`server/src/eligibility.ts` therefore only models the under-81 path (any
+service-connected rating qualifies); a veteran on the 81+ path silently
+misses the match. The under-81 path is fully covered by tests; the 81+
+path was deliberately skipped during the VALife test pass on 2026-04-29.
+
+**Recommended approach.** A product/UX call: should the questionnaire ask
+for date of birth at all?
+
+- **(a) Add the fields.** Introduce `dateOfBirth: string` (ISO date) and
+  `ratingNotificationDate: string | null` on `QuestionnaireAnswersSchema`,
+  wire them through the client questionnaire, and extend `checkVALife` to
+  handle the 81+ path. Both fields would also be natural inputs for any
+  future age-gated rule, and `ageOrDisability` could potentially be
+  derived from `dateOfBirth` rather than asked separately.
+- **(b) Accept the path as out of scope.** Document the 81+ path in the
+  VALife seed text as "not currently checked" so a veteran or counselor
+  understands the gap.
+
+Option (a) opens up cleaner modelling for any future age-gated rule;
+option (b) avoids a substantial schema change for a relatively rare path.
+
+**Cost.** Option (a): schema + client + server + spec doc, similar in
+scope to item #1 — a focused day or two, plus the question of whether to
+deprecate `ageOrDisability` in favor of the derived value (which would
+touch `checkPension`). Option (b): an afternoon for the seed-text update.
