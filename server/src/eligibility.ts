@@ -253,7 +253,11 @@ function checkDisabilityCompensation(answers: QuestionnaireAnswers): boolean {
 }
 
 function checkVALife(answers: QuestionnaireAnswers): boolean {
-  return answers.hasDisabilityRating === true;
+  if (answers.hasDisabilityRating !== true) return false;
+  for (const period of answers.servicePeriods) {
+    if (period.dischargeLevel <= 2) return true;
+  }
+  return false;
 }
 
 function checkHealthCare(answers: QuestionnaireAnswers): boolean {
