@@ -491,6 +491,9 @@ function Questionnaire() {
               <button className="nav-dropdown__item" role="menuitem" onClick={() => handleNavTo('/about')}>
                 About
               </button>
+              <button className="nav-dropdown__item" role="menuitem" onClick={() => handleNavTo('/resources')}>
+                Resources
+              </button>
             </div>
           )}
         </div>
