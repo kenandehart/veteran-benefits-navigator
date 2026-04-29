@@ -755,6 +755,11 @@ function Questionnaire() {
     }
 
     case 'activation-periods': {
+      // The Yes/No answer is intentionally not persisted: this step only
+      // gates the display of activation-guidance, which tells the user to
+      // re-enter each activation as its own service period. Eligibility
+      // logic reads activations as standard active-duty entries in
+      // servicePeriods, so a separate field would be redundant.
       stepContent = (
         <>
           <label className="q-label">

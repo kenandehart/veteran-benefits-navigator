@@ -218,9 +218,12 @@ Steps that affect flow but write nothing are noted explicitly.
 - **Question text:** "Were you activated for federal active duty service (not
   including training) during this period?"
 - **Input type:** Two-button choice — **No** (left) / **Yes** (right).
-- **Writes:** *Nothing.* The veteran's answer is not persisted on either the
-  service period or the answers object; it only affects whether the
-  `activation-guidance` informational step is shown.
+- **Writes:** *Nothing, by design.* The Yes/No answer is intentionally not
+  persisted on either the service period or the answers object; its only
+  purpose is to gate the display of the `activation-guidance` informational
+  step, which prompts the user to re-enter each activation as its own service
+  period. Eligibility logic then reads activations as standard active-duty
+  entries in `servicePeriods`, so a separate field would be redundant.
 - **Branching:** Yes → question 10, `activation-guidance`. No → question 11,
   `add-another`.
 
@@ -581,14 +584,7 @@ review rather than guessed at.
    legacy clients), the rationale is not visible in code; if it is
    defensive, the schema may be tighter than it looks.
 
-2. **`activation-periods` answer is not stored anywhere.** The Yes/No
-   answer affects only whether the `activation-guidance` informational step
-   is shown. No field on the service period or the answers object captures
-   whether the veteran was activated, so eligibility cannot reference it.
-   If activation status is meaningful for any benefit, this field is
-   missing from the answer schema.
-
-3. **Naming mismatch: VGLI predicate gates the SGLI question.** The
+2. **Naming mismatch: VGLI predicate gates the SGLI question.** The
    `meetsVGLIDateWindow` helper is used to decide whether to ask
    `sgli-coverage` (an SGLI question). Presumably this is because SGLI is a
    prerequisite for VGLI and the flow only asks about SGLI when VGLI may
@@ -597,7 +593,7 @@ review rather than guessed at.
    prerequisite for VGLI conversion, but the question text itself just
    asks about SGLI coverage in general.
 
-4. **`paidAtTotalDisabilityRate` semantics differ from the question text.**
+3. **`paidAtTotalDisabilityRate` semantics differ from the question text.**
    The question asks "Does the VA pay you at the 100% disability rate?",
    which can be true via a 100% rating, via TDIU, or via other VA pay
    mechanisms. The field name suggests "100% single-disability rating OR
@@ -605,7 +601,7 @@ review rather than guessed at.
    the field as the question (any 100% pay rate) or as the name (rating
    100% or TDIU only).
 
-5. **Section labels jump non-monotonically.** The progress indicator's
+4. **Section labels jump non-monotonically.** The progress indicator's
    section label moves through: Service History → (Insurance) → Health &
    Disability → Housing → Health & Disability → Financial → Health &
    Disability → Service History (final POW question). This is not strictly
@@ -613,19 +609,19 @@ review rather than guessed at.
    The POW question is also the only final-section step that returns to
    "Service History" after several sections away.
 
-6. **Schema permits `disabilityRating` values that the UI cannot produce.**
+5. **Schema permits `disabilityRating` values that the UI cannot produce.**
    `RATING_OPTIONS` is `{0, 10, …, 100}` (multiples of 10), but the schema
    accepts any integer 0–100. Either the schema should restrict to
    multiples of 10, or the UI should expose all integer values (the
    official VA combined ratings are always multiples of 10, so the schema
    is broader than necessary).
 
-7. **Schema permits up to 20 service periods, but the UI does not cap.**
+6. **Schema permits up to 20 service periods, but the UI does not cap.**
    The `add-another` Yes button has no guard against the schema's
    `max(20)`. A user adding a 21st period would fail validation only at
    submit. Consider either capping in the UI or relaxing the schema.
 
-8. **`adaptiveHousingCondition` collapses two questions into a single
+7. **`adaptiveHousingCondition` collapses two questions into a single
    boolean.** A veteran who has a qualifying housing condition but does
    NOT live in / plan to live in an owned home will end up with
    `adaptiveHousingCondition = false`, identical to a veteran who has no
@@ -634,16 +630,16 @@ review rather than guessed at.
    these cases (e.g., for a benefit that ignores ownership), the field
    is too coarse.
 
-9. **"I'm not sure" only exists for `service-connected`.** Several other
+8. **"I'm not sure" only exists for `service-connected`.** Several other
    questions (SGLI, Purple Heart, POW) plausibly have uncertain answers
    but offer only Yes/No. This is a UX consistency question rather than
    a code defect.
 
-10. **The `service-connected` step explicitly resets
-    `adaptiveHousingCondition = false`.** Since this step is only reached
-    on the `has-rating = No` path — and the only writers of
-    `adaptiveHousingCondition` are reached via `has-rating = Yes` — the
-    field could not have been set to anything other than its default
-    `false` here. The reset appears to be defensive; confirm it is not
-    masking a flow path where the field was set earlier and would now be
-    silently cleared.
+9. **The `service-connected` step explicitly resets
+   `adaptiveHousingCondition = false`.** Since this step is only reached
+   on the `has-rating = No` path — and the only writers of
+   `adaptiveHousingCondition` are reached via `has-rating = Yes` — the
+   field could not have been set to anything other than its default
+   `false` here. The reset appears to be defensive; confirm it is not
+   masking a flow path where the field was set earlier and would now be
+   silently cleared.
