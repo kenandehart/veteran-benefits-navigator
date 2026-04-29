@@ -198,7 +198,7 @@ const benefits = [
     description:
       'Dental care for qualifying veterans, including cleanings, fillings, extractions, dentures, and oral surgery.',
     eligibility_summary:
-      'Veterans may qualify if they have a service-connected dental condition, a 100% service-connected disability rating, former prisoner of war status, recent separation from 90 or more days of active duty during the Persian Gulf War era, or active enrollment in VR&E.',
+      'Veterans may qualify if they have a 100% service-connected disability rating, former prisoner of war status, recent separation from 90 or more days of active duty during the Persian Gulf War era, or active enrollment in VR&E.',
     url: 'https://www.va.gov/health-care/about-va-health-benefits/dental-care/',
     is_active: true,
     application_guidance:

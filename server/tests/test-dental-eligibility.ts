@@ -1,15 +1,30 @@
 // server/tests/test-dental-eligibility.ts
-// Run with: npx tsx server/tests/test-dental-eligibility.ts
 //
 // Test suite for VA Dental Care (benefit ID 11) eligibility logic.
-// Tests run through the public checkEligibility entry point and assert
-// presence/absence of ID 11 in the matched array.
+// Tests run through the public checkEligibility entry point and assert only
+// on presence/absence of ID 11 in the matched array. Other benefits in the
+// result are intentionally ignored — this file's job is to characterize the
+// dental rule in isolation.
 //
-// Note: tests assume "today" is 2026-04-22 (the date the suite was authored).
-// The 180-day window for Path D is anchored to the actual current date at
-// runtime, so re-anchor Path D test dates if running far from this date.
+// Source of truth for the rules:
+// https://www.va.gov/health-care/about-va-health-benefits/dental-care/
+//
+// Run with: npx tsx --test server/tests/test-dental-eligibility.ts
+//
+// Note: the project uses Node's built-in test runner (node:test). The
+// describe/test API is the same shape Jest and Vitest use; only the import
+// and assertion library differ.
+//
+// Note: the recent-separation path in eligibility.ts uses a 180-day window
+// anchored to the actual current date at runtime. Cases that probe that path
+// were written assuming "today" is around 2026-04-29; re-anchor those test
+// dates if running far from that date.
 
+import { describe, test } from 'node:test';
+import assert from 'node:assert/strict';
 import { checkEligibility } from '../src/eligibility';
+
+const VA_DENTAL_CARE_ID = 11;
 
 // ---------------------------------------------------------------------------
 // Type definitions — mirrored from eligibility.ts (interfaces are not exported
@@ -39,21 +54,30 @@ interface QuestionnaireAnswers {
   ageOrDisability: boolean;
   purpleHeartPost911: boolean;
   hadSGLI: boolean;
-  servedInVietnam: boolean;
   currentlyInVRE: boolean;
-  formerPOW: boolean;
   paidAtTotalDisabilityRate: boolean;
+  formerPOW: boolean;
+  servedInVietnam: boolean;
 }
 
-const DENTAL_ID = 11;
+// Baseline service period: passes the outer non-dishonorable gate but is far
+// enough in the past that it does not trigger the recent-discharge path on
+// its own, so each case can probe its qualifying path in isolation.
+const BASELINE_PERIOD: ServicePeriod = {
+  entryDate: '2010-01-01',
+  separationDate: '2014-01-01',
+  activeDuty: true,
+  officerOrEnlisted: 'enlisted',
+  dischargeLevel: 1,
+  disabilityDischarge: false,
+  completedFullTerm: true,
+  hardshipOrEarlyOut: false,
+};
 
-// Safe falsy defaults for every field. Each test overrides only the fields
-// it cares about, so the default object stays the single source of truth
-// for "what does an empty answers object look like".
 const DEFAULT_ANSWERS: QuestionnaireAnswers = {
-  servicePeriods: [],
-  serviceConnectedCondition: null,
-  hasDisabilityRating: null,
+  servicePeriods: [BASELINE_PERIOD],
+  serviceConnectedCondition: false,
+  hasDisabilityRating: false,
   disabilityRating: null,
   adaptiveHousingCondition: false,
   hasAutoGrantCondition: false,
@@ -61,247 +85,203 @@ const DEFAULT_ANSWERS: QuestionnaireAnswers = {
   ageOrDisability: false,
   purpleHeartPost911: false,
   hadSGLI: false,
-  servedInVietnam: false,
   currentlyInVRE: false,
-  formerPOW: false,
   paidAtTotalDisabilityRate: false,
+  formerPOW: false,
+  servedInVietnam: false,
 };
 
-interface TestCase {
-  name: string;
-  expected: boolean;
-  overrides: Partial<QuestionnaireAnswers>;
+function buildAnswers(overrides: Partial<QuestionnaireAnswers> = {}): QuestionnaireAnswers {
+  return { ...DEFAULT_ANSWERS, ...overrides };
 }
 
-const tests: TestCase[] = [
-  // -------------------------------------------------------------------------
-  // PATH PASSES — one positive case per eligibility path
-  // -------------------------------------------------------------------------
+// Cases 4a/4b/4c probe the recent-discharge path, which uses a 180-day window
+// anchored to the actual current date at runtime. Hard-coded dates would
+// drift in and out of the window over time, so those cases derive their
+// entry/separation dates from "today" via daysAgo(). Returns a UTC midnight
+// YYYY-MM-DD string N days before today, matching the date format eligibility.ts
+// expects.
+function daysAgo(n: number): string {
+  const d = new Date();
+  d.setUTCHours(0, 0, 0, 0);
+  d.setUTCDate(d.getUTCDate() - n);
+  return d.toISOString().slice(0, 10);
+}
+
+interface TestCase {
+  description: string;
+  answers: Partial<QuestionnaireAnswers>;
+  shouldMatch: boolean;
+}
+
+const cases: TestCase[] = [
+  // ---------- Qualifying paths (each probed in isolation) ----------
 
   {
-    name: 'TEST 1 — Path A pass: Former POW with qualifying service',
-    expected: true,
-    overrides: {
-      servicePeriods: [{
-        entryDate: '1968-03-01',
-        separationDate: '1971-03-01',
-        activeDuty: true,
-        officerOrEnlisted: 'enlisted',
-        dischargeLevel: 1,
-        disabilityDischarge: false,
-        completedFullTerm: true,
-        hardshipOrEarlyOut: false,
-      }],
-      formerPOW: true,
-    },
+    description: '1. Former POW',
+    answers: { formerPOW: true },
+    shouldMatch: true,
   },
-
   {
-    name: 'TEST 2 — Path B pass: Single 100% / TDIU',
-    expected: true,
-    overrides: {
-      servicePeriods: [{
-        entryDate: '2008-06-01',
-        separationDate: '2014-06-01',
-        activeDuty: true,
-        officerOrEnlisted: 'enlisted',
-        dischargeLevel: 1,
-        disabilityDischarge: false,
-        completedFullTerm: true,
-        hardshipOrEarlyOut: false,
-      }],
-      paidAtTotalDisabilityRate: true,
-    },
+    description: '2. Paid at 100% / TDIU rate',
+    answers: { paidAtTotalDisabilityRate: true },
+    shouldMatch: true,
   },
-
   {
-    name: 'TEST 3 — Path C pass: Currently participating in VR&E',
-    expected: true,
-    overrides: {
-      servicePeriods: [{
-        entryDate: '2010-01-01',
-        separationDate: '2018-01-01',
-        activeDuty: true,
-        officerOrEnlisted: 'enlisted',
-        dischargeLevel: 1,
-        disabilityDischarge: false,
-        completedFullTerm: true,
-        hardshipOrEarlyOut: false,
-      }],
-      currentlyInVRE: true,
-    },
+    description: '3. Currently participating in VR&E',
+    answers: { currentlyInVRE: true },
+    shouldMatch: true,
   },
-
+  // Cases 4a/4b/4c exercise the recent-discharge path with dynamic dates
+  // (see daysAgo() above). Each case sets a ~120-day Honorable active-duty
+  // period whose separation date is N days before today; only the recency
+  // of separation differs between cases.
   {
-    name: 'TEST 4 — Path D pass: Recent GWOT-era separation, >90 days active',
-    expected: true,
-    overrides: {
+    description: '4a. Recent-discharge path: separation 30 days ago, 120-day period',
+    answers: {
       servicePeriods: [{
-        entryDate: '2025-07-01',
-        separationDate: '2026-01-15',
-        activeDuty: true,
-        officerOrEnlisted: 'enlisted',
-        dischargeLevel: 1,
-        disabilityDischarge: false,
-        completedFullTerm: true,
-        hardshipOrEarlyOut: false,
+        ...BASELINE_PERIOD,
+        entryDate: daysAgo(150),
+        separationDate: daysAgo(30),
       }],
     },
+    shouldMatch: true,
   },
-
   {
-    name: 'TEST 5 — Path D pass via completedFullTerm: short tour, recent',
-    expected: true,
-    overrides: {
+    description: '4b. Recent-discharge path: separation 179 days ago (just inside 180-day window)',
+    answers: {
       servicePeriods: [{
-        entryDate: '2026-01-01',
-        separationDate: '2026-02-28',
-        activeDuty: true,
-        officerOrEnlisted: 'enlisted',
-        dischargeLevel: 1,
-        disabilityDischarge: false,
-        completedFullTerm: true,
-        hardshipOrEarlyOut: false,
+        ...BASELINE_PERIOD,
+        entryDate: daysAgo(299),
+        separationDate: daysAgo(179),
       }],
     },
+    shouldMatch: true,
   },
-
-  // -------------------------------------------------------------------------
-  // PATH FAILURES — boundary and disqualifier cases
-  // -------------------------------------------------------------------------
-
   {
-    // Critical regression: catches the Math.abs bug where a future-dated
-    // separation (e.g., user mistype) would incorrectly pass the 180-day
-    // window check. Must be false.
-    name: 'TEST 6 — Path D fail: separation date in the future',
-    expected: false,
-    overrides: {
+    description: '4c. Recent-discharge path: separation 181 days ago (just outside 180-day window)',
+    answers: {
       servicePeriods: [{
-        entryDate: '2025-06-01',
-        separationDate: '2026-08-01',
-        activeDuty: true,
-        officerOrEnlisted: 'enlisted',
-        dischargeLevel: 1,
-        disabilityDischarge: false,
-        completedFullTerm: true,
-        hardshipOrEarlyOut: false,
+        ...BASELINE_PERIOD,
+        entryDate: daysAgo(301),
+        separationDate: daysAgo(181),
       }],
     },
+    shouldMatch: false,
   },
+  // Case 5 (service-connected dental condition path) was here. It has been
+  // removed because eligibility.ts cannot distinguish a dental
+  // service-connected condition from a generic one — the questionnaire
+  // collects only `serviceConnectedCondition` as a single boolean covering
+  // any service-connected condition. The seed text was updated in this
+  // session to drop this path, bringing it in line with what the code
+  // surfaces. To re-introduce the path, a new questionnaire question is
+  // needed; see docs/tech-debt.md item #1 ("Service-connected dental
+  // condition question") for the scope.
+
+  // ---------- Non-qualifying ----------
 
   {
-    name: 'TEST 7 — Path D fail: separation more than 180 days ago',
-    expected: false,
-    overrides: {
+    description: '6. Post-Gulf-War period under 90 days, no other qualifying flags',
+    answers: {
       servicePeriods: [{
-        entryDate: '2020-01-01',
-        separationDate: '2025-06-01',
-        activeDuty: true,
-        officerOrEnlisted: 'enlisted',
-        dischargeLevel: 1,
-        disabilityDischarge: false,
-        completedFullTerm: true,
-        hardshipOrEarlyOut: false,
-      }],
-    },
-  },
-
-  {
-    name: 'TEST 8 — Path D fail: <90 days AND not completedFullTerm',
-    expected: false,
-    overrides: {
-      servicePeriods: [{
+        ...BASELINE_PERIOD,
         entryDate: '2026-02-01',
         separationDate: '2026-03-15',
-        activeDuty: true,
-        officerOrEnlisted: 'enlisted',
-        dischargeLevel: 1,
-        disabilityDischarge: false,
         completedFullTerm: false,
-        hardshipOrEarlyOut: false,
       }],
     },
+    shouldMatch: false,
   },
-
+  // Case 7 probes the 90-day threshold boundary (60 days < 90).
+  // Note: the 1992 dates also fall outside the 180-day recency window, so
+  // the recent-discharge path would block on either check independently.
   {
-    name: 'TEST 9 — Path D fail: reserve service, not active duty',
-    expected: false,
-    overrides: {
+    description: '7. Persian Gulf War era period, only 60 days',
+    answers: {
       servicePeriods: [{
-        entryDate: '2025-07-01',
-        separationDate: '2026-01-15',
-        activeDuty: false,
-        officerOrEnlisted: 'enlisted',
-        dischargeLevel: 1,
-        disabilityDischarge: false,
-        completedFullTerm: true,
-        hardshipOrEarlyOut: false,
+        ...BASELINE_PERIOD,
+        entryDate: '1992-01-01',
+        separationDate: '1992-03-01',
+        completedFullTerm: false,
       }],
     },
+    shouldMatch: false,
   },
-
-  // -------------------------------------------------------------------------
-  // OUTER GATE — discharge and service requirements
-  // -------------------------------------------------------------------------
-
+  // Case 8 probes the Persian Gulf War era boundary (federal law sets the
+  // start at 1990-08-02). A 90+ day active-duty period entirely before that
+  // date should not match the recent-discharge path.
   {
-    // All four happy-path booleans fire simultaneously. The only thing
-    // standing in the way is the outer discharge gate. Catches accidental
-    // refactors that move the gate inside an individual path branch.
-    name: 'TEST 10 — Outer gate fail: dishonorable discharge blocks all paths',
-    expected: false,
-    overrides: {
+    description: '8. 90+ days active duty, but pre-Gulf-War era',
+    answers: {
       servicePeriods: [{
-        entryDate: '2010-01-01',
-        separationDate: '2014-01-01',
-        activeDuty: true,
-        officerOrEnlisted: 'enlisted',
+        ...BASELINE_PERIOD,
+        entryDate: '1980-01-01',
+        separationDate: '1980-06-01',
+      }],
+    },
+    shouldMatch: false,
+  },
+  {
+    description: '9. Persian Gulf War 90+ days but Dishonorable discharge',
+    answers: {
+      servicePeriods: [{
+        ...BASELINE_PERIOD,
+        entryDate: '1991-01-01',
+        separationDate: '1991-05-01',
         dischargeLevel: 5,
-        disabilityDischarge: false,
-        completedFullTerm: true,
-        hardshipOrEarlyOut: false,
       }],
+    },
+    shouldMatch: false,
+  },
+  {
+    description: '10. Persian Gulf War 90+ days but not active duty',
+    answers: {
+      servicePeriods: [{
+        ...BASELINE_PERIOD,
+        entryDate: '1991-01-01',
+        separationDate: '1991-05-01',
+        activeDuty: false,
+      }],
+    },
+    shouldMatch: false,
+  },
+
+  // ---------- Cross-cutting ----------
+
+  {
+    description: '11. Multiple qualifying paths (POW + 100% + VR&E)',
+    answers: {
       formerPOW: true,
       paidAtTotalDisabilityRate: true,
       currentlyInVRE: true,
     },
+    shouldMatch: true,
   },
-
   {
-    name: 'TEST 11 — Outer gate fail: no service periods at all',
-    expected: false,
-    overrides: {
-      servicePeriods: [],
+    description: '12. Persian Gulf 90+ active duty AND former POW',
+    answers: {
+      servicePeriods: [{
+        ...BASELINE_PERIOD,
+        entryDate: daysAgo(150),
+        separationDate: daysAgo(30),
+      }],
       formerPOW: true,
     },
+    shouldMatch: true,
   },
 ];
 
-// ---------------------------------------------------------------------------
-// Runner
-// ---------------------------------------------------------------------------
-
-let passed = 0;
-let failed = 0;
-
-console.log(`Running ${tests.length} dental eligibility tests...\n`);
-
-for (const test of tests) {
-  const answers: QuestionnaireAnswers = { ...DEFAULT_ANSWERS, ...test.overrides };
-  const matched = checkEligibility(answers);
-  const actual = matched.includes(DENTAL_ID);
-
-  if (actual === test.expected) {
-    console.log(`  PASS  ${test.name}`);
-    passed++;
-  } else {
-    console.log(`  FAIL  ${test.name}`);
-    console.log(`        Expected dental match: ${test.expected}`);
-    console.log(`        Actual dental match:   ${actual}`);
-    console.log(`        Full matched IDs:      [${matched.join(', ')}]`);
-    failed++;
+describe('VA Dental Care', () => {
+  for (const c of cases) {
+    test(c.description, () => {
+      const matched = checkEligibility(buildAnswers(c.answers));
+      const present = matched.includes(VA_DENTAL_CARE_ID);
+      assert.strictEqual(
+        present,
+        c.shouldMatch,
+        `Expected benefit ID ${VA_DENTAL_CARE_ID} to ${c.shouldMatch ? 'be' : 'NOT be'} present. Matched IDs: [${matched.join(', ')}]`,
+      );
+    });
   }
-}
-
-console.log(`\n${passed} passed, ${failed} failed`);
+});
