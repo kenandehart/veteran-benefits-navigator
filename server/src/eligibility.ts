@@ -135,7 +135,7 @@ function checkPensionServiceReq(periods: ServicePeriod[], servedInVietnam: boole
 }
 
 function checkHomeLoanServiceReq(answers: QuestionnaireAnswers): boolean {
-  const active    = answers.servicePeriods.filter(p => p.activeDuty && p.dischargeLevel < 5);
+  const active    = answers.servicePeriods.filter(p => p.activeDuty && p.dischargeLevel <= 2);
   const nonActive = answers.servicePeriods.filter(p => !p.activeDuty);
 
   // PATH 1: Era-based active duty service
