@@ -235,7 +235,11 @@ function checkHousingGrant(answers: QuestionnaireAnswers): boolean {
 }
 
 function checkAutomobileGrant(answers: QuestionnaireAnswers): boolean {
-  if (answers.hasDisabilityRating && answers.hasAutoGrantCondition) return true;
+  if (!answers.hasDisabilityRating) return false;
+  if (!answers.hasAutoGrantCondition) return false;
+  for (const period of answers.servicePeriods) {
+    if (period.dischargeLevel <= 2) return true;
+  }
   return false;
 }
 
