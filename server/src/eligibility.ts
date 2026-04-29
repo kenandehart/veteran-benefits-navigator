@@ -204,9 +204,10 @@ function checkAutomobileGrant(answers: QuestionnaireAnswers): boolean {
 }
 
 function checkDisabilityCompensation(answers: QuestionnaireAnswers): boolean {
+  if(answers.hasDisabilityRating === true) return false;
   if(answers.serviceConnectedCondition === false) return false;
   for (const period of answers.servicePeriods) {
-    if(period.dischargeLevel <= 4) return true;
+    if(period.dischargeLevel <= 2 && period.activeDuty === true) return true;
   }
   return false;
 }
