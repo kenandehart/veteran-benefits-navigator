@@ -311,7 +311,7 @@ function checkVRE(answers: QuestionnaireAnswers): boolean {
   const rating = answers.disabilityRating;
   if (rating === null || rating < 10) return false;
   for (const period of answers.servicePeriods) {
-    if (period.dischargeLevel < 5) return true;
+    if (period.dischargeLevel <= 2) return true;
   }
   return false;
 }
