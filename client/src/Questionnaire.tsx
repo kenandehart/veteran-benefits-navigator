@@ -788,7 +788,7 @@ function Questionnaire() {
               onClick={() => advance('add-another')}
               style={{ marginLeft: 'auto' }}
             >
-              Continue
+              Continue →
             </button>
           </div>
         </>
