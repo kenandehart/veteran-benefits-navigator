@@ -253,7 +253,7 @@ function checkVALife(answers: QuestionnaireAnswers): boolean {
 function checkHealthCare(answers: QuestionnaireAnswers): boolean {
   for (const period of answers.servicePeriods) {
     if (!period.activeDuty) continue;
-    if (period.dischargeLevel >= 5) continue; // dishonorable
+    if (period.dischargeLevel >= 3) continue; // stricter than General
 
     const entry = new Date(period.entryDate);
     const days = periodDays(period);
