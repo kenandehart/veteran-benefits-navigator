@@ -44,11 +44,19 @@ const TRANS_END       = new Date('1990-08-01');
 const GULF_WAR_START  = new Date('1990-08-02');
 const VIETNAM_IN_COUNTRY_START = new Date('1955-11-01');
 
+// Vietnam wartime window for pension purposes is split: in-country veterans
+// get the wider window starting 1961-02-28; everyone else starts 1964-08-05.
+// (1955-11-01 above is the Home Loan in-country eligibility threshold — a
+// different rule, kept distinct.)
+const VIETNAM_WARTIME_IN_COUNTRY_START = new Date('1961-02-28');
+const VIETNAM_WARTIME_OUTSIDE_START    = new Date('1964-08-05');
+
+// Wartime windows that do not depend on where the veteran served. The
+// Vietnam window is selected per-veteran inside overlapsWartime().
 const WARTIME_PERIODS: Array<{ start: Date; end: Date | null }> = [
-  { start: new Date('1941-12-07'), end: new Date('1946-12-31') },
-  { start: new Date('1950-06-27'), end: new Date('1955-01-31') },
-  { start: new Date('1955-11-01'), end: new Date('1975-05-07') },
-  { start: new Date('1990-08-02'), end: null }, // Gulf War, no end date
+  { start: new Date('1941-12-07'), end: new Date('1946-12-31') }, // WWII
+  { start: new Date('1950-06-27'), end: new Date('1955-01-31') }, // Korea
+  { start: new Date('1990-08-02'), end: null },                   // Gulf War (open-ended)
 ];
 
 function daysAfterSept11(period: ServicePeriod): number {
@@ -65,23 +73,45 @@ function periodDays(period: ServicePeriod): number {
   return Math.floor((sep.getTime() - entry.getTime()) / (1000 * 60 * 60 * 24));
 }
 
-function overlapsWartime(period: ServicePeriod): boolean {
+function overlapsWartime(period: ServicePeriod, servedInVietnam: boolean): boolean {
   const entry = new Date(period.entryDate);
   const sep   = new Date(period.separationDate);
-  return WARTIME_PERIODS.some(wt => {
+  const vietnamStart = servedInVietnam
+    ? VIETNAM_WARTIME_IN_COUNTRY_START
+    : VIETNAM_WARTIME_OUTSIDE_START;
+  const windows: Array<{ start: Date; end: Date | null }> = [
+    ...WARTIME_PERIODS,
+    { start: vietnamStart, end: VIETNAM_END },
+  ];
+  return windows.some(wt => {
     if (sep < wt.start) return false;
     if (wt.end !== null && entry > wt.end) return false;
     return true;
   });
 }
 
-function checkPensionServiceReq(periods: ServicePeriod[]): boolean {
-  if (!periods.some(overlapsWartime)) return false;
+function checkPensionServiceReq(periods: ServicePeriod[], servedInVietnam: boolean): boolean {
+  // VA's officer pension rule disqualifies any officer period that began
+  // after 1981-10-16 if the veteran already had 24+ months of active-duty
+  // service before that period started. Drop those periods up front so they
+  // contribute to nothing downstream — wartime, totalDays, or path checks.
+  // The veteran can still qualify on the strength of other periods.
+  const eligible = periods.filter(p => {
+    if (p.officerOrEnlisted !== 'officer') return true;
+    const entry = new Date(p.entryDate);
+    if (entry < OCT_17_1981) return true;
+    const priorActiveDays = periods
+      .filter(other => other !== p && new Date(other.separationDate) <= entry)
+      .reduce((sum, other) => sum + periodDays(other), 0);
+    return priorActiveDays < 730;
+  });
 
-  const totalDays = periods.reduce((sum, p) => sum + periodDays(p), 0);
+  if (!eligible.some(p => overlapsWartime(p, servedInVietnam))) return false;
+
+  const totalDays = eligible.reduce((sum, p) => sum + periodDays(p), 0);
 
   // Path A: pre-cutoff (90-day minimum)
-  const hasPreCutoff = periods.some(p => {
+  const hasPreCutoff = eligible.some(p => {
     const entry = new Date(p.entryDate);
     if (entry < SEPT_8_1980) return true;
     if (p.officerOrEnlisted === 'officer' && entry < OCT_17_1981) return true;
@@ -90,7 +120,7 @@ function checkPensionServiceReq(periods: ServicePeriod[]): boolean {
   if (hasPreCutoff && totalDays >= 90) return true;
 
   // Path B: post-cutoff (24-month / 730-day minimum)
-  const hasPostCutoff = periods.some(p => {
+  const hasPostCutoff = eligible.some(p => {
     const entry = new Date(p.entryDate);
     if (p.officerOrEnlisted === 'enlisted' && entry >= SEPT_8_1980) return true;
     if (p.officerOrEnlisted === 'officer' && entry >= OCT_17_1981) return true;
@@ -98,7 +128,7 @@ function checkPensionServiceReq(periods: ServicePeriod[]): boolean {
   });
   if (hasPostCutoff) {
     if (totalDays >= 730) return true;
-    if (periods.some(p => p.completedFullTerm)) return true;
+    if (eligible.some(p => p.completedFullTerm)) return true;
   }
 
   return false;
@@ -181,11 +211,11 @@ function checkPension(answers: QuestionnaireAnswers): boolean {
   if (!answers.ageOrDisability) return false;
 
   const qualifyingPeriods = answers.servicePeriods.filter(
-    p => p.activeDuty && p.dischargeLevel < 5
+    p => p.activeDuty && p.dischargeLevel <= 2
   );
   if (qualifyingPeriods.length === 0) return false;
 
-  return checkPensionServiceReq(qualifyingPeriods);
+  return checkPensionServiceReq(qualifyingPeriods, answers.servedInVietnam);
 }
 
 function checkVGLI(answers: QuestionnaireAnswers): boolean {
