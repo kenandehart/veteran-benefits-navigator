@@ -7,7 +7,6 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "seed": "node --loader ts-node/esm src/seed.ts",
-    "seed:requirements": "node --loader ts-node/esm src/seedRequirements.ts",
     "migrate": "node -r dotenv/config ./node_modules/.bin/node-pg-migrate",
     "migrate:up": "npm run migrate -- up",
     "migrate:down": "npm run migrate -- down",
