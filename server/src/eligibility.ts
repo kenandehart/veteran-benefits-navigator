@@ -224,7 +224,11 @@ function checkVGLI(answers: QuestionnaireAnswers): boolean {
 }
 
 function checkHousingGrant(answers: QuestionnaireAnswers): boolean {
-  if (answers.hasDisabilityRating && answers.adaptiveHousingCondition) return true;
+  if (!answers.hasDisabilityRating) return false;
+  if (!answers.adaptiveHousingCondition) return false;
+  for (const period of answers.servicePeriods) {
+    if (period.dischargeLevel <= 2) return true;
+  }
   return false;
 }
 
