@@ -42,6 +42,7 @@ export default function LoginModal({ onClose }: LoginModalProps) {
             type="text"
             value={username}
             onChange={e => setUsername(e.target.value)}
+            autoComplete="username"
             autoFocus
             required
           />
@@ -53,10 +54,11 @@ export default function LoginModal({ onClose }: LoginModalProps) {
             type="password"
             value={password}
             onChange={e => setPassword(e.target.value)}
+            autoComplete="current-password"
             required
           />
         </label>
-        {error && <p className="modal-error">{error}</p>}
+        {error && <p className="modal-error" role="alert">{error}</p>}
         <button className="cta-button" type="submit" disabled={submitting}>
           {submitting ? 'Logging in...' : 'Log in'}
         </button>
