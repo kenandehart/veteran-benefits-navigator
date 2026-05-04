@@ -52,6 +52,7 @@ export default function RegisterModal({ onClose, answers, matchedBenefitIds, onS
             type="text"
             value={username}
             onChange={e => setUsername(e.target.value)}
+            autoComplete="username"
             autoFocus
             required
           />
@@ -64,6 +65,7 @@ export default function RegisterModal({ onClose, answers, matchedBenefitIds, onS
             value={password}
             onChange={e => setPassword(e.target.value)}
             minLength={10}
+            autoComplete="new-password"
             required
           />
           <span className="modal-helper">Must be at least 10 characters.</span>
@@ -75,12 +77,13 @@ export default function RegisterModal({ onClose, answers, matchedBenefitIds, onS
             type="email"
             value={email}
             onChange={e => setEmail(e.target.value)}
+            autoComplete="email"
           />
           <span className="modal-helper">
             Adding an email lets you recover your account if you forget your password.
           </span>
         </label>
-        {error && <p className="modal-error">{error}</p>}
+        {error && <p className="modal-error" role="alert">{error}</p>}
         <button className="cta-button" type="submit" disabled={submitting}>
           {submitting ? 'Creating account...' : 'Sign up'}
         </button>
