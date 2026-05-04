@@ -247,6 +247,54 @@ function progressDescription(step: Step, committedPeriods: number): string {
   return `${section} section, ${phase}`;
 }
 
+// Phosphor Regular icons next to each section label. Path data copied from the
+// phosphor-icons/core repository (raw/regular/{medal,heartbeat,identification-card}.svg)
+// so the line geometry exactly matches the published Phosphor Regular weight
+// (16-unit stroke on a 256x256 viewBox, round joins/caps, no fill). Stroke
+// inherits currentColor from the .q-progress-text wrapper, which is gold.
+const PHOSPHOR_SVG_PROPS = {
+  viewBox: '0 0 256 256',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+  strokeWidth: 16,
+  'aria-hidden': true,
+  focusable: false,
+} as const;
+
+function ProgressSectionIcon({ section }: { section: string }) {
+  if (section === 'Service History') {
+    return (
+      <svg className="q-progress-text__icon" {...PHOSPHOR_SVG_PROPS}>
+        <circle cx="128" cy="96" r="80" />
+        <circle cx="128" cy="96" r="48" />
+        <polyline points="176 160 176 240 127.99 216 80 240 80 160.01" />
+      </svg>
+    );
+  }
+  if (section === 'Health & Disability') {
+    return (
+      <svg className="q-progress-text__icon" {...PHOSPHOR_SVG_PROPS}>
+        <polyline points="32 136 72 136 88 112 120 160 136 136 160 136" />
+        <path d="M24,104c0-.67,0-1.33,0-2A54,54,0,0,1,78,48c22.59,0,41.94,12.31,50,32,8.06-19.69,27.41-32,50-32a54,54,0,0,1,54,54c0,66-104,122-104,122s-42-22.6-72.58-56" />
+      </svg>
+    );
+  }
+  if (section === 'Personal Information') {
+    return (
+      <svg className="q-progress-text__icon" {...PHOSPHOR_SVG_PROPS}>
+        <line x1="152" y1="112" x2="192" y2="112" />
+        <line x1="152" y1="144" x2="192" y2="144" />
+        <rect x="32" y="48" width="192" height="160" rx="8" />
+        <circle cx="96" cy="120" r="24" />
+        <path d="M64,168c3.55-13.8,17.09-24,32-24s28.46,10.19,32,24" />
+      </svg>
+    );
+  }
+  return null;
+}
+
 const DISCHARGE_OPTIONS = [
   { label: 'Honorable', value: 1 },
   { label: 'General (Under Honorable Conditions)', value: 2 },
@@ -1617,7 +1665,10 @@ function Questionnaire() {
             <div className="q-progress-bar__fill" style={{ width: `${progressPercent}%` }} />
           </div>
           {showBack && backButton}
-          <div className="q-progress-text">{section}</div>
+          <div className="q-progress-text">
+            <ProgressSectionIcon section={section} />
+            <span>{section}</span>
+          </div>
           {stepContent}
         </div>
       </main>

@@ -367,7 +367,20 @@ button[disabled] {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--gold);
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.q-progress-text__icon {
+  display: block;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  /* Optical cap-height alignment with the uppercase label, matching the
+     landing-page feature__icon pattern. */
+  transform: translateY(-1px);
 }
 
 .q-progress-bar {
