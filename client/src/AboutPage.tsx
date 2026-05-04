@@ -15,23 +15,33 @@ function AboutPage() {
       <main className="privacy-page">
         <h1 className="privacy-page__title">About</h1>
 
-        <h2 className="privacy-page__heading">What is this?</h2>
-        <p>vabenefits.app is a tool that helps veterans discover which VA benefits they might be eligible for. The site aims to guide veterans through a short questionnaire, compare their answers to benefit eligibility requirements, and present matched benefits. The application was designed to be frictionless, allowing veterans to access the site, answer questions, and see matched benefits with as few obstacles as possible. The benefits catalogue scope is intentionally limited to benefits managed by the Department of Veterans Affairs.</p>
-
-        <h2 className="privacy-page__heading">How was it built?</h2>
-        <p>The website was built by a solo developer leveraging the help of an AI coding assistant, Claude. An Express server and Postgres database handle backend operations, while UI interactivity is made possible using React with TypeScript. Development decisions were made with a focus on user privacy, acknowledging the sensitivity of a veteran's service history and disability status. The website is self hosted and maintained on a virtual private server. Code and development history can be seen in the project's GitHub repository.</p>
-
-        <h2 className="privacy-page__heading">Who built it?</h2>
-        <p>
-          Hello, my name is Kenan, I'm a disabled US Air Force veteran studying software engineering as part of my participation in the{' '}
-          <Link to="/benefits/veteran-readiness-employment">
-            Chapter 31 Veteran Readiness and Employment
-          </Link>{' '}
-          program. After my discharge from the Air Force, I struggled to get connected with VA resources. My goal with this website is to build something that would have been helpful to me in that time.
+        <p style={{ textAlign: 'center', margin: '24px 0 8px' }}>
+          <img
+            src="/service-photo.jpg"
+            alt="Kenan DeHart in U.S. Air Force uniform"
+            style={{ width: '175px', maxWidth: '100%', height: 'auto' }}
+          />
+        </p>
+        <p style={{ textAlign: 'center', fontStyle: 'italic', opacity: 0.7, fontSize: '0.9em', marginTop: 0 }}>
+          U.S. Air Force, 2014-2018
         </p>
 
-        <h2 className="privacy-page__heading">Contact</h2>
-        <p>My current professional goal is a career in software development / engineering. Are you hiring? Want to get ahold of me for anything else? Contact me at the email below.</p>
+        <p>I'm Kenan DeHart. At 18, I enlisted in the U.S. Air Force as an airborne cryptologic language analyst. I graduated with honors from the Modern Standard Arabic program at the Defense Language Institute, and completed aircrew fundamentals, intelligence fundamentals, and various survival trainings.</p>
+
+        <p>Shortly after arriving to my first duty station, I developed a severe mental health disorder and was ultimately discharged. Treating my health conditions while finding stability and direction in life proved to be a significant challenge. The path to connecting with VA benefits was not obvious, and at times intimidating. My goal with vabenefits.app is to provide a tool to other veterans who might be facing similar challenges.</p>
+
+        <p>
+          The application guides a user through a short questionnaire, and performs eligibility checks to determine which benefits they might be eligible for. Each benefit includes a description, eligibility summary, broad application guidance, and links to official{' '}
+          <a href="https://www.va.gov" target="_blank" rel="noopener noreferrer">va.gov</a>
+          {' '}resources. A veteran can start their questionnaire just one click from the home page, with an optional sign-up to save results.
+        </p>
+
+        <p>
+          I'm now studying software engineering as part of my participation in the{' '}
+          <Link to="/benefits/veteran-readiness-employment">Chapter 31 Veteran Readiness and Employment program</Link>
+          . Post graduation, I will be looking for software development and engineering opportunities. To contact me in this regard, or for anything else, I can be reached at the email below. All code and development history can be found in the GitHub repository.
+        </p>
+
         <p style={{ display: 'flex', gap: '24px', flexWrap: 'wrap', alignItems: 'center', marginTop: '18px' }}>
           <code>contact@vabenefits.app</code>
           <a
