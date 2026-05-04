@@ -65,6 +65,66 @@ function StepTransition({
   );
 }
 
+function SectionHeader({ section }: { section: string }) {
+  return (
+    <div className="q-progress-text__layer">
+      <ProgressSectionIcon section={section} />
+      <span>{section}</span>
+    </div>
+  );
+}
+
+function SectionHeaderTransition({
+  section,
+  direction,
+}: {
+  section: string;
+  direction: 'forward' | 'back';
+}) {
+  const lastSection = useRef(section);
+  const [transition, setTransition] = useState<{
+    outgoingSection: string;
+    direction: 'forward' | 'back';
+  } | null>(null);
+
+  useEffect(() => {
+    if (section === lastSection.current) return;
+    const previousSection = lastSection.current;
+    lastSection.current = section;
+    if (prefersReducedMotion()) {
+      setTransition(null);
+      return;
+    }
+    setTransition({ outgoingSection: previousSection, direction });
+    const t = window.setTimeout(() => setTransition(null), 340);
+    return () => window.clearTimeout(t);
+  }, [section, direction]);
+
+  if (!transition) {
+    return <SectionHeader section={section} />;
+  }
+
+  return (
+    <>
+      <div
+        key={`out-${transition.outgoingSection}`}
+        className={`q-progress-text__layer q-section-header--out q-section-header--out-${transition.direction}`}
+        aria-hidden="true"
+      >
+        <ProgressSectionIcon section={transition.outgoingSection} />
+        <span>{transition.outgoingSection}</span>
+      </div>
+      <div
+        key={`in-${section}`}
+        className={`q-progress-text__layer q-section-header--in q-section-header--in-${transition.direction}`}
+      >
+        <ProgressSectionIcon section={section} />
+        <span>{section}</span>
+      </div>
+    </>
+  );
+}
+
 function getStored<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(key);
@@ -1721,8 +1781,7 @@ function Questionnaire() {
           </div>
           {showBack && backButton}
           <div className="q-progress-text">
-            <ProgressSectionIcon section={section} />
-            <span>{section}</span>
+            <SectionHeaderTransition section={section} direction={navDirection} />
           </div>
           <StepTransition stepKey={currentStep} direction={navDirection}>
             {stepContent}

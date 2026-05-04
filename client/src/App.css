@@ -367,10 +367,20 @@ button[disabled] {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--gold);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.q-progress-text__layer {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
+  white-space: nowrap;
+  width: 100%;
 }
 
 .q-progress-text__icon {
@@ -472,6 +482,34 @@ button[disabled] {
 @keyframes q-step-fade-out {
   from { opacity: 1; }
   to   { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .q-section-header--in-forward {
+    animation:
+      q-step-slide-in-from-right 320ms ease-out both,
+      q-step-fade-in 96ms ease-out both;
+  }
+  .q-section-header--in-back {
+    animation:
+      q-step-slide-in-from-left 320ms ease-out both,
+      q-step-fade-in 96ms ease-out both;
+  }
+  .q-section-header--out {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .q-section-header--out-forward {
+    animation:
+      q-step-slide-out-to-left 320ms ease-out both,
+      q-step-fade-out 96ms ease-out 224ms both;
+  }
+  .q-section-header--out-back {
+    animation:
+      q-step-slide-out-to-right 320ms ease-out both,
+      q-step-fade-out 96ms ease-out 224ms both;
+  }
 }
 
 .q-label {
