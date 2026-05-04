@@ -404,8 +404,74 @@ button[disabled] {
 
 @media (prefers-reduced-motion: no-preference) {
   .q-progress-bar__fill {
-    transition: width 360ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition: width 320ms ease-out;
   }
+}
+
+.q-step-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.q-step {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .q-step--in-forward {
+    animation:
+      q-step-slide-in-from-right 320ms ease-out both,
+      q-step-fade-in 96ms ease-out both;
+  }
+  .q-step--in-back {
+    animation:
+      q-step-slide-in-from-left 320ms ease-out both,
+      q-step-fade-in 96ms ease-out both;
+  }
+  .q-step--out {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .q-step--out-forward {
+    animation:
+      q-step-slide-out-to-left 320ms ease-out both,
+      q-step-fade-out 96ms ease-out 224ms both;
+  }
+  .q-step--out-back {
+    animation:
+      q-step-slide-out-to-right 320ms ease-out both,
+      q-step-fade-out 96ms ease-out 224ms both;
+  }
+}
+
+@keyframes q-step-slide-in-from-right {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes q-step-slide-in-from-left {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes q-step-slide-out-to-left {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
+}
+@keyframes q-step-slide-out-to-right {
+  from { transform: translateX(0); }
+  to   { transform: translateX(100%); }
+}
+@keyframes q-step-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes q-step-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
 }
 
 .q-label {

@@ -7,6 +7,64 @@ import SiteHeader from './components/SiteHeader.tsx';
 import { ScrollableConditions } from './ScrollableConditions.tsx';
 import { writeAnonResults } from './anonResults';
 
+function prefersReducedMotion(): boolean {
+  if (typeof window === 'undefined' || !window.matchMedia) return false;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function StepTransition({
+  stepKey,
+  direction,
+  children,
+}: {
+  stepKey: string;
+  direction: 'forward' | 'back';
+  children: React.ReactNode;
+}) {
+  const lastKey = useRef(stepKey);
+  const lastNode = useRef<React.ReactNode>(children);
+  const [outgoing, setOutgoing] = useState<{
+    key: string;
+    node: React.ReactNode;
+    direction: 'forward' | 'back';
+  } | null>(null);
+
+  useEffect(() => {
+    if (stepKey === lastKey.current) return;
+    const previousKey = lastKey.current;
+    const previousNode = lastNode.current;
+    lastKey.current = stepKey;
+    if (prefersReducedMotion()) {
+      setOutgoing(null);
+      return;
+    }
+    setOutgoing({ key: previousKey, node: previousNode, direction });
+    const t = window.setTimeout(() => setOutgoing(null), 340);
+    return () => window.clearTimeout(t);
+  }, [stepKey, direction]);
+
+  useEffect(() => {
+    lastNode.current = children;
+  });
+
+  return (
+    <div className="q-step-stage">
+      {outgoing && (
+        <div
+          key={outgoing.key}
+          className={`q-step q-step--out q-step--out-${outgoing.direction}`}
+          aria-hidden="true"
+        >
+          {outgoing.node}
+        </div>
+      )}
+      <div key={stepKey} className={`q-step q-step--in q-step--in-${direction}`}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 function getStored<T>(key: string, fallback: T): T {
   try {
     const raw = localStorage.getItem(key);
@@ -445,6 +503,7 @@ const INITIAL_ANSWERS: QuestionnaireAnswers = {
 function Questionnaire() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<Step>(() => getStored('vbn_step_v2', 'entry-date'));
+  const [navDirection, setNavDirection] = useState<'forward' | 'back'>('forward');
   const [currentServicePeriod, setCurrentServicePeriod] = useState<Partial<ServicePeriod>>({});
   const [answers, setAnswers] = useState<QuestionnaireAnswers>(() => getStored('vbn_answers_v2', INITIAL_ANSWERS));
   const [history, setHistory] = useState<Snapshot[]>(() => getStored('vbn_history_v2', []));
@@ -605,6 +664,7 @@ function Questionnaire() {
     updatedAnswers?: QuestionnaireAnswers,
   ) {
     setHistory(h => [...h, takeSnapshot()]);
+    setNavDirection('forward');
     setCurrentStep(nextStep);
     if (updatedServicePeriod !== undefined) setCurrentServicePeriod(updatedServicePeriod);
     if (updatedAnswers !== undefined) setAnswers(updatedAnswers);
@@ -621,6 +681,7 @@ function Questionnaire() {
     const prev = history[history.length - 1];
     if (!prev) return;
     setHistory(h => h.slice(0, -1));
+    setNavDirection('back');
     setCurrentStep(prev.step);
     setCurrentServicePeriod(prev.currentServicePeriod);
     setAnswers(prev.answers);
@@ -1136,13 +1197,7 @@ function Questionnaire() {
               )}
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            <button
-              className="cta-button"
-              onClick={() => advance('income-limit', undefined, { ...answers, serviceConnectedCondition: null, adaptiveHousingCondition: false })}
-            >
-              I'm not sure
-            </button>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
               onClick={() => advance('income-limit', undefined, { ...answers, serviceConnectedCondition: false, adaptiveHousingCondition: false })}
@@ -1669,7 +1724,9 @@ function Questionnaire() {
             <ProgressSectionIcon section={section} />
             <span>{section}</span>
           </div>
-          {stepContent}
+          <StepTransition stepKey={currentStep} direction={navDirection}>
+            {stepContent}
+          </StepTransition>
         </div>
       </main>
 
