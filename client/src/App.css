@@ -1227,6 +1227,65 @@
   letter-spacing: -0.005em;
 }
 
+.crisis-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px 32px;
+  margin: 0 0 14px;
+}
+
+.crisis-actions__call {
+  display: inline-block;
+  flex-shrink: 0;
+  transition: opacity 0.15s ease;
+}
+
+.crisis-actions__call:hover {
+  opacity: 0.8;
+}
+
+.crisis-actions__call:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 4px;
+  opacity: 0.85;
+}
+
+.crisis-actions__logo {
+  display: block;
+  width: 280px;
+  height: auto;
+  max-width: 100%;
+}
+
+.crisis-actions__alt {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 1rem;
+  color: var(--text);
+}
+
+.crisis-actions__alt li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.crisis-actions__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crisis-actions__call {
+    transition: none;
+  }
+}
+
 .privacy-page p {
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 1rem;

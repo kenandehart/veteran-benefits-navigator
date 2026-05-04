@@ -20,11 +20,38 @@ function ResourcesPage() {
 
         <h2 className="privacy-page__heading">Veterans Crisis Line</h2>
         <p>If you or a veteran you know is in emotional distress or having thoughts of suicide, the Veterans Crisis Line connects you with caring, qualified responders, 24 hours a day. You don't need to be enrolled in VA health care or registered with the VA to use it.</p>
-        <p>
-          <strong>Call:</strong> <a href="tel:988">988, then press 1</a><br />
-          <strong>Text:</strong> <a href="sms:838255">838255</a><br />
-          <strong>Chat online:</strong> <a href="https://www.veteranscrisisline.net/" target="_blank" rel="noopener noreferrer">veteranscrisisline.net</a>
-        </p>
+        <div className="crisis-actions">
+          <a
+            href="tel:988"
+            aria-label="Call the Veterans Crisis Line at 988, then press 1"
+            className="crisis-actions__call"
+          >
+            <img
+              src="/veterans-crisis-line-logo.png"
+              alt="Veterans Crisis Line — Dial 988 then Press 1"
+              width="280"
+              height="92"
+              className="crisis-actions__logo"
+            />
+          </a>
+          <ul className="crisis-actions__alt">
+            <li>
+              <strong>Text:</strong>
+              <a href="sms:838255" className="crisis-actions__link">838255</a>
+            </li>
+            <li>
+              <strong>Chat online:</strong>
+              <a
+                href="https://www.veteranscrisisline.net/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="crisis-actions__link"
+              >
+                veteranscrisisline.net
+              </a>
+            </li>
+          </ul>
+        </div>
 
         <hr style={hrStyle} />
 
