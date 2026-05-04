@@ -16,7 +16,7 @@ function getStored<T>(key: string, fallback: T): T {
   }
 }
 
-const STORAGE_KEYS = ['vbn_step_v2', 'vbn_answers_v2', 'vbn_history_v2', 'vbn_housing_condition_v2'];
+const STORAGE_KEYS = ['vbn_step_v2', 'vbn_answers_v2', 'vbn_history_v2', 'vbn_housing_condition_v2', 'vbn_progress_v2'];
 
 function clearQuestionnaireStorage() {
   STORAGE_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch {} });
@@ -116,101 +116,134 @@ const STEP_SECTIONS: Record<Step, string> = {
 };
 
 // --- Progress bar ----------------------------------------------------------
-// The progress bar fills in three bands (one per section) of equal width.
-// Within each band, each step has a hand-tuned "depth" between 0 and 1 that
-// describes its perceived position along the typical-flow trajectory.
+// The bar's three section "shares" are proportional, not fixed thirds. Each
+// section contributes a typical question count to the total denominator;
+// SH grows with each committed (or in-progress projected) service period,
+// while HD and PI are fixed.
 //
-// These numbers don't align to actual step counts: some steps are skipped on
-// some paths (single-disability-tdiu, currently-in-vre, housing-ownership,
-// vietnam-service, sgli-coverage), so a strict count-based denominator would
-// shift under the user as branches resolved. Hand-tuned positions keep the
-// bar's pace within a reasonable "imprecise but never reversing" envelope on
-// every reachable path.
+//   shareSH = (9 * projectedPeriods) / total
+//   shareHD = 5 / total
+//   sharePI = 5 / total
+//   total   = 9 * projectedPeriods + 10
 //
-// Service-period loop note: the loop visits the same eleven steps once per
-// period. Without a per-period bump, starting iteration 2 would visibly
-// rewind the bar (entry-date < add-another). SH_PERIOD_BONUS adds a fixed
-// amount per already-committed period; combined with the per-step depth and
-// the final clamp at 1.0, the SH band advances forward through ~3 periods
-// and then plateaus at 33% until the user leaves Service History.
+// Within each section, the bar fills proportionally to typical questions
+// completed at the current step. SH per-period maps loop steps to positions
+// 1..9 (with conditional sub-steps as fractional positions). HD and PI map
+// their steps to 1..5.
+//
+// While the user is mid-loop, projectedPeriods = committed + 1. Treating the
+// in-progress period as "going to commit" keeps the SH share stable through
+// the period and lets within-section progress advance smoothly. After the
+// user clicks add-another (Yes or No) and exits the loop, projected =
+// committed and the math stabilizes.
+//
+// vietnam-service and sgli-coverage are not in the per-period count; they
+// are pinned at the SH-share end (sectionFraction = 1.0) so the bar holds
+// at the SH/HD boundary while they are answered.
+//
+// The forward max-clamp is enforced at the call site via the progressHigh
+// state in the component: advance() applies max(prev, newRaw); goBack()
+// allows the bar to decrease by writing the raw value directly.
 
-const SH_DEPTH: Partial<Record<Step, number>> = {
-  'entry-date':           0.12,
-  'separation-date':      0.16,
-  'active-duty':          0.20,
-  'officer-enlisted':     0.24,
-  'discharge':            0.28,
-  'completed-full-term':  0.32,
-  'hardship-early-out':   0.36,
-  'disability-discharge': 0.38,
-  'activation-periods':   0.41,
-  'activation-guidance':  0.43,
-  'add-another':          0.45,
-  'vietnam-service':      0.75,
-  'sgli-coverage':        0.90,
+const SH_LOOP_POS: Partial<Record<Step, number>> = {
+  'entry-date':           1,
+  'separation-date':      2,
+  'active-duty':          3,
+  'officer-enlisted':     4,
+  'discharge':            5,
+  'completed-full-term':  6,
+  'hardship-early-out':   6.5,
+  'disability-discharge': 7,
+  'activation-periods':   7.5,
+  'activation-guidance':  8,
+  'add-another':          9,
 };
 
-const HD_DEPTH: Partial<Record<Step, number>> = {
-  'has-rating':             0.10,
-  'rating-value':           0.30,
-  'single-disability-tdiu': 0.50,
-  'currently-in-vre':       0.70,
-  'service-connected':      0.85,
-  'housing-condition':      0.78,
-  'auto-grant-condition':   0.95,
+const HD_POS: Partial<Record<Step, number>> = {
+  'has-rating':             1,
+  'rating-value':           2,
+  'single-disability-tdiu': 3,
+  'currently-in-vre':       4,
+  'housing-condition':      4.5,
+  'auto-grant-condition':   5,
+  // Sole HD step on the no-rating path; placed at the section end so the exit
+  // into PI is a small step (~5%) rather than a large jump.
+  'service-connected':      5,
 };
 
-const PI_DEPTH: Partial<Record<Step, number>> = {
-  'housing-ownership': 0.15,
-  'income-limit':      0.30,
-  'age-disability':    0.55,
-  'purple-heart':      0.75,
-  'former-pow':        0.95,
+const PI_POS: Partial<Record<Step, number>> = {
+  'housing-ownership': 1,
+  'income-limit':      2,
+  'age-disability':    3,
+  'purple-heart':      4,
+  // Held back from 5 so the click that submits ("Yes/No" on former-pow)
+  // animates the final ~2% to 100% while the request is in flight.
+  'former-pow':        4.5,
 };
 
-const SH_PERIOD_BONUS = 0.35;
+const SH_PER_PERIOD = 9;
+const HD_TYPICAL = 5;
+const PI_TYPICAL = 5;
 
-function calculateProgress(
-  step: Step,
-  servicePeriodCount: number,
-  isSubmitting: boolean,
-): number {
-  // After the user clicks the final answer on `former-pow`, the bar should
-  // fill to 100 while the submit fetch is in flight, before the navigation
-  // away to /results.
-  if (isSubmitting) return 100;
-
-  const section = STEP_SECTIONS[step];
-  let depth: number;
-  if (section === 'Service History') {
-    depth = Math.min((SH_DEPTH[step] ?? 0) + servicePeriodCount * SH_PERIOD_BONUS, 1);
-  } else if (section === 'Health & Disability') {
-    depth = HD_DEPTH[step] ?? 0;
-  } else {
-    depth = PI_DEPTH[step] ?? 0;
-  }
-
-  const SECTION_WIDTH = 100 / 3;
-  const bandStart =
-    section === 'Service History'      ? 0
-    : section === 'Health & Disability' ? SECTION_WIDTH
-    :                                    SECTION_WIDTH * 2;
-
-  return bandStart + depth * SECTION_WIDTH;
+interface ProgressBreakdown {
+  section: string;
+  sectionFraction: number;
+  totalPercent: number;
 }
 
-function progressDescription(step: Step, percent: number): string {
+function computeRawProgress(step: Step, committedPeriods: number): ProgressBreakdown {
   const section = STEP_SECTIONS[step];
-  const SECTION_WIDTH = 100 / 3;
-  const bandStart =
-    section === 'Service History'      ? 0
-    : section === 'Health & Disability' ? SECTION_WIDTH
-    :                                    SECTION_WIDTH * 2;
-  const inSection = (percent - bandStart) / SECTION_WIDTH;
+  const inLoop = SH_LOOP_POS[step] !== undefined;
+  // Mid-loop: treat the in-progress period as if it will commit, so the SH
+  // denominator is stable across the period. Outside the loop the user has
+  // already exited the loop via add-another, so committed is authoritative.
+  // Math.max(.., 1) defends against the unreachable "outside loop with 0
+  // periods" state (would imply data corruption).
+  const projectedPeriods = inLoop ? committedPeriods + 1 : Math.max(committedPeriods, 1);
+
+  const shTypical = SH_PER_PERIOD * projectedPeriods;
+  const total = shTypical + HD_TYPICAL + PI_TYPICAL;
+  const shShare = shTypical / total;
+  const hdShare = HD_TYPICAL / total;
+  const piShare = PI_TYPICAL / total;
+
+  let sectionFraction: number;
+  let totalFraction: number;
+
+  if (section === 'Service History') {
+    let shShown: number;
+    if (inLoop) {
+      shShown = committedPeriods * SH_PER_PERIOD + (SH_LOOP_POS[step] ?? 0);
+    } else if (step === 'vietnam-service' || step === 'sgli-coverage') {
+      // Pin at SH-share end. These conditional post-loop steps aren't in the
+      // per-period count, so we treat them as "the user is done with SH".
+      shShown = projectedPeriods * SH_PER_PERIOD;
+    } else {
+      shShown = 0;
+    }
+    sectionFraction = Math.min(shShown / shTypical, 1);
+    totalFraction = sectionFraction * shShare;
+  } else if (section === 'Health & Disability') {
+    sectionFraction = Math.min((HD_POS[step] ?? 0) / HD_TYPICAL, 1);
+    totalFraction = shShare + sectionFraction * hdShare;
+  } else {
+    sectionFraction = Math.min((PI_POS[step] ?? 0) / PI_TYPICAL, 1);
+    totalFraction = shShare + hdShare + sectionFraction * piShare;
+  }
+
+  return {
+    section,
+    sectionFraction,
+    totalPercent: Math.min(totalFraction * 100, 100),
+  };
+}
+
+function progressDescription(step: Step, committedPeriods: number): string {
+  const { section, sectionFraction } = computeRawProgress(step, committedPeriods);
   const phase =
-    inSection < 0.33 ? 'just started'
-    : inSection < 0.7 ? 'partway through'
-    :                   'almost done';
+    sectionFraction < 0.33 ? 'just started'
+    : sectionFraction < 0.7 ? 'partway through'
+    :                         'almost done';
   return `${section} section, ${phase}`;
 }
 
@@ -377,6 +410,20 @@ function Questionnaire() {
   const [housingConditionAnswer, setHousingConditionAnswer] = useState<boolean | null>(
     () => getStored('vbn_housing_condition_v2', null as boolean | null),
   );
+  // Forward "high water mark" for the bar — advance() max-clamps against the
+  // previous value so a recalculation that produces a lower raw percentage
+  // (e.g., starting iteration 2 inflates the SH denominator) doesn't visibly
+  // rewind the bar. goBack() writes the raw value directly so the bar is
+  // allowed to decrease on explicit Back navigation. Persisted so a mid-flow
+  // page reload doesn't drop the high-water mark to the raw value of the
+  // resumed step.
+  const [progressHigh, setProgressHigh] = useState<number>(() => {
+    const stored = getStored<number | null>('vbn_progress_v2', null);
+    if (typeof stored === 'number' && Number.isFinite(stored)) return stored;
+    const initialStep = getStored<Step>('vbn_step_v2', 'entry-date');
+    const initialAnswers = getStored<QuestionnaireAnswers>('vbn_answers_v2', INITIAL_ANSWERS);
+    return computeRawProgress(initialStep, initialAnswers.servicePeriods.length).totalPercent;
+  });
   const [showTooltip, setShowTooltip] = useState(false);
   // Drives the progress bar to 100% once the user clicks the final answer on
   // `former-pow`, so the bar visibly completes during the submit fetch
@@ -396,6 +443,7 @@ function Questionnaire() {
   useEffect(() => { try { localStorage.setItem('vbn_answers_v2', JSON.stringify(answers)); } catch {} }, [answers]);
   useEffect(() => { try { localStorage.setItem('vbn_history_v2', JSON.stringify(history)); } catch {} }, [history]);
   useEffect(() => { try { localStorage.setItem('vbn_housing_condition_v2', JSON.stringify(housingConditionAnswer)); } catch {} }, [housingConditionAnswer]);
+  useEffect(() => { try { localStorage.setItem('vbn_progress_v2', JSON.stringify(progressHigh)); } catch {} }, [progressHigh]);
 
   useEffect(() => {
     if (!showTooltip) return;
@@ -512,6 +560,12 @@ function Questionnaire() {
     setCurrentStep(nextStep);
     if (updatedServicePeriod !== undefined) setCurrentServicePeriod(updatedServicePeriod);
     if (updatedAnswers !== undefined) setAnswers(updatedAnswers);
+    // Forward navigation: max-clamp the bar against the previous high so a
+    // recalculated raw value (e.g., entering iteration 2 inflates the SH
+    // denominator and lowers raw progress) does not visibly rewind the bar.
+    const finalCommitted = (updatedAnswers ?? answers).servicePeriods.length;
+    const newRaw = computeRawProgress(nextStep, finalCommitted).totalPercent;
+    setProgressHigh(prev => Math.max(prev, newRaw));
     setShowTooltip(false);
   }
 
@@ -526,12 +580,17 @@ function Questionnaire() {
     // will not carry the field; coerce undefined → null so the gate falls back
     // to "skip housing-ownership" rather than carrying an undefined value.
     setHousingConditionAnswer(prev.housingConditionAnswer ?? null);
+    // Back navigation is the explicit exception to the forward max-clamp:
+    // write the raw value directly so the bar moves backward to reflect the
+    // user's actual current position.
+    setProgressHigh(computeRawProgress(prev.step, prev.answers.servicePeriods.length).totalPercent);
     setShowTooltip(false);
   }
 
   async function handleSubmit(finalAnswers: QuestionnaireAnswers) {
     setAnswers(finalAnswers);
     setIsSubmitting(true);
+    setProgressHigh(100);
 
     try {
       const response = await fetch('/api/questionnaire', {
@@ -596,10 +655,13 @@ function Questionnaire() {
 
   const showBack = history.length > 0;
   const section = STEP_SECTIONS[currentStep];
-  const progressPercent = calculateProgress(currentStep, answers.servicePeriods.length, isSubmitting);
+  // The bar reads from progressHigh (maintained by advance/goBack/handleSubmit)
+  // rather than recomputing each render, so the forward max-clamp survives
+  // recalculations triggered by share changes (e.g., starting iteration 2).
+  const progressPercent = progressHigh;
   const progressLabel = isSubmitting
     ? 'Submitting your answers'
-    : progressDescription(currentStep, progressPercent);
+    : progressDescription(currentStep, answers.servicePeriods.length);
 
   const backButton = (
     <button className="benefit-detail__back" onClick={goBack}>
