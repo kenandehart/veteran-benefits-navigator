@@ -86,7 +86,7 @@ function ResetPasswordPage() {
                 }
               }}
             >
-              ← Back
+              <span className="button-arrow" aria-hidden="true">←</span> Back
             </button>
             <h1 className="modal-title">Invalid link</h1>
           </div>
@@ -123,7 +123,7 @@ function ResetPasswordPage() {
                 }
               }}
             >
-              ← Back
+              <span className="button-arrow" aria-hidden="true">←</span> Back
             </button>
             <h1 className="modal-title">Password reset</h1>
           </div>
@@ -160,7 +160,7 @@ function ResetPasswordPage() {
               }
             }}
           >
-            ← Back
+            <span className="button-arrow" aria-hidden="true">←</span> Back
           </button>
           <h1 className="modal-title">Reset your password</h1>
         </div>

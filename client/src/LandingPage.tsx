@@ -46,7 +46,7 @@ function LandingPage() {
           <p className="hero-body">
             Answer a few questions about your service. We'll suggest benefits you might be eligible for, with links to learn more and apply at VA.gov.
           </p>
-          <button className="cta-button" onClick={() => navigate('/questionnaire')}>Find my benefits →</button>
+          <button className="cta-button" onClick={() => navigate('/questionnaire')}>Find my benefits <span className="button-arrow" aria-hidden="true">→</span></button>
         </section>
 
         <section className="features">

@@ -56,13 +56,13 @@ function BenefitDetailPage() {
         {status === 'notfound' && (
           <div className="no-results">
             <p>We couldn't find a benefit at that address.</p>
-            <Link to="/benefits" className="cta-button benefit-detail__link">Browse catalogue →</Link>
+            <Link to="/benefits" className="cta-button benefit-detail__link">Browse catalogue <span className="button-arrow" aria-hidden="true">→</span></Link>
           </div>
         )}
         {status === 'error' && (
           <div className="no-results">
             <p>Something went wrong loading this benefit. Please try again later.</p>
-            <Link to="/benefits" className="cta-button benefit-detail__link">Browse catalogue →</Link>
+            <Link to="/benefits" className="cta-button benefit-detail__link">Browse catalogue <span className="button-arrow" aria-hidden="true">→</span></Link>
           </div>
         )}
         {status === 'ok' && benefit && (
@@ -79,7 +79,7 @@ function BenefitDetailPage() {
                   }
                 }}
               >
-                ← Back
+                <span className="button-arrow" aria-hidden="true">←</span> Back
               </button>
               <h1 className="benefit-detail__name">{benefit.name}</h1>
             </div>
@@ -109,7 +109,7 @@ function BenefitDetailPage() {
                   rel="noopener noreferrer"
                   className="benefit-detail__section-link"
                 >
-                  Who may be eligible →
+                  Who may be eligible <span className="button-arrow" aria-hidden="true">→</span>
                 </a>
               </h2>
               <p className="benefit-detail__section-text">{benefit.eligibility_summary}</p>
@@ -122,7 +122,7 @@ function BenefitDetailPage() {
                   rel="noopener noreferrer"
                   className="benefit-detail__section-link"
                 >
-                  How to apply →
+                  How to apply <span className="button-arrow" aria-hidden="true">→</span>
                 </a>
               </h2>
               <p className="benefit-detail__section-text">{benefit.application_guidance}</p>
@@ -133,7 +133,7 @@ function BenefitDetailPage() {
               rel="noopener noreferrer"
               className="cta-button benefit-detail__link"
             >
-              Visit official resource →
+              Visit official resource <span className="button-arrow" aria-hidden="true">→</span>
             </a>
           </div>
         )}

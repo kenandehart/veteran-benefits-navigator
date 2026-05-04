@@ -535,7 +535,7 @@ function Questionnaire() {
 
   const backButton = (
     <button className="benefit-detail__back" onClick={goBack}>
-      ← Back
+      <span className="button-arrow" aria-hidden="true">←</span> Back
     </button>
   );
 
@@ -567,7 +567,7 @@ function Questionnaire() {
               disabled={!currentServicePeriod.entryDate || !!entryDateError}
               style={{ marginLeft: 'auto' }}
             >
-              Next →
+              Next <span className="button-arrow" aria-hidden="true">→</span>
             </button>
           </div>
         </>
@@ -602,7 +602,7 @@ function Questionnaire() {
               disabled={!currentServicePeriod.separationDate || !!sepDateError}
               style={{ marginLeft: 'auto' }}
             >
-              Next →
+              Next <span className="button-arrow" aria-hidden="true">→</span>
             </button>
           </div>
         </>
@@ -680,7 +680,7 @@ function Questionnaire() {
               disabled={!currentServicePeriod.dischargeLevel}
               style={{ marginLeft: 'auto' }}
             >
-              Next →
+              Next <span className="button-arrow" aria-hidden="true">→</span>
             </button>
           </div>
         </>
@@ -805,7 +805,7 @@ function Questionnaire() {
               onClick={() => advance('add-another')}
               style={{ marginLeft: 'auto' }}
             >
-              Continue →
+              Continue <span className="button-arrow" aria-hidden="true">→</span>
             </button>
           </div>
         </>
@@ -1046,7 +1046,7 @@ function Questionnaire() {
               disabled={answers.disabilityRating === null}
               style={{ marginLeft: 'auto' }}
             >
-              Next →
+              Next <span className="button-arrow" aria-hidden="true">→</span>
             </button>
           </div>
         </>

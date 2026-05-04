@@ -61,7 +61,7 @@ function ForgotPasswordPage() {
               }
             }}
           >
-            ← Back
+            <span className="button-arrow" aria-hidden="true">←</span> Back
           </button>
           <h1 className="modal-title">Forgot your password?</h1>
         </div>
