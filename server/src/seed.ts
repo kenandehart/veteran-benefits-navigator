@@ -202,7 +202,7 @@ const benefits = [
     url: 'https://www.va.gov/health-care/about-va-health-benefits/dental-care/',
     is_active: true,
     application_guidance:
-      "There’s no separate dental application. You become eligible by enrolling in VA Health Care, after which the VA determines your dental class based on your service history, disability rating, and current circumstances. Apply online at VA.gov or by submitting VA Form 10-10EZ if you’re not already enrolled. Most enrolled veterans don’t qualify for free dental care, so review the dental benefits classes before assuming coverage. If you don’t qualify, the VA Dental Insurance Program (VADIP) offers discounted private dental insurance through Delta Dental or MetLife.",
+      "There’s no separate dental application. You become eligible by enrolling in VA Health Care, after which the VA determines your dental class based on your service history, disability rating, and current circumstances. Apply online at VA.gov or by submitting VA Form 10-10EZ if you’re not already enrolled.",
     application_url: 'https://www.va.gov/health-care/apply-for-health-care-form-10-10ez/introduction',
     eligibility_url: 'https://www.va.gov/health-care/about-va-health-benefits/dental-care/#what-va-dental-care-benefits-d',
   }
