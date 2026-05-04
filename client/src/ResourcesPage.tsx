@@ -15,7 +15,16 @@ function ResourcesPage() {
       <SiteHeader />
       <main className="privacy-page">
         <h1 className="privacy-page__title">Resources</h1>
-        <p>This site can help you discover what benefits you may be eligible for, but it can't answer every question or walk you through every claim. The resources below connect you with people and organizations that can.</p>
+
+        <hr style={hrStyle} />
+
+        <h2 className="privacy-page__heading">Veterans Crisis Line</h2>
+        <p>If you or a veteran you know is in emotional distress or having thoughts of suicide, the Veterans Crisis Line connects you with caring, qualified responders, 24 hours a day. You don't need to be enrolled in VA health care or registered with the VA to use it.</p>
+        <p>
+          <strong>Call:</strong> <a href="tel:988">988, then press 1</a><br />
+          <strong>Text:</strong> <a href="sms:838255">838255</a><br />
+          <strong>Chat online:</strong> <a href="https://www.veteranscrisisline.net/" target="_blank" rel="noopener noreferrer">veteranscrisisline.net</a>
+        </p>
 
         <hr style={hrStyle} />
 
@@ -48,15 +57,6 @@ function ResourcesPage() {
         <p>The National Call Center for Homeless Veterans connects veterans and their families to housing assistance, medical care, and other support, 24 hours a day.</p>
         <p><strong>Call:</strong> <a href="tel:18774243838">1-877-424-3838</a></p>
 
-        <hr style={hrStyle} />
-
-        <h2 className="privacy-page__heading">Veterans Crisis Line</h2>
-        <p>If you or a veteran you know is in emotional distress or having thoughts of suicide, the Veterans Crisis Line connects you with caring, qualified responders, 24 hours a day. You don't need to be enrolled in VA health care or registered with the VA to use it.</p>
-        <p>
-          <strong>Call:</strong> <a href="tel:988">988, then press 1</a><br />
-          <strong>Text:</strong> <a href="sms:838255">838255</a><br />
-          <strong>Chat online:</strong> <a href="https://www.veteranscrisisline.net/" target="_blank" rel="noopener noreferrer">veteranscrisisline.net</a>
-        </p>
       </main>
       <Footer />
     </div>
