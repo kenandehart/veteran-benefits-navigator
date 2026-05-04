@@ -221,6 +221,25 @@
   margin: 0;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .js-enabled .feature {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  .js-enabled .feature.feature--visible {
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .js-enabled .feature:nth-child(2).feature--visible {
+    animation-delay: 100ms;
+  }
+
+  .js-enabled .feature:nth-child(3).feature--visible {
+    animation-delay: 200ms;
+  }
+}
+
 .feature p {
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 0.95rem;

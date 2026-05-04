@@ -11,6 +11,29 @@ function LandingPage() {
     window.scrollTo(0, 0)
   }, [])
 
+  useEffect(() => {
+    if (!('IntersectionObserver' in window)) return
+
+    const cards = document.querySelectorAll('.feature')
+    if (cards.length === 0) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('feature--visible')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.35 }
+    )
+
+    cards.forEach((card) => observer.observe(card))
+
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <div className="page">
       <SiteHeader />

@@ -17,6 +17,10 @@ import '@fontsource/source-sans-3/600.css'
 import './index.css'
 import App from './App.tsx'
 
+if ('IntersectionObserver' in window) {
+  document.documentElement.classList.add('js-enabled')
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
