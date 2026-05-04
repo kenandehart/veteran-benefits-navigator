@@ -16,7 +16,7 @@ function getStored<T>(key: string, fallback: T): T {
   }
 }
 
-const STORAGE_KEYS = ['vbn_step_v2', 'vbn_answers_v2', 'vbn_history_v2'];
+const STORAGE_KEYS = ['vbn_step_v2', 'vbn_answers_v2', 'vbn_history_v2', 'vbn_housing_condition_v2'];
 
 function clearQuestionnaireStorage() {
   STORAGE_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch {} });
@@ -81,34 +81,38 @@ interface Snapshot {
   step: Step;
   currentServicePeriod: Partial<ServicePeriod>;
   answers: QuestionnaireAnswers;
+  // Internal flow state, not part of QuestionnaireAnswers: tracks whether the
+  // veteran answered Yes to housing-condition so the (now-relocated)
+  // housing-ownership step still gates on the same predicate.
+  housingConditionAnswer: boolean | null;
 }
 
 const STEP_SECTIONS: Record<Step, string> = {
-  'entry-date':        'Service History',
-  'separation-date':   'Service History',
-  'active-duty':       'Service History',
-  'officer-enlisted':  'Service History',
-  'discharge':             'Service History',
-  'disability-discharge':  'Service History',
-  'completed-full-term':   'Service History',
-  'hardship-early-out':    'Service History',
-  'activation-periods':    'Service History',
-  'activation-guidance':   'Service History',
-  'add-another':           'Service History',
-  'vietnam-service':       'Service History',
-  'service-connected': 'Health & Disability',
-  'has-rating':        'Health & Disability',
-  'rating-value':      'Health & Disability',
+  'entry-date':             'Service History',
+  'separation-date':        'Service History',
+  'active-duty':            'Service History',
+  'officer-enlisted':       'Service History',
+  'discharge':              'Service History',
+  'disability-discharge':   'Service History',
+  'completed-full-term':    'Service History',
+  'hardship-early-out':     'Service History',
+  'activation-periods':     'Service History',
+  'activation-guidance':    'Service History',
+  'add-another':            'Service History',
+  'vietnam-service':        'Service History',
+  'sgli-coverage':          'Service History',
+  'has-rating':             'Health & Disability',
+  'rating-value':           'Health & Disability',
   'single-disability-tdiu': 'Health & Disability',
-  'currently-in-vre':  'Health & Disability',
-  'sgli-coverage':     'Insurance',
-  'housing-condition':   'Housing',
-  'housing-ownership':   'Housing',
-  'auto-grant-condition': 'Health & Disability',
-  'income-limit':        'Financial',
-  'age-disability':    'Financial',
-  'purple-heart':      'Health & Disability',
-  'former-pow':        'Service History',
+  'currently-in-vre':       'Health & Disability',
+  'service-connected':      'Health & Disability',
+  'housing-condition':      'Health & Disability',
+  'auto-grant-condition':   'Health & Disability',
+  'housing-ownership':      'Personal Information',
+  'income-limit':           'Personal Information',
+  'age-disability':         'Personal Information',
+  'purple-heart':           'Personal Information',
+  'former-pow':             'Personal Information',
 };
 
 const DISCHARGE_OPTIONS = [
@@ -264,6 +268,16 @@ function Questionnaire() {
   const [currentServicePeriod, setCurrentServicePeriod] = useState<Partial<ServicePeriod>>({});
   const [answers, setAnswers] = useState<QuestionnaireAnswers>(() => getStored('vbn_answers_v2', INITIAL_ANSWERS));
   const [history, setHistory] = useState<Snapshot[]>(() => getStored('vbn_history_v2', []));
+  // housing-ownership lives in the Personal Information section but is only
+  // shown when housing-condition was answered Yes. We track the predicate here
+  // because it cannot be derived from QuestionnaireAnswers (housing-condition
+  // writes nothing on Yes, and `adaptiveHousingCondition = false` cannot
+  // distinguish "housing-condition was No" from "housing-condition was Yes
+  // but housing-ownership not yet reached"). Persisted so a mid-flow page
+  // reload doesn't drop the gate.
+  const [housingConditionAnswer, setHousingConditionAnswer] = useState<boolean | null>(
+    () => getStored('vbn_housing_condition_v2', null as boolean | null),
+  );
   const [showTooltip, setShowTooltip] = useState(false);
   const { user, logout } = useAuth();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -278,6 +292,7 @@ function Questionnaire() {
   useEffect(() => { try { localStorage.setItem('vbn_step_v2', JSON.stringify(currentStep)); } catch {} }, [currentStep]);
   useEffect(() => { try { localStorage.setItem('vbn_answers_v2', JSON.stringify(answers)); } catch {} }, [answers]);
   useEffect(() => { try { localStorage.setItem('vbn_history_v2', JSON.stringify(history)); } catch {} }, [history]);
+  useEffect(() => { try { localStorage.setItem('vbn_housing_condition_v2', JSON.stringify(housingConditionAnswer)); } catch {} }, [housingConditionAnswer]);
 
   useEffect(() => {
     if (!showTooltip) return;
@@ -381,6 +396,7 @@ function Questionnaire() {
       step: currentStep,
       currentServicePeriod: { ...currentServicePeriod },
       answers: { ...answers, servicePeriods: [...answers.servicePeriods] },
+      housingConditionAnswer,
     };
   }
 
@@ -403,6 +419,10 @@ function Questionnaire() {
     setCurrentStep(prev.step);
     setCurrentServicePeriod(prev.currentServicePeriod);
     setAnswers(prev.answers);
+    // Snapshots persisted before housingConditionAnswer was added to Snapshot
+    // will not carry the field; coerce undefined → null so the gate falls back
+    // to "skip housing-ownership" rather than carrying an undefined value.
+    setHousingConditionAnswer(prev.housingConditionAnswer ?? null);
     setShowTooltip(false);
   }
 
@@ -1175,13 +1195,19 @@ function Questionnaire() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
-              onClick={() => advance('auto-grant-condition', undefined, { ...answers, adaptiveHousingCondition: false })}
+              onClick={() => {
+                setHousingConditionAnswer(false);
+                advance('auto-grant-condition', undefined, { ...answers, adaptiveHousingCondition: false });
+              }}
             >
               No
             </button>
             <button
               className="cta-button"
-              onClick={() => advance('housing-ownership')}
+              onClick={() => {
+                setHousingConditionAnswer(true);
+                advance('auto-grant-condition');
+              }}
             >
               Yes
             </button>
@@ -1246,13 +1272,13 @@ function Questionnaire() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
-              onClick={() => advance('auto-grant-condition', undefined, { ...answers, adaptiveHousingCondition: false })}
+              onClick={() => advance('income-limit', undefined, { ...answers, adaptiveHousingCondition: false })}
             >
               No
             </button>
             <button
               className="cta-button"
-              onClick={() => advance('auto-grant-condition', undefined, { ...answers, adaptiveHousingCondition: true })}
+              onClick={() => advance('income-limit', undefined, { ...answers, adaptiveHousingCondition: true })}
             >
               Yes
             </button>
@@ -1271,6 +1297,12 @@ function Questionnaire() {
         'ALS (amyotrophic lateral sclerosis)',
         'Ankylosis of one or both knees or hips',
       ];
+      // housing-ownership now lives at the start of the Personal Information
+      // section, but its gating predicate is unchanged: only show it when
+      // housing-condition was answered Yes. On every other path (housing-
+      // condition No, or no-rating path that skips housing-condition entirely)
+      // we proceed directly to income-limit.
+      const nextAfterAutoGrant: Step = housingConditionAnswer === true ? 'housing-ownership' : 'income-limit';
       stepContent = (
         <>
           <label className="q-label">Do you have any of the following service-connected conditions?</label>
@@ -1278,13 +1310,13 @@ function Questionnaire() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
-              onClick={() => advance('income-limit', undefined, { ...answers, hasAutoGrantCondition: false })}
+              onClick={() => advance(nextAfterAutoGrant, undefined, { ...answers, hasAutoGrantCondition: false })}
             >
               No
             </button>
             <button
               className="cta-button"
-              onClick={() => advance('income-limit', undefined, { ...answers, hasAutoGrantCondition: true })}
+              onClick={() => advance(nextAfterAutoGrant, undefined, { ...answers, hasAutoGrantCondition: true })}
             >
               Yes
             </button>

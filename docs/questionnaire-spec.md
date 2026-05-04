@@ -40,10 +40,11 @@ and `vbn_history`. A Back button restores the prior step+answer snapshot in
 LIFO order. All three keys are cleared on submit, on Home/Sign Out (after a
 confirm dialog), or on any confirmed nav-away.
 
-The progress indicator at the top of each step displays one of five section
-labels: **Service History**, **Health & Disability**, **Insurance**,
-**Housing**, **Financial**. Section assignments are static per step and do not
-follow strict monotonic order across the flow (see Open Questions).
+The progress indicator at the top of each step displays one of three section
+labels: **Service History**, **Health & Disability**, **Personal
+Information**. Section assignments are static per step, and the flow visits
+the three sections in that order (each label appears as a contiguous run of
+steps).
 
 ---
 
@@ -290,7 +291,7 @@ Steps that affect flow but write nothing are noted explicitly.
 
 #### 13. `sgli-coverage`
 
-- **Section:** Insurance
+- **Section:** Service History
 - **Trigger:** Shown when (a) the veteran chose No on `add-another` and the
   Vietnam-era condition was not met but the VGLI date-window predicate was,
   OR (b) the veteran reached `vietnam-service` and the VGLI date-window
@@ -383,7 +384,7 @@ Steps that affect flow but write nothing are noted explicitly.
 
 #### 19. `housing-condition`
 
-- **Section:** Housing
+- **Section:** Health & Disability
 - **Trigger:** Shown only when `has-rating` was Yes (i.e., the veteran came
   through the `rating-value` branch). Reached from `currently-in-vre`
   (any rating ≥ 10%) or directly from `rating-value` when the rating is 0%.
@@ -404,29 +405,26 @@ Steps that affect flow but write nothing are noted explicitly.
 - **Input type:** Two-button choice — **No** (left) / **Yes** (right). The
   list is informational; the answer is a single Yes/No covering "any of the
   above".
-- **Branching:**
-  - **No:** set `adaptiveHousingCondition = false`; continue to question 21,
-    `auto-grant-condition`.
-  - **Yes:** continue to question 20, `housing-ownership`. (The
-    `adaptiveHousingCondition` field is not yet written.)
+- **Branching (both branches continue to question 20, `auto-grant-condition`):**
+  - **No:** set `adaptiveHousingCondition = false`. The Yes-branch gating
+    flag (see below) is recorded as `false`, which causes question 21,
+    `housing-ownership`, to be skipped later in the flow.
+  - **Yes:** the Yes-branch gating flag is recorded as `true`, which causes
+    question 21, `housing-ownership`, to be shown later in the flow. The
+    `adaptiveHousingCondition` field is not yet written.
 
-#### 20. `housing-ownership`
+> **Yes-branch gating flag.** The flow tracks whether the veteran answered
+> Yes to `housing-condition` so it can decide later (after `auto-grant-condition`)
+> whether to ask `housing-ownership`. This flag is internal flow state — it
+> is not part of `QuestionnaireAnswers` and is not submitted to the server.
+> It is persisted alongside the other questionnaire state in `localStorage`
+> so a mid-flow page reload does not drop the gate.
 
-- **Section:** Housing
-- **Trigger:** Shown only when `housing-condition` was Yes.
-- **Question text:** "Are you currently living in, or planning to live in, a
-  home that you or a family member own or will own?"
-- **Input type:** Two-button choice — **No** (left) / **Yes** (right).
-- **Writes:** `adaptiveHousingCondition` — `true` only when the answer is
-  Yes; `false` otherwise.
-- **Continues to:** question 21, `auto-grant-condition`.
-
-#### 21. `auto-grant-condition`
+#### 20. `auto-grant-condition`
 
 - **Section:** Health & Disability
-- **Trigger:** Shown only on the `has-rating = Yes` path. Reached from either
-  branch of `housing-condition` (No directly, or Yes via
-  `housing-ownership`).
+- **Trigger:** Shown only on the `has-rating = Yes` path. Always reached after
+  `housing-condition` (regardless of which branch the veteran took).
 - **Question text:** "Do you have any of the following service-connected
   conditions?"
 - **Displayed condition list** (read-only, scrollable):
@@ -441,13 +439,34 @@ Steps that affect flow but write nothing are noted explicitly.
 - **Input type:** Two-button choice — **No** (left) / **Yes** (right). Single
   Yes/No covering "any of the above".
 - **Writes:** `hasAutoGrantCondition` (`false` or `true`).
+- **Branching:**
+  - If the Yes-branch gating flag set by `housing-condition` is `true`,
+    continue to question 21, `housing-ownership`.
+  - Otherwise (gating flag is `false`, or `housing-condition` was never
+    reached because the veteran is on the no-rating path — though in that
+    case `auto-grant-condition` itself is also skipped), continue directly
+    to question 22, `income-limit`.
+
+#### 21. `housing-ownership`
+
+- **Section:** Personal Information
+- **Trigger:** Shown only when `housing-condition` was answered Yes (the
+  Yes-branch gating flag described under question 19 is `true`). Reached from
+  `auto-grant-condition`.
+- **Question text:** "Are you currently living in, or planning to live in, a
+  home that you or a family member own or will own?"
+- **Input type:** Two-button choice — **No** (left) / **Yes** (right).
+- **Writes:** `adaptiveHousingCondition` — `true` only when the answer is
+  Yes; `false` otherwise.
 - **Continues to:** question 22, `income-limit`.
 
 #### 22. `income-limit`
 
-- **Section:** Financial
+- **Section:** Personal Information
 - **Trigger:** Always reached. From `service-connected` on the no-rating
-  path, or from `auto-grant-condition` on the rating path.
+  path, from `auto-grant-condition` on the rating path when
+  `housing-condition` was answered No, or from `housing-ownership` when
+  `housing-condition` was answered Yes.
 - **Question text:** "Is your combined net worth and annual income below
   $163,699?"
 - **Tooltip text:** "This includes all assets except your primary residence
@@ -458,7 +477,7 @@ Steps that affect flow but write nothing are noted explicitly.
 
 #### 23. `age-disability`
 
-- **Section:** Financial
+- **Section:** Personal Information
 - **Trigger:** Always shown after `income-limit`.
 - **Question text:** "Are any of the following true?"
 - **Displayed condition list** (read-only, non-scrollable bullets):
@@ -475,7 +494,7 @@ Steps that affect flow but write nothing are noted explicitly.
 
 #### 24. `purple-heart`
 
-- **Section:** Health & Disability
+- **Section:** Personal Information
 - **Trigger:** Always shown after `age-disability`.
 - **Question text:** "Were you awarded a Purple Heart on or after September
   11, 2001?"
@@ -485,7 +504,7 @@ Steps that affect flow but write nothing are noted explicitly.
 
 #### 25. `former-pow` (terminal)
 
-- **Section:** Service History
+- **Section:** Personal Information
 - **Trigger:** Always shown after `purple-heart`.
 - **Question text:** "Were you ever a prisoner of war?"
 - **Input type:** Two-button choice — **No** (left) / **Yes** (right).
@@ -550,18 +569,24 @@ The following statements enumerate every conditional branch in the flow.
 
 ### Branches in the housing sub-flow
 
-- **B11 (housing-condition).** If answered No, `housing-ownership` is
-  skipped and `adaptiveHousingCondition` is set to `false`; the flow
-  proceeds to `auto-grant-condition`. If answered Yes,
-  `housing-ownership` is shown.
-- **B12 (housing-ownership).** Final value of `adaptiveHousingCondition` is
+- **B11 (housing-condition).** Either answer continues to
+  `auto-grant-condition`. The branch only differs in two ways:
+  (a) No sets `adaptiveHousingCondition = false` immediately; Yes leaves
+  the field at its prior value (later overwritten by `housing-ownership`);
+  (b) the answer is recorded in the internal Yes-branch gating flag, which
+  decides whether `housing-ownership` is shown after `auto-grant-condition`.
+- **B12 (auto-grant-condition exit).** If the Yes-branch gating flag from
+  `housing-condition` is `true`, the flow continues to `housing-ownership`.
+  Otherwise it skips `housing-ownership` and continues directly to
+  `income-limit`.
+- **B13 (housing-ownership).** Final value of `adaptiveHousingCondition` is
   set: `true` only when `housing-ownership` is Yes (i.e., Yes on both
   housing-condition and housing-ownership), `false` otherwise. Either
-  branch continues to `auto-grant-condition`.
+  branch continues to `income-limit`.
 
 ### Service-connected three-way (no-rating path only)
 
-- **B13 (service-connected).** All three options (I'm not sure / No / Yes)
+- **B14 (service-connected).** All three options (I'm not sure / No / Yes)
   continue to `income-limit`; they only differ in the value written to
   `serviceConnectedCondition` (`null` / `false` / `true` respectively).
   All three also explicitly set `adaptiveHousingCondition = false`.
@@ -595,15 +620,7 @@ review rather than guessed at.
    the field as the question (any 100% pay rate) or as the name (rating
    100% or TDIU only).
 
-3. **Section labels jump non-monotonically.** The progress indicator's
-   section label moves through: Service History → (Insurance) → Health &
-   Disability → Housing → Health & Disability → Financial → Health &
-   Disability → Service History (final POW question). This is not strictly
-   wrong but may confuse users who expect sections to advance in order.
-   The POW question is also the only final-section step that returns to
-   "Service History" after several sections away.
-
-4. **`adaptiveHousingCondition` collapses two questions into a single
+3. **`adaptiveHousingCondition` collapses two questions into a single
    boolean.** A veteran who has a qualifying housing condition but does
    NOT live in / plan to live in an owned home will end up with
    `adaptiveHousingCondition = false`, identical to a veteran who has no
@@ -612,12 +629,12 @@ review rather than guessed at.
    these cases (e.g., for a benefit that ignores ownership), the field
    is too coarse.
 
-5. **"I'm not sure" only exists for `service-connected`.** Several other
+4. **"I'm not sure" only exists for `service-connected`.** Several other
    questions (SGLI, Purple Heart, POW) plausibly have uncertain answers
    but offer only Yes/No. This is a UX consistency question rather than
    a code defect.
 
-6. **The `service-connected` step explicitly resets
+5. **The `service-connected` step explicitly resets
    `adaptiveHousingCondition = false`.** Since this step is only reached
    on the `has-rating = No` path — and the only writers of
    `adaptiveHousingCondition` are reached via `has-rating = Yes` — the
