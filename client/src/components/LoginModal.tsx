@@ -11,7 +11,7 @@ interface LoginModalProps {
 export default function LoginModal({ onClose }: LoginModalProps) {
   const { login } = useAuth()
   const navigate = useNavigate()
-  const [username, setUsername] = useState('')
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -21,7 +21,7 @@ export default function LoginModal({ onClose }: LoginModalProps) {
     setError('')
     setSubmitting(true)
     try {
-      const loggedInUser = await login(username, password)
+      const loggedInUser = await login(identifier, password)
       onClose()
       if (loggedInUser.hasResults) navigate('/dashboard')
     } catch (err) {
@@ -36,12 +36,13 @@ export default function LoginModal({ onClose }: LoginModalProps) {
       <h2 className="modal-title">Log in</h2>
       <form className="modal-form" onSubmit={handleSubmit}>
         <label className="modal-label">
-          Username
+          Username or email
           <input
             className="q-input"
             type="text"
-            value={username}
-            onChange={e => setUsername(e.target.value)}
+            value={identifier}
+            onChange={e => setIdentifier(e.target.value)}
+            autoComplete="username"
             autoFocus
             required
           />

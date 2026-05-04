@@ -88,9 +88,13 @@ router.post('/register', authIpLimiter, authUserLimiter, validateBody(RegisterBo
 const DUMMY_HASH = '$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012345';
 
 router.post('/login', authIpLimiter, authUserLimiter, validateBody(LoginBodySchema), async (req, res, next) => {
-  const { username, password } = req.body as LoginBody;
+  const { identifier, password } = req.body as LoginBody;
 
-  const normalizedUsername = username.toLowerCase();
+  const isEmail = identifier.includes('@');
+  const lookupSql = isEmail
+    ? 'SELECT id, username, email, created_at, password_hash FROM users WHERE LOWER(email) = LOWER($1)'
+    : 'SELECT id, username, email, created_at, password_hash FROM users WHERE username = $1';
+  const lookupValue = isEmail ? identifier : identifier.toLowerCase();
 
   try {
     const result = await pool.query<{
@@ -99,16 +103,13 @@ router.post('/login', authIpLimiter, authUserLimiter, validateBody(LoginBodySche
       email: string | null;
       created_at: Date;
       password_hash: string;
-    }>(
-      'SELECT id, username, email, created_at, password_hash FROM users WHERE username = $1',
-      [normalizedUsername]
-    );
+    }>(lookupSql, [lookupValue]);
 
     const user = result.rows[0];
     const passwordMatch = await bcrypt.compare(password, user?.password_hash ?? DUMMY_HASH);
 
     if (!user || !passwordMatch) {
-      res.status(401).json({ error: 'Invalid username or password' });
+      res.status(401).json({ error: 'Invalid username, email, or password' });
       return;
     }
 

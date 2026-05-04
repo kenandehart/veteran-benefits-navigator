@@ -66,8 +66,10 @@ export const RegisterBodySchema = z.object({
 
 // Login is intentionally permissive on length — existing accounts pre-date
 // the min(10) registration rule. Wrong credentials still fail auth as usual.
+// `identifier` accepts either username or email; the route decides which
+// based on whether the value contains '@'. No format constraint here.
 export const LoginBodySchema = z.object({
-  username: z.string().min(1).max(40),
+  identifier: z.string().min(1).max(254),
   password: z.string().min(1).max(200),
 });
 

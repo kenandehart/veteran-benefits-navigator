@@ -16,7 +16,7 @@ interface User {
 interface AuthContextValue {
   user: User | null
   isLoading: boolean
-  login: (username: string, password: string) => Promise<User>
+  login: (identifier: string, password: string) => Promise<User>
   register: (
     username: string,
     password: string,
@@ -50,12 +50,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user) clearAnonResults()
   }, [user])
 
-  const login = useCallback(async (username: string, password: string): Promise<User> => {
+  const login = useCallback(async (identifier: string, password: string): Promise<User> => {
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ identifier, password }),
     })
     if (!res.ok) {
       const body = await res.json().catch(() => ({}))

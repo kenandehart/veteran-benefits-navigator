@@ -17,14 +17,16 @@ import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import type { Request } from 'express';
 
 function authKey(req: Request): string {
-  const body = (req.body ?? {}) as { username?: unknown; email?: unknown };
-  const secondary =
-    typeof body.username === 'string'
-      ? body.username.toLowerCase()
-      : typeof body.email === 'string'
-        ? body.email.toLowerCase()
-        : '';
-  return `${ipKeyGenerator(req.ip ?? '')}::${secondary}`;
+  const body = (req.body ?? {}) as { username?: unknown; identifier?: unknown; email?: unknown };
+  const candidate =
+    typeof body.identifier === 'string'
+      ? body.identifier
+      : typeof body.username === 'string'
+        ? body.username
+        : typeof body.email === 'string'
+          ? body.email
+          : '';
+  return `${ipKeyGenerator(req.ip ?? '')}::${candidate.toLowerCase()}`;
 }
 
 export const authIpLimiter = rateLimit({
