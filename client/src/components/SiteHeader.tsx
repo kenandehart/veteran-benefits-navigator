@@ -1,14 +1,53 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.tsx'
 import AuthButtons from './AuthButtons.tsx'
 import AuthMenuItems from './AuthMenuItems.tsx'
 import { hasAnonResults } from '../anonResults'
 
-export default function SiteHeader() {
+interface SiteHeaderProps {
+  /**
+   * Optional override for in-app navigation triggered from the header menu.
+   * Receives the destination path. When provided, the caller is responsible
+   * for performing the actual navigation (e.g., after a confirmation dialog).
+   */
+  onNavigate?: (path: string) => void
+  /**
+   * Optional override for sign-out triggered from the header menu.
+   * When provided, called instead of the default logout flow.
+   */
+  onSignOut?: () => void
+}
+
+export default function SiteHeader({ onNavigate, onSignOut }: SiteHeaderProps = {}) {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
   const [showMenu, setShowMenu] = useState(false)
+
+  function goTo(path: string) {
+    setShowMenu(false)
+    if (onNavigate) {
+      onNavigate(path)
+    } else {
+      navigate(path)
+    }
+  }
+
+  function handleHome() {
+    let path = '/'
+    if (user) path = '/dashboard'
+    else if (hasAnonResults()) path = '/results'
+    goTo(path)
+  }
+
+  function handleSignOut() {
+    setShowMenu(false)
+    if (onSignOut) {
+      onSignOut()
+    } else {
+      logout().then(() => navigate('/'))
+    }
+  }
 
   return (
     <>
@@ -30,19 +69,14 @@ export default function SiteHeader() {
               <button
                 className="nav-dropdown__item"
                 role="menuitem"
-                onClick={() => {
-                  setShowMenu(false)
-                  if (user) navigate('/dashboard')
-                  else if (hasAnonResults()) navigate('/results')
-                  else navigate('/')
-                }}
+                onClick={handleHome}
               >
                 Home
               </button>
               <button
                 className="nav-dropdown__item"
                 role="menuitem"
-                onClick={() => { setShowMenu(false); navigate('/benefits') }}
+                onClick={() => goTo('/benefits')}
               >
                 Benefits
               </button>
@@ -50,31 +84,27 @@ export default function SiteHeader() {
                 <button
                   className="nav-dropdown__item"
                   role="menuitem"
-                  onClick={() => { setShowMenu(false); logout().then(() => navigate('/')) }}
+                  onClick={handleSignOut}
                 >
                   Sign out
                 </button>
               )}
               <AuthMenuItems onNavigate={() => setShowMenu(false)} />
               <hr style={{ border: 'none', borderTop: '1px solid var(--border-light)', margin: '4px 0' }} />
-              <Link
-                to="/about"
-                role="menuitem"
+              <button
                 className="nav-dropdown__item"
-                style={{ textDecoration: 'none' }}
-                onClick={() => setShowMenu(false)}
+                role="menuitem"
+                onClick={() => goTo('/about')}
               >
                 About
-              </Link>
-              <Link
-                to="/resources"
-                role="menuitem"
+              </button>
+              <button
                 className="nav-dropdown__item"
-                style={{ textDecoration: 'none' }}
-                onClick={() => setShowMenu(false)}
+                role="menuitem"
+                onClick={() => goTo('/resources')}
               >
                 Resources
-              </Link>
+              </button>
             </div>
           )}
         </div>

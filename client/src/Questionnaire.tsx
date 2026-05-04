@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './App.css';
 import { useAuth } from './context/AuthContext.tsx';
 import Footer from './Footer';
-import AuthButtons from './components/AuthButtons.tsx';
-import AuthMenuItems from './components/AuthMenuItems.tsx';
+import SiteHeader from './components/SiteHeader.tsx';
 import { ScrollableConditions } from './ScrollableConditions.tsx';
 import { writeAnonResults } from './anonResults';
 
@@ -266,7 +265,6 @@ function Questionnaire() {
   const [answers, setAnswers] = useState<QuestionnaireAnswers>(() => getStored('vbn_answers_v2', INITIAL_ANSWERS));
   const [history, setHistory] = useState<Snapshot[]>(() => getStored('vbn_history_v2', []));
   const [showTooltip, setShowTooltip] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
   const { user, logout } = useAuth();
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState('/');
@@ -356,33 +354,7 @@ function Questionnaire() {
     }
   }
 
-  function handleGoHome() {
-    setShowMenu(false);
-    const homeRoute = user ? '/dashboard' : '/';
-    const hasProgress = history.length > 0;
-    if (hasProgress) {
-      setPendingNavigation(homeRoute);
-      setShowConfirmDialog(true);
-    } else {
-      clearQuestionnaireStorage();
-      navigate(homeRoute);
-    }
-  }
-
-  function handleSignOut() {
-    setShowMenu(false);
-    const hasProgress = history.length > 0;
-    if (hasProgress) {
-      setPendingLogout(true);
-      setShowConfirmDialog(true);
-    } else {
-      clearQuestionnaireStorage();
-      logout().then(() => navigate('/'));
-    }
-  }
-
-  function handleNavTo(path: string) {
-    setShowMenu(false);
+  function handleNav(path: string) {
     const hasProgress = history.length > 0;
     if (hasProgress) {
       setPendingNavigation(path);
@@ -390,6 +362,17 @@ function Questionnaire() {
     } else {
       clearQuestionnaireStorage();
       navigate(path);
+    }
+  }
+
+  function handleSignOut() {
+    const hasProgress = history.length > 0;
+    if (hasProgress) {
+      setPendingLogout(true);
+      setShowConfirmDialog(true);
+    } else {
+      clearQuestionnaireStorage();
+      logout().then(() => navigate('/'));
     }
   }
 
@@ -458,50 +441,7 @@ function Questionnaire() {
     }
   }
 
-  const siteHeader = (
-    <>
-      {showMenu && <div className="menu-backdrop" onClick={() => setShowMenu(false)} />}
-      <header className="header">
-        <div className="header-menu">
-          <button
-            className="menu-btn"
-            onClick={() => setShowMenu(v => !v)}
-            aria-label="Open navigation menu"
-            aria-expanded={showMenu}
-          >
-            <span className="menu-btn__bar" />
-            <span className="menu-btn__bar" />
-            <span className="menu-btn__bar" />
-          </button>
-          {showMenu && (
-            <div className="nav-dropdown" role="menu">
-              <button className="nav-dropdown__item" role="menuitem" onClick={handleGoHome}>
-                Home
-              </button>
-              <button className="nav-dropdown__item" role="menuitem" onClick={() => handleNavTo('/benefits')}>
-                Benefits
-              </button>
-              {user && (
-                <button className="nav-dropdown__item" role="menuitem" onClick={handleSignOut}>
-                  Sign out
-                </button>
-              )}
-              <AuthMenuItems onNavigate={() => setShowMenu(false)} />
-              <hr style={{ border: 'none', borderTop: '1px solid var(--border-light)', margin: '4px 0' }} />
-              <button className="nav-dropdown__item" role="menuitem" onClick={() => handleNavTo('/about')}>
-                About
-              </button>
-              <button className="nav-dropdown__item" role="menuitem" onClick={() => handleNavTo('/resources')}>
-                Resources
-              </button>
-            </div>
-          )}
-        </div>
-        <span className="wordmark">Benefits Navigator</span>
-        <AuthButtons />
-      </header>
-    </>
-  );
+  const siteHeader = <SiteHeader onNavigate={handleNav} onSignOut={handleSignOut} />;
 
   function dismissConfirmDialog() {
     setShowConfirmDialog(false);
