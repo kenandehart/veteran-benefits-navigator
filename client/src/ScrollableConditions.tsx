@@ -8,6 +8,8 @@ export function ScrollableConditions({ items }: { items: string[] }) {
     const list = listRef.current;
     if (!list) return;
 
+    list.scrollTop = 0;
+
     function checkScroll() {
       if (!list) return;
       if (list.scrollHeight <= list.clientHeight) {
@@ -26,7 +28,7 @@ export function ScrollableConditions({ items }: { items: string[] }) {
       list.removeEventListener('scroll', checkScroll);
       observer.disconnect();
     };
-  }, []);
+  }, [items]);
 
   return (
     <div className="conditions-wrapper">
