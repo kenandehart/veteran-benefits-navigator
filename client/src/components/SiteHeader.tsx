@@ -78,7 +78,21 @@ export default function SiteHeader() {
             </div>
           )}
         </div>
-        <span className="wordmark">Benefits Navigator</span>
+        <span className="brand">
+          <svg
+            className="brand__emblem"
+            viewBox="0 0 32 32"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <rect className="brand__emblem-bg" width="32" height="32" rx="2" />
+            <polygon
+              className="brand__emblem-star"
+              points="16,5 18.5,12.6 26.5,12.6 20,17.3 22.5,24.9 16,20.2 9.5,24.9 12,17.3 5.5,12.6 13.5,12.6"
+            />
+          </svg>
+          <span className="wordmark">Benefits Navigator</span>
+        </span>
         <AuthButtons />
       </header>
     </>

@@ -52,6 +52,28 @@
   flex-shrink: 0;
 }
 
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand__emblem {
+  width: 32px;
+  height: 32px;
+  display: block;
+  flex-shrink: 0;
+  transform: translateY(-1px);
+}
+
+.brand__emblem-bg {
+  fill: var(--navy);
+}
+
+.brand__emblem-star {
+  fill: var(--gold);
+}
+
 .wordmark {
   font-family: 'Playfair Display', Georgia, serif;
   font-size: 1rem;
@@ -167,6 +189,22 @@
   margin-bottom: 22px;
 }
 
+.feature__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.feature__icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+  color: var(--gold);
+  flex-shrink: 0;
+  transform: translateY(-1px);
+}
+
 .feature:last-child {
   border-right: none;
 }
@@ -178,7 +216,7 @@
   text-transform: uppercase;
   letter-spacing: 0.13em;
   color: var(--navy);
-  margin-bottom: 14px;
+  margin: 0;
 }
 
 .feature p {
@@ -1646,6 +1684,11 @@
   .header {
     padding: 0 24px;
     height: 56px;
+  }
+
+  .brand__emblem {
+    width: 28px;
+    height: 28px;
   }
 
   .header-auth {
