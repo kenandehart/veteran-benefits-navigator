@@ -289,7 +289,9 @@ button[disabled] {
 .footer-disclaimer {
   margin: 0;
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.45);
+  /* WCAG 1.4.3: 0.45 alpha composited on --navy resolved to ~#818996 (4.19:1).
+     Bumped to 0.55 for ~5.48:1 against the same navy background. */
+  color: rgba(255, 255, 255, 0.55);
   text-align: center;
 }
 
@@ -310,7 +312,10 @@ button[disabled] {
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.55);
+  /* WCAG 1.4.3: 0.55 alpha sat near the borderline against --navy. Bumped to
+     0.60 for a clearer ~6.24:1 margin while staying slightly more prominent
+     than .footer-disclaimer (0.55), preserving the original visual hierarchy. */
+  color: rgba(255, 255, 255, 0.60);
   cursor: pointer;
   text-decoration: none;
   transition: color 0.15s ease;
@@ -366,7 +371,12 @@ button[disabled] {
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--gold);
+  /* WCAG 1.4.3: var(--gold) (#c49a1a) on the white .q-card resolves to 2.63:1
+     and fails AA. This is a darker variant of --gold (same hue/saturation,
+     lightness dropped from ~43% to ~30%) for a 5.02:1 ratio. Token left
+     unchanged to avoid affecting other gold uses (focus rings, progress fill,
+     navy backgrounds) where the original gold passes contrast. */
+  color: #876c12;
   position: relative;
   display: flex;
   align-items: center;
@@ -1347,7 +1357,13 @@ button[disabled] {
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 0.8rem;
   font-weight: 500;
-  color: #c0392b;
+  /* WCAG 1.4.3: #c0392b at opacity 0.7 composited on the page bg #f7f5f1
+     resolves to ~#D17166 → 3.08:1, fails AA. Darkening the foreground to
+     #8B0000 (CSS named "darkred") puts the composite at ~#AB4A48 → 5.07:1.
+     The destructive-action red semantic is preserved; the hue is shifted
+     slightly toward pure red (less orange) to compensate for the alpha
+     blend without removing the intentional opacity-0.7 subtlety. */
+  color: #8B0000;
   cursor: pointer;
   padding: 0;
   opacity: 0.7;
