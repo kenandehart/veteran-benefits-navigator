@@ -425,6 +425,25 @@ button[disabled] {
   overflow: hidden;
 }
 
+/* The step stage's overflow: hidden (above) is required to clip the slide-in /
+   slide-out animations of step content. That same clipping eats outset focus
+   rings of focusable elements inside the stage — most visibly the .cta-button
+   Next button at the right edge, and the inline-styled ⓘ tooltip buttons that
+   rely on the browser-default focus ring. Pulling each ring inside the
+   element's own box (negative outline-offset) preserves keyboard focus
+   visibility without changing layout, padding, or button positioning. */
+.q-step-stage button:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: -3px;
+}
+/* The base .cta-button:focus-visible rule sets outline-offset: 3px (outset,
+   clipped) and has higher specificity than the rule above; this scoped
+   override pins the offset back to -3px so the gold ring lands inside the
+   button. Outline color/thickness are unchanged. */
+.q-step-stage .cta-button:not(:disabled):focus-visible {
+  outline-offset: -3px;
+}
+
 .q-step {
   display: flex;
   flex-direction: column;
