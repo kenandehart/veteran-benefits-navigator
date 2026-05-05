@@ -153,22 +153,23 @@ function DashboardPage() {
             <p className="dashboard-meta">Loading your results...</p>
           ) : results ? (
             <>
-              <div className="benefits-grid">
+              <ul className="benefits-grid">
                 {[...results.matchedBenefits]
                   .sort((a, b) => a.name.localeCompare(b.name))
                   .map(benefit => (
-                    <Link
-                      key={benefit.id}
-                      to={`/benefits/${benefit.slug}`}
-                      className="benefit-tile"
-                    >
-                      <span className="benefit-tile__name">{benefit.name}</span>
-                      {benefit.short_description && (
-                        <span className="benefit-tile__desc">{benefit.short_description}</span>
-                      )}
-                    </Link>
+                    <li key={benefit.id}>
+                      <Link
+                        to={`/benefits/${benefit.slug}`}
+                        className="benefit-tile"
+                      >
+                        <h2 className="benefit-tile__name">{benefit.name}</h2>
+                        {benefit.short_description && (
+                          <p className="benefit-tile__desc">{benefit.short_description}</p>
+                        )}
+                      </Link>
+                    </li>
                   ))}
-              </div>
+              </ul>
               <button className="cta-button dashboard-retake" onClick={() => navigate('/questionnaire')}>
                 Retake Questionnaire
               </button>

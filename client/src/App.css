@@ -382,6 +382,7 @@ button[disabled] {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  margin: 0;
 }
 
 .q-progress-text__layer {
@@ -547,6 +548,7 @@ button[disabled] {
   font-weight: 400;
   line-height: 1.4;
   color: var(--navy);
+  margin: 0;
 }
 
 .q-input {
@@ -668,6 +670,9 @@ button[disabled] {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .benefit-tile {
@@ -685,6 +690,7 @@ button[disabled] {
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.18s ease;
   font-family: inherit;
   width: 100%;
+  height: 100%;
   text-decoration: none;
   color: inherit;
 }
@@ -710,6 +716,7 @@ button[disabled] {
   font-weight: 400;
   color: var(--navy);
   line-height: 1.3;
+  margin: 0;
 }
 
 .benefit-tile__desc {
@@ -718,6 +725,7 @@ button[disabled] {
   font-weight: 300;
   color: var(--text-muted);
   line-height: 1.65;
+  margin: 0;
 }
 
 /* Save results CTA */

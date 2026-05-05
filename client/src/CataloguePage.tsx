@@ -48,22 +48,23 @@ function CataloguePage() {
         }}>
           This is not an exhaustive list of benefits available to veterans. For complete information, visit <a href="https://www.va.gov/" target="_blank" rel="noopener noreferrer">va.gov</a>.
         </p>
-        <div className="benefits-grid">
+        <ul className="benefits-grid">
           {[...benefits]
             .sort((a, b) => a.name.localeCompare(b.name))
             .map(benefit => (
-              <Link
-                key={benefit.id}
-                to={`/benefits/${benefit.slug}`}
-                className="benefit-tile"
-              >
-                <span className="benefit-tile__name">{benefit.name}</span>
-                {benefit.short_description && (
-                  <span className="benefit-tile__desc">{benefit.short_description}</span>
-                )}
-              </Link>
+              <li key={benefit.id}>
+                <Link
+                  to={`/benefits/${benefit.slug}`}
+                  className="benefit-tile"
+                >
+                  <h2 className="benefit-tile__name">{benefit.name}</h2>
+                  {benefit.short_description && (
+                    <p className="benefit-tile__desc">{benefit.short_description}</p>
+                  )}
+                </Link>
+              </li>
             ))}
-        </div>
+        </ul>
       </main>
       <Footer />
     </div>

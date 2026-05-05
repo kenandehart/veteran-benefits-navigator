@@ -898,7 +898,7 @@ function Questionnaire() {
       const entryDateError = validateEntryDate(currentServicePeriod.entryDate ?? '');
       stepContent = (
         <>
-          <label className="q-label" htmlFor="entry-date">{label}</label>
+          <h3 className="q-label"><label htmlFor="entry-date">{label}</label></h3>
           <DateInput
             id="entry-date"
             value={currentServicePeriod.entryDate ?? ''}
@@ -943,9 +943,11 @@ function Questionnaire() {
       );
       stepContent = (
         <>
-          <label className="q-label" htmlFor="separation-date">
-            What is the date of separation for this period of service?
-          </label>
+          <h3 className="q-label">
+            <label htmlFor="separation-date">
+              What is the date of separation for this period of service?
+            </label>
+          </h3>
           <DateInput
             id="separation-date"
             value={currentServicePeriod.separationDate ?? ''}
@@ -986,7 +988,7 @@ function Questionnaire() {
     case 'active-duty': {
       stepContent = (
         <>
-          <label className="q-label">Was this period of service active duty?</label>
+          <h3 className="q-label">Was this period of service active duty?</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
@@ -1009,7 +1011,7 @@ function Questionnaire() {
     case 'officer-enlisted': {
       stepContent = (
         <>
-          <label className="q-label">Did you start this period of service as an officer or enlisted?</label>
+          <h3 className="q-label">Did you start this period of service as an officer or enlisted?</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
@@ -1033,9 +1035,11 @@ function Questionnaire() {
       const showDischargeError = missingFieldErrorStep === 'discharge' && !currentServicePeriod.dischargeLevel;
       stepContent = (
         <>
-          <label className="q-label" htmlFor="q-input">
-            What was your characterization of discharge for this period of service?
-          </label>
+          <h3 className="q-label">
+            <label htmlFor="q-input">
+              What was your characterization of discharge for this period of service?
+            </label>
+          </h3>
           <select
             ref={dischargeSelectRef}
             id="q-input"
@@ -1079,9 +1083,9 @@ function Questionnaire() {
     case 'disability-discharge': {
       stepContent = (
         <>
-          <label className="q-label">
+          <h3 className="q-label">
             Were you discharged from this period of service specifically due to a service-connected disability?
-          </label>
+          </h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
@@ -1104,9 +1108,9 @@ function Questionnaire() {
     case 'completed-full-term': {
       stepContent = (
         <>
-          <label className="q-label">
+          <h3 className="q-label">
             Did you complete the full term of service for this period?
-          </label>
+          </h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
@@ -1129,9 +1133,9 @@ function Questionnaire() {
     case 'hardship-early-out': {
       stepContent = (
         <>
-          <label className="q-label">
+          <h3 className="q-label">
             Were you discharged for a hardship or &lsquo;early out&rsquo;?
-          </label>
+          </h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
@@ -1159,9 +1163,9 @@ function Questionnaire() {
       // servicePeriods, so a separate field would be redundant.
       stepContent = (
         <>
-          <label className="q-label">
+          <h3 className="q-label">
             Were you activated for federal active duty service (not including training) during this period?
-          </label>
+          </h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
@@ -1184,9 +1188,9 @@ function Questionnaire() {
     case 'activation-guidance': {
       stepContent = (
         <>
-          <p className="q-label">
+          <h3 className="q-label">
             Please add each activation as a separate period of service when prompted. This helps us accurately determine your eligibility.
-          </p>
+          </h3>
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
             <button
               className="cta-button q-next-btn"
@@ -1209,7 +1213,7 @@ function Questionnaire() {
       const atServicePeriodLimit = answers.servicePeriods.length >= 19;
       stepContent = (
         <>
-          <label className="q-label">Would you like to add another period of service?</label>
+          <h3 className="q-label">Would you like to add another period of service?</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
@@ -1263,7 +1267,7 @@ function Questionnaire() {
     case 'vietnam-service': {
       stepContent = (
         <>
-          <label className="q-label">Did you serve in the Republic of Vietnam?</label>
+          <h3 className="q-label">Did you serve in the Republic of Vietnam?</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
@@ -1303,9 +1307,9 @@ function Questionnaire() {
       stepContent = (
         <>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-            <label className="q-label">
+            <h3 className="q-label">
               Do you have a current illness, injury, or condition related to your service?
-            </label>
+            </h3>
             <div ref={serviceConnectedTooltipRef} style={{ position: 'relative', flexShrink: 0, marginTop: '4px' }}>
               <button
                 onClick={() => setShowTooltip(v => !v)}
@@ -1368,7 +1372,7 @@ function Questionnaire() {
     case 'has-rating': {
       stepContent = (
         <>
-          <label className="q-label">Do you have a current VA disability rating?</label>
+          <h3 className="q-label">Do you have a current VA disability rating?</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
@@ -1392,7 +1396,7 @@ function Questionnaire() {
       const showRatingError = missingFieldErrorStep === 'rating-value' && answers.disabilityRating === null;
       stepContent = (
         <>
-          <label className="q-label" htmlFor="q-input">What is your current VA disability rating?</label>
+          <h3 className="q-label"><label htmlFor="q-input">What is your current VA disability rating?</label></h3>
           <select
             ref={ratingSelectRef}
             id="q-input"
@@ -1453,9 +1457,9 @@ function Questionnaire() {
       stepContent = (
         <>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-            <label className="q-label">
+            <h3 className="q-label">
               Does the VA pay you at the 100% disability rate?
-            </label>
+            </h3>
             <div ref={tdiuTooltipRef} style={{ position: 'relative', flexShrink: 0, marginTop: '4px' }}>
               <button
                 onClick={() => setShowTooltip(v => !v)}
@@ -1521,9 +1525,9 @@ function Questionnaire() {
     case 'currently-in-vre': {
       stepContent = (
         <>
-          <label className="q-label">
+          <h3 className="q-label">
             Are you currently participating in a VR&amp;E (Veteran Readiness and Employment / Chapter 31) program?
-          </label>
+          </h3>
           <div
             style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }}
             className="yn-row"
@@ -1551,9 +1555,9 @@ function Questionnaire() {
       stepContent = (
         <>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-            <label className="q-label">
+            <h3 className="q-label">
               Did you have Servicemembers' Group Life Insurance (SGLI) coverage during your service?
-            </label>
+            </h3>
             <div ref={sgliTooltipRef} style={{ position: 'relative', flexShrink: 0, marginTop: '4px' }}>
               <button
                 onClick={() => setShowTooltip(v => !v)}
@@ -1625,7 +1629,7 @@ function Questionnaire() {
       ];
       stepContent = (
         <>
-          <label className="q-label">Do your service-connected disabilities include any of the following?</label>
+          <h3 className="q-label">Do your service-connected disabilities include any of the following?</h3>
           <ScrollableConditions items={QUALIFYING_CONDITIONS} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
@@ -1655,7 +1659,7 @@ function Questionnaire() {
     case 'purple-heart': {
       stepContent = (
         <>
-          <label className="q-label">Were you awarded a Purple Heart on or after September 11, 2001?</label>
+          <h3 className="q-label">Were you awarded a Purple Heart on or after September 11, 2001?</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
@@ -1678,7 +1682,7 @@ function Questionnaire() {
     case 'former-pow': {
       stepContent = (
         <>
-          <label className="q-label">Were you ever a prisoner of war?</label>
+          <h3 className="q-label">Were you ever a prisoner of war?</h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
@@ -1701,9 +1705,9 @@ function Questionnaire() {
     case 'housing-ownership': {
       stepContent = (
         <>
-          <label className="q-label">
+          <h3 className="q-label">
             Are you currently living in, or planning to live in, a home that you or a family member own or will own?
-          </label>
+          </h3>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
               className="cta-button"
@@ -1740,7 +1744,7 @@ function Questionnaire() {
       const nextAfterAutoGrant: Step = housingConditionAnswer === true ? 'housing-ownership' : 'income-limit';
       stepContent = (
         <>
-          <label className="q-label">Do you have any of the following service-connected conditions?</label>
+          <h3 className="q-label">Do you have any of the following service-connected conditions?</h3>
           <ScrollableConditions items={AUTO_GRANT_CONDITIONS} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', width: '100%', justifyItems: 'center' }} className="yn-row">
             <button
@@ -1765,9 +1769,9 @@ function Questionnaire() {
       stepContent = (
         <>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-            <label className="q-label">
+            <h3 className="q-label">
               Is your combined net worth and annual income below $163,699?
-            </label>
+            </h3>
             <div ref={incomeLimitTooltipRef} style={{ position: 'relative', flexShrink: 0, marginTop: '4px' }}>
               <button
                 onClick={() => setShowTooltip(v => !v)}
@@ -1836,7 +1840,7 @@ function Questionnaire() {
       ];
       stepContent = (
         <>
-          <label className="q-label">Are any of the following true?</label>
+          <h3 className="q-label">Are any of the following true?</h3>
           <div className="conditions-wrapper">
             <ul className="conditions-list">
               {AGE_DISABILITY_CONDITIONS.map((condition, i) => (
@@ -1869,6 +1873,7 @@ function Questionnaire() {
       {siteHeader}
 
       <main className="q-main">
+        <h1 className="sr-only">VA Benefits Questionnaire</h1>
         <div className="q-card">
           <div
             className="q-progress-bar"
@@ -1882,9 +1887,9 @@ function Questionnaire() {
             <div className="q-progress-bar__fill" style={{ width: `${progressPercent}%` }} />
           </div>
           {showBack && backButton}
-          <div className="q-progress-text">
+          <h2 className="q-progress-text">
             <SectionHeaderTransition section={section} direction={navDirection} />
-          </div>
+          </h2>
           <StepTransition stepKey={currentStep} direction={navDirection}>
             {stepContent}
           </StepTransition>
