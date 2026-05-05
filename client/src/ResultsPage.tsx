@@ -1,5 +1,5 @@
 import './App.css'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.tsx'
 import Footer from './Footer'
@@ -36,6 +36,7 @@ function ResultsPage() {
   )
   const [answers, setAnswers] = useState<unknown>(initialState?.answers ?? null)
   const [showRegister, setShowRegister] = useState(false)
+  const registerTriggerRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -178,7 +179,13 @@ function ResultsPage() {
                 <p className="results-save-cta__text">
                   Create an account to save your results and access them anytime.
                 </p>
-                <button className="cta-button" onClick={() => setShowRegister(true)}>
+                <button
+                  className="cta-button"
+                  onClick={(e) => {
+                    registerTriggerRef.current = e.currentTarget
+                    setShowRegister(true)
+                  }}
+                >
                   Save my results
                 </button>
               </div>
@@ -206,6 +213,7 @@ function ResultsPage() {
                 answers={answers}
                 matchedBenefitIds={eligibleBenefits.map(b => b.id)}
                 onSuccess={() => navigate('/dashboard')}
+                triggerRef={registerTriggerRef}
               />
             )}
           </>

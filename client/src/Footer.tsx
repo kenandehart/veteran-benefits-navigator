@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Modal from './components/Modal.tsx'
 import FeedbackWidget from './components/FeedbackWidget.tsx'
 
 export default function Footer() {
   const [showFeedback, setShowFeedback] = useState(false)
+  const triggerRef = useRef<HTMLElement | null>(null)
 
   return (
     <footer className="footer">
@@ -15,7 +16,10 @@ export default function Footer() {
         <button
           type="button"
           className="footer-link"
-          onClick={() => setShowFeedback(true)}
+          onClick={(e) => {
+            triggerRef.current = e.currentTarget
+            setShowFeedback(true)
+          }}
         >
           Send feedback
         </button>
@@ -24,7 +28,7 @@ export default function Footer() {
         </Link>
       </div>
       {showFeedback && (
-        <Modal onClose={() => setShowFeedback(false)}>
+        <Modal onClose={() => setShowFeedback(false)} title="Send feedback" triggerRef={triggerRef}>
           <FeedbackWidget pageContext="footer" />
         </Modal>
       )}

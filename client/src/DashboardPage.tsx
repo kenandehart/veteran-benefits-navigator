@@ -1,5 +1,5 @@
 import './App.css'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.tsx'
@@ -39,6 +39,7 @@ function DashboardPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
+  const loginTriggerRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -121,12 +122,18 @@ function DashboardPage() {
             textAlign: 'center',
           }}>
             <p>Please log in to view your dashboard</p>
-            <button className="cta-button" onClick={() => setShowLoginModal(true)}>
+            <button
+              className="cta-button"
+              onClick={(e) => {
+                loginTriggerRef.current = e.currentTarget
+                setShowLoginModal(true)
+              }}
+            >
               Log in
             </button>
           </div>
         </main>
-        {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
+        {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} triggerRef={loginTriggerRef} />}
         <Footer />
       </div>
     )

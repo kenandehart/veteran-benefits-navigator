@@ -1,14 +1,15 @@
 import { useState } from 'react'
-import type { FormEvent } from 'react'
+import type { FormEvent, RefObject } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.tsx'
 import Modal from './Modal.tsx'
 
 interface LoginModalProps {
   onClose: () => void
+  triggerRef?: RefObject<HTMLElement | null>
 }
 
-export default function LoginModal({ onClose }: LoginModalProps) {
+export default function LoginModal({ onClose, triggerRef }: LoginModalProps) {
   const { login } = useAuth()
   const navigate = useNavigate()
   const [identifier, setIdentifier] = useState('')
@@ -32,8 +33,8 @@ export default function LoginModal({ onClose }: LoginModalProps) {
   }
 
   return (
-    <Modal onClose={onClose}>
-      <h2 className="modal-title">Log in</h2>
+    <Modal onClose={onClose} titleId="login-modal-title" triggerRef={triggerRef}>
+      <h2 id="login-modal-title" className="modal-title">Log in</h2>
       <form className="modal-form" onSubmit={handleSubmit}>
         <label className="modal-label">
           Username or email

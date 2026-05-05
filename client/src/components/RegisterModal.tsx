@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { FormEvent } from 'react'
+import type { FormEvent, RefObject } from 'react'
 import { useAuth } from '../context/AuthContext.tsx'
 import Modal from './Modal.tsx'
 
@@ -8,9 +8,10 @@ interface RegisterModalProps {
   answers?: unknown
   matchedBenefitIds?: number[]
   onSuccess?: () => void
+  triggerRef?: RefObject<HTMLElement | null>
 }
 
-export default function RegisterModal({ onClose, answers, matchedBenefitIds, onSuccess }: RegisterModalProps) {
+export default function RegisterModal({ onClose, answers, matchedBenefitIds, onSuccess, triggerRef }: RegisterModalProps) {
   const { register } = useAuth()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -42,8 +43,8 @@ export default function RegisterModal({ onClose, answers, matchedBenefitIds, onS
   }
 
   return (
-    <Modal onClose={onClose}>
-      <h2 className="modal-title">Sign up</h2>
+    <Modal onClose={onClose} titleId="register-modal-title" triggerRef={triggerRef}>
+      <h2 id="register-modal-title" className="modal-title">Sign up</h2>
       <form className="modal-form" onSubmit={handleSubmit}>
         <label className="modal-label">
           Username
