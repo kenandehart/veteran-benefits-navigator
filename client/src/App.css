@@ -1455,10 +1455,33 @@ button[disabled] {
   color: #c0392b;
 }
 
+.feedback-widget__textarea-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  /* Reserve at least one error-line of vertical space so adding/removing the
+     error doesn't shift the form vertically. */
+  min-height: 1.5rem;
+}
+
+/* Override the column-layout self-alignment of the counter when it sits in the
+   meta row, and push it to the right edge regardless of whether the error is
+   present. */
+.feedback-widget__textarea-meta .feedback-widget__counter {
+  align-self: auto;
+  margin-left: auto;
+}
+
 .feedback-widget__error {
   margin: 0;
   font-family: 'Source Sans 3', system-ui, sans-serif;
   font-size: 0.875rem;
+  /* Reset typography inherited from .feedback-widget__label so the error
+     matches the questionnaire's .date-input-error treatment (normal case,
+     normal weight, no letter-spacing). */
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
   color: #c0392b;
 }
 

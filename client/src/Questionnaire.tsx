@@ -497,7 +497,19 @@ function isoToDisplay(iso: string): string {
 }
 
 // Accepts value/onChange in ISO format (YYYY-MM-DD or '').
-function DateInput({ id, value, onChange }: { id: string; value: string; onChange: (v: string) => void }) {
+function DateInput({
+  id,
+  value,
+  onChange,
+  inputRef,
+  emptyError = false,
+}: {
+  id: string;
+  value: string;
+  onChange: (v: string) => void;
+  inputRef?: React.Ref<HTMLInputElement>;
+  emptyError?: boolean;
+}) {
   const [textValue, setTextValue] = useState(value ? isoToDisplay(value) : '');
   const [touched, setTouched] = useState(false);
 
@@ -515,13 +527,19 @@ function DateInput({ id, value, onChange }: { id: string; value: string; onChang
     onChange(parsed ? toISO(parsed.month, parsed.day, parsed.year) : '');
   }
 
-  const isInvalid = touched && textValue.length > 0 && !parseDateText(textValue);
+  const isFormatInvalid = touched && textValue.length > 0 && !parseDateText(textValue);
+  // Empty-error is parent-driven: the parent flips emptyError to true when the
+  // user attempts to advance with no date entered. It auto-hides as soon as the
+  // user types anything, since textValue becomes non-empty.
+  const showEmptyError = emptyError && textValue.length === 0;
+  const showError = isFormatInvalid || showEmptyError;
 
   return (
     <div className="date-input-wrapper">
-      <div className={`date-input-field${isInvalid ? ' date-input-field--error' : ''}`}>
+      <div className={`date-input-field${showError ? ' date-input-field--error' : ''}`}>
         <input
           id={id}
+          ref={inputRef}
           type="text"
           inputMode="numeric"
           className="date-input-text"
@@ -530,13 +548,13 @@ function DateInput({ id, value, onChange }: { id: string; value: string; onChang
           maxLength={10}
           onChange={e => handleTextChange(e.target.value)}
           onBlur={() => setTouched(true)}
-          aria-invalid={isInvalid}
-          aria-describedby={isInvalid ? `${id}-error` : undefined}
+          aria-invalid={showError}
+          aria-describedby={showError ? `${id}-error` : undefined}
         />
       </div>
-      {isInvalid && (
+      {showError && (
         <p id={`${id}-error`} className="date-input-error" role="alert">
-          Please enter a valid date (MM/DD/YYYY).
+          {showEmptyError ? 'Please enter a date.' : 'Please enter a valid date (MM/DD/YYYY).'}
         </p>
       )}
     </div>
@@ -600,11 +618,20 @@ function Questionnaire() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState('/');
   const [pendingLogout, setPendingLogout] = useState(false);
+  // Tracks which step has had a "missing required input" error surfaced. Set
+  // when the user clicks Next (or presses Enter) with an empty field, so the
+  // step's input can render an error message and aria-invalid. Cleared on any
+  // step navigation via advance/goBack so errors don't bleed across steps.
+  const [missingFieldErrorStep, setMissingFieldErrorStep] = useState<Step | null>(null);
 
   const serviceConnectedTooltipRef = useRef<HTMLDivElement>(null);
   const incomeLimitTooltipRef = useRef<HTMLDivElement>(null);
   const sgliTooltipRef = useRef<HTMLDivElement>(null);
   const tdiuTooltipRef = useRef<HTMLDivElement>(null);
+  const entryDateInputRef = useRef<HTMLInputElement>(null);
+  const separationDateInputRef = useRef<HTMLInputElement>(null);
+  const dischargeSelectRef = useRef<HTMLSelectElement>(null);
+  const ratingSelectRef = useRef<HTMLSelectElement>(null);
 
   useEffect(() => { try { localStorage.setItem('vbn_step_v2', JSON.stringify(currentStep)); } catch {} }, [currentStep]);
   useEffect(() => { try { localStorage.setItem('vbn_answers_v2', JSON.stringify(answers)); } catch {} }, [answers]);
@@ -636,36 +663,57 @@ function Questionnaire() {
 
       switch (currentStep) {
         case 'entry-date': {
-          const error = validateEntryDate(currentServicePeriod.entryDate ?? '');
-          if (currentServicePeriod.entryDate && !error) advance('separation-date');
+          if (!currentServicePeriod.entryDate) {
+            setMissingFieldErrorStep('entry-date');
+            entryDateInputRef.current?.focus();
+            break;
+          }
+          if (validateEntryDate(currentServicePeriod.entryDate)) {
+            entryDateInputRef.current?.focus();
+            break;
+          }
+          advance('separation-date');
           break;
         }
         case 'separation-date': {
-          const error = validateSeparationDate(
-            currentServicePeriod.separationDate ?? '',
-            currentServicePeriod.entryDate ?? '',
-          );
-          if (currentServicePeriod.separationDate && !error) advance('active-duty');
+          if (!currentServicePeriod.separationDate) {
+            setMissingFieldErrorStep('separation-date');
+            separationDateInputRef.current?.focus();
+            break;
+          }
+          if (validateSeparationDate(currentServicePeriod.separationDate, currentServicePeriod.entryDate ?? '')) {
+            separationDateInputRef.current?.focus();
+            break;
+          }
+          advance('active-duty');
           break;
         }
         case 'discharge': {
-          if (currentServicePeriod.dischargeLevel) advance('completed-full-term');
+          if (!currentServicePeriod.dischargeLevel) {
+            setMissingFieldErrorStep('discharge');
+            dischargeSelectRef.current?.focus();
+            break;
+          }
+          advance('completed-full-term');
           break;
         }
         case 'rating-value': {
-          if (answers.disabilityRating !== null) {
-            if (answers.disabilityRating === 100) {
-              advance('currently-in-vre', undefined, { ...answers, serviceConnectedCondition: true, paidAtTotalDisabilityRate: true });
-            } else if (answers.disabilityRating >= 10) {
-              advance('single-disability-tdiu', undefined, { ...answers, serviceConnectedCondition: true });
-            } else {
-              advance('housing-condition', undefined, {
-                ...answers,
-                serviceConnectedCondition: true,
-                currentlyInVRE: false,
-                paidAtTotalDisabilityRate: false,
-              });
-            }
+          if (answers.disabilityRating === null) {
+            setMissingFieldErrorStep('rating-value');
+            ratingSelectRef.current?.focus();
+            break;
+          }
+          if (answers.disabilityRating === 100) {
+            advance('currently-in-vre', undefined, { ...answers, serviceConnectedCondition: true, paidAtTotalDisabilityRate: true });
+          } else if (answers.disabilityRating >= 10) {
+            advance('single-disability-tdiu', undefined, { ...answers, serviceConnectedCondition: true });
+          } else {
+            advance('housing-condition', undefined, {
+              ...answers,
+              serviceConnectedCondition: true,
+              currentlyInVRE: false,
+              paidAtTotalDisabilityRate: false,
+            });
           }
           break;
         }
@@ -735,6 +783,7 @@ function Questionnaire() {
     const newRaw = computeRawProgress(nextStep, finalCommitted).totalPercent;
     setProgressHigh(prev => Math.max(prev, newRaw));
     setShowTooltip(false);
+    setMissingFieldErrorStep(null);
   }
 
   function goBack() {
@@ -754,6 +803,7 @@ function Questionnaire() {
     // user's actual current position.
     setProgressHigh(computeRawProgress(prev.step, prev.answers.servicePeriods.length).totalPercent);
     setShowTooltip(false);
+    setMissingFieldErrorStep(null);
   }
 
   async function handleSubmit(finalAnswers: QuestionnaireAnswers) {
@@ -853,6 +903,8 @@ function Questionnaire() {
             id="entry-date"
             value={currentServicePeriod.entryDate ?? ''}
             onChange={v => setCurrentServicePeriod(p => ({ ...p, entryDate: v }))}
+            inputRef={entryDateInputRef}
+            emptyError={missingFieldErrorStep === 'entry-date'}
           />
           {entryDateError && (
             <p role="alert" style={{ color: '#b91c1c', fontSize: '0.85rem', margin: '4px 0 0', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
@@ -862,8 +914,18 @@ function Questionnaire() {
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
             <button
               className="cta-button q-next-btn"
-              onClick={() => advance('separation-date')}
-              disabled={!currentServicePeriod.entryDate || !!entryDateError}
+              onClick={() => {
+                if (!currentServicePeriod.entryDate) {
+                  setMissingFieldErrorStep('entry-date');
+                  entryDateInputRef.current?.focus();
+                  return;
+                }
+                if (validateEntryDate(currentServicePeriod.entryDate)) {
+                  entryDateInputRef.current?.focus();
+                  return;
+                }
+                advance('separation-date');
+              }}
               style={{ marginLeft: 'auto' }}
             >
               Next <span className="button-arrow" aria-hidden="true">→</span>
@@ -888,6 +950,8 @@ function Questionnaire() {
             id="separation-date"
             value={currentServicePeriod.separationDate ?? ''}
             onChange={v => setCurrentServicePeriod(p => ({ ...p, separationDate: v }))}
+            inputRef={separationDateInputRef}
+            emptyError={missingFieldErrorStep === 'separation-date'}
           />
           {sepDateError && (
             <p role="alert" style={{ color: '#b91c1c', fontSize: '0.85rem', margin: '4px 0 0', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
@@ -897,8 +961,18 @@ function Questionnaire() {
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
             <button
               className="cta-button q-next-btn"
-              onClick={() => advance('active-duty')}
-              disabled={!currentServicePeriod.separationDate || !!sepDateError}
+              onClick={() => {
+                if (!currentServicePeriod.separationDate) {
+                  setMissingFieldErrorStep('separation-date');
+                  separationDateInputRef.current?.focus();
+                  return;
+                }
+                if (validateSeparationDate(currentServicePeriod.separationDate, currentServicePeriod.entryDate ?? '')) {
+                  separationDateInputRef.current?.focus();
+                  return;
+                }
+                advance('active-duty');
+              }}
               style={{ marginLeft: 'auto' }}
             >
               Next <span className="button-arrow" aria-hidden="true">→</span>
@@ -956,27 +1030,42 @@ function Questionnaire() {
     }
 
     case 'discharge': {
+      const showDischargeError = missingFieldErrorStep === 'discharge' && !currentServicePeriod.dischargeLevel;
       stepContent = (
         <>
           <label className="q-label" htmlFor="q-input">
             What was your characterization of discharge for this period of service?
           </label>
           <select
+            ref={dischargeSelectRef}
             id="q-input"
-            className="q-input q-select"
+            className={`q-input q-select${showDischargeError ? ' q-input--error' : ''}`}
             value={currentServicePeriod.dischargeLevel ?? ''}
             onChange={e => setCurrentServicePeriod(p => ({ ...p, dischargeLevel: Number(e.target.value) }))}
+            aria-invalid={showDischargeError}
+            aria-describedby={showDischargeError ? 'discharge-error' : undefined}
           >
             <option value="">Select one…</option>
             {DISCHARGE_OPTIONS.map(opt => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
           </select>
+          {showDischargeError && (
+            <p id="discharge-error" className="date-input-error" role="alert">
+              Please select an option.
+            </p>
+          )}
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
             <button
               className="cta-button q-next-btn"
-              onClick={() => advance('completed-full-term')}
-              disabled={!currentServicePeriod.dischargeLevel}
+              onClick={() => {
+                if (!currentServicePeriod.dischargeLevel) {
+                  setMissingFieldErrorStep('discharge');
+                  dischargeSelectRef.current?.focus();
+                  return;
+                }
+                advance('completed-full-term');
+              }}
               style={{ marginLeft: 'auto' }}
             >
               Next <span className="button-arrow" aria-hidden="true">→</span>
@@ -1300,20 +1389,29 @@ function Questionnaire() {
     }
 
     case 'rating-value': {
+      const showRatingError = missingFieldErrorStep === 'rating-value' && answers.disabilityRating === null;
       stepContent = (
         <>
           <label className="q-label" htmlFor="q-input">What is your current VA disability rating?</label>
           <select
+            ref={ratingSelectRef}
             id="q-input"
-            className="q-input q-select"
+            className={`q-input q-select${showRatingError ? ' q-input--error' : ''}`}
             value={answers.disabilityRating ?? ''}
             onChange={e => setAnswers(a => ({ ...a, disabilityRating: Number(e.target.value) }))}
+            aria-invalid={showRatingError}
+            aria-describedby={showRatingError ? 'rating-error' : undefined}
           >
             <option value="">Select one…</option>
             {RATING_OPTIONS.map(v => (
               <option key={v} value={v}>{v}%</option>
             ))}
           </select>
+          {showRatingError && (
+            <p id="rating-error" className="date-input-error" role="alert">
+              Please select an option.
+            </p>
+          )}
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
             {/*
               Any rating value, including 0%, sets serviceConnectedCondition = true:
@@ -1323,9 +1421,14 @@ function Questionnaire() {
             <button
               className="cta-button q-next-btn"
               onClick={() => {
+                if (answers.disabilityRating === null) {
+                  setMissingFieldErrorStep('rating-value');
+                  ratingSelectRef.current?.focus();
+                  return;
+                }
                 if (answers.disabilityRating === 100) {
                   advance('currently-in-vre', undefined, { ...answers, serviceConnectedCondition: true, paidAtTotalDisabilityRate: true });
-                } else if (answers.disabilityRating !== null && answers.disabilityRating >= 10) {
+                } else if (answers.disabilityRating >= 10) {
                   advance('single-disability-tdiu', undefined, { ...answers, serviceConnectedCondition: true });
                 } else {
                   advance('housing-condition', undefined, {
@@ -1336,7 +1439,6 @@ function Questionnaire() {
                   });
                 }
               }}
-              disabled={answers.disabilityRating === null}
               style={{ marginLeft: 'auto' }}
             >
               Next <span className="button-arrow" aria-hidden="true">→</span>

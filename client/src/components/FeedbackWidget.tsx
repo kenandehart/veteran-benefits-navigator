@@ -16,7 +16,9 @@ export default function FeedbackWidget({ pageContext, metadata }: FeedbackWidget
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<Status>('idle')
   const [errorMessage, setErrorMessage] = useState('')
+  const [commentMissingError, setCommentMissingError] = useState(false)
   const lockoutTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     return () => {
@@ -25,20 +27,25 @@ export default function FeedbackWidget({ pageContext, metadata }: FeedbackWidget
   }, [])
 
   const trimmedComment = comment.trim()
-  const disabled = status === 'submitting' || status === 'success' || trimmedComment.length === 0
+  const disabled = status === 'submitting' || status === 'success'
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (status === 'submitting' || status === 'success') return
 
     setErrorMessage('')
+    setCommentMissingError(false)
 
+    if (trimmedComment.length === 0) {
+      setCommentMissingError(true)
+      textareaRef.current?.focus()
+      return
+    }
     if (email && !/^.+@.+\..+$/.test(email)) {
       setStatus('error')
       setErrorMessage('Please enter a valid email address.')
       return
     }
-    if (trimmedComment.length === 0) return
     if (trimmedComment.length > MAX_COMMENT_LEN) {
       setStatus('error')
       setErrorMessage(`Comment must be ${MAX_COMMENT_LEN} characters or fewer.`)
@@ -104,18 +111,34 @@ export default function FeedbackWidget({ pageContext, metadata }: FeedbackWidget
       <label className="feedback-widget__label">
         Share your feedback
         <textarea
+          ref={textareaRef}
           className="feedback-widget__textarea"
           value={comment}
-          onChange={(e) => setComment(e.target.value.slice(0, MAX_COMMENT_LEN))}
+          onChange={(e) => {
+            const next = e.target.value.slice(0, MAX_COMMENT_LEN)
+            setComment(next)
+            if (commentMissingError && next.trim().length > 0) {
+              setCommentMissingError(false)
+            }
+          }}
           maxLength={MAX_COMMENT_LEN}
           rows={4}
           placeholder="What worked, what didn't, what's missing?"
           disabled={status === 'submitting'}
+          aria-invalid={commentMissingError}
+          aria-describedby={commentMissingError ? 'feedback-comment-error' : undefined}
           required
         />
-        <span className={counterClass} aria-live="polite">
-          {comment.length} / {MAX_COMMENT_LEN}
-        </span>
+        <div className="feedback-widget__textarea-meta">
+          {commentMissingError && (
+            <p id="feedback-comment-error" className="feedback-widget__error" role="alert">
+              Please enter your feedback.
+            </p>
+          )}
+          <span className={counterClass} aria-live="polite">
+            {comment.length} / {MAX_COMMENT_LEN}
+          </span>
+        </div>
       </label>
       <label className="feedback-widget__label">
         Email <span className="feedback-widget__optional">(optional — if you'd like a reply)</span>
