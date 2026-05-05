@@ -4,6 +4,7 @@ import './App.css';
 import { useAuth } from './context/AuthContext.tsx';
 import Footer from './Footer';
 import SiteHeader from './components/SiteHeader.tsx';
+import SkipLink from './components/SkipLink.tsx';
 import { ScrollableConditions } from './ScrollableConditions.tsx';
 import { writeAnonResults } from './anonResults';
 
@@ -1870,9 +1871,10 @@ function Questionnaire() {
 
   return (
     <div className="page">
+      <SkipLink />
       {siteHeader}
 
-      <main className="q-main">
+      <main id="main" tabIndex={-1} className="q-main">
         <h1 className="sr-only">VA Benefits Questionnaire</h1>
         <div className="q-card">
           <div

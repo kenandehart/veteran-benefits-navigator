@@ -4,6 +4,7 @@ import type { FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import Footer from './Footer'
 import SiteHeader from './components/SiteHeader'
+import SkipLink from './components/SkipLink'
 
 type Status = 'idle' | 'submitting' | 'success' | 'invalidToken' | 'networkError'
 
@@ -72,8 +73,9 @@ function ResetPasswordPage() {
   if (!token) {
     return (
       <div className="page">
+        <SkipLink />
         {siteHeader}
-        <main style={pageMainStyle}>
+        <main id="main" tabIndex={-1} style={pageMainStyle}>
           <div className="benefit-detail__header">
             <button
               className="benefit-detail__back"
@@ -109,8 +111,9 @@ function ResetPasswordPage() {
   if (status === 'success') {
     return (
       <div className="page">
+        <SkipLink />
         {siteHeader}
-        <main style={{ ...pageMainStyle, textAlign: 'center' }}>
+        <main id="main" tabIndex={-1} style={{ ...pageMainStyle, textAlign: 'center' }}>
           <div className="benefit-detail__header">
             <button
               className="benefit-detail__back"
@@ -146,8 +149,9 @@ function ResetPasswordPage() {
 
   return (
     <div className="page">
+      <SkipLink />
       {siteHeader}
-      <main style={pageMainStyle}>
+      <main id="main" tabIndex={-1} style={pageMainStyle}>
         <div className="benefit-detail__header">
           <button
             className="benefit-detail__back"

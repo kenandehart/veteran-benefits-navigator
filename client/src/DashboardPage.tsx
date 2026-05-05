@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.tsx'
 import Footer from './Footer'
 import SiteHeader from './components/SiteHeader'
+import SkipLink from './components/SkipLink'
 import LoginModal from './components/LoginModal.tsx'
 
 interface Benefit {
@@ -111,8 +112,9 @@ function DashboardPage() {
   if (!isLoading && !user) {
     return (
       <div className="page">
+        <SkipLink />
         {siteHeader}
-        <main className="dashboard-main">
+        <main id="main" tabIndex={-1} className="dashboard-main">
           <div style={{
             display: 'flex',
             flexDirection: 'column',
@@ -141,8 +143,9 @@ function DashboardPage() {
 
   return (
     <div className="page">
+      <SkipLink />
       {siteHeader}
-      <main className="dashboard-main">
+      <main id="main" tabIndex={-1} className="dashboard-main">
         <h1 className="dashboard-greeting">
           Welcome back, {user?.username}
         </h1>

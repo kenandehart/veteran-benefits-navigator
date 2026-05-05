@@ -1,6 +1,7 @@
 import './App.css'
 import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
+import SkipLink from './components/SkipLink'
 
 interface FeedbackRow {
   id: number
@@ -232,7 +233,8 @@ export default function AdminPage() {
   if (!authHeader) {
     return (
       <div className="page">
-        <main className="admin-feedback-main admin-feedback-main--login">
+        <SkipLink />
+        <main id="main" tabIndex={-1} className="admin-feedback-main admin-feedback-main--login">
           <form className="admin-login" onSubmit={handleLogin}>
             <h1 className="admin-login__title">Admin sign in</h1>
             <label className="modal-label">
@@ -273,7 +275,8 @@ export default function AdminPage() {
 
   return (
     <div className="page">
-      <main className="admin-feedback-main">
+      <SkipLink />
+      <main id="main" tabIndex={-1} className="admin-feedback-main">
         <h1 className="admin-feedback__title">Admin</h1>
 
         <div style={tabBarStyle} role="tablist">

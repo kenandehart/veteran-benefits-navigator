@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Footer from './Footer'
 import SiteHeader from './components/SiteHeader'
+import SkipLink from './components/SkipLink'
 
 function AboutPage() {
   useEffect(() => {
@@ -11,8 +12,9 @@ function AboutPage() {
 
   return (
     <div className="page">
+      <SkipLink />
       <SiteHeader />
-      <main className="privacy-page">
+      <main id="main" tabIndex={-1} className="privacy-page">
         <h1 className="privacy-page__title">About</h1>
 
         <p style={{ textAlign: 'center', margin: '24px 0 8px' }}>

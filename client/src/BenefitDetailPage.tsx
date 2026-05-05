@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Footer from './Footer'
 import SiteHeader from './components/SiteHeader'
+import SkipLink from './components/SkipLink'
 
 interface Benefit {
   id: number
@@ -51,8 +52,9 @@ function BenefitDetailPage() {
 
   return (
     <div className="page">
+      <SkipLink />
       {siteHeader}
-      <main className="detail-main">
+      <main id="main" tabIndex={-1} className="detail-main">
         {status === 'notfound' && (
           <div className="no-results">
             <p>We couldn't find a benefit at that address.</p>

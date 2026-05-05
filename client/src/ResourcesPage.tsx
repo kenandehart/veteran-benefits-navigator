@@ -2,6 +2,7 @@ import './App.css'
 import { useEffect } from 'react'
 import Footer from './Footer'
 import SiteHeader from './components/SiteHeader'
+import SkipLink from './components/SkipLink'
 
 function ResourcesPage() {
   useEffect(() => {
@@ -12,8 +13,9 @@ function ResourcesPage() {
 
   return (
     <div className="page">
+      <SkipLink />
       <SiteHeader />
-      <main className="privacy-page">
+      <main id="main" tabIndex={-1} className="privacy-page">
         <h1 className="privacy-page__title">Resources</h1>
 
         <hr style={hrStyle} />

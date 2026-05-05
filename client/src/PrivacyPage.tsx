@@ -2,6 +2,7 @@ import './App.css'
 import { useEffect } from 'react'
 import Footer from './Footer'
 import SiteHeader from './components/SiteHeader'
+import SkipLink from './components/SkipLink'
 
 function PrivacyPage() {
   useEffect(() => {
@@ -10,8 +11,9 @@ function PrivacyPage() {
 
   return (
     <div className="page">
+      <SkipLink />
       <SiteHeader />
-      <main className="privacy-page">
+      <main id="main" tabIndex={-1} className="privacy-page">
         <h1 className="privacy-page__title">Privacy Policy</h1>
         <p className="privacy-page__meta">Last updated: April 23, 2026</p>
 

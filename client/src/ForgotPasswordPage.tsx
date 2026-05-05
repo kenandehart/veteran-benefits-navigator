@@ -4,6 +4,7 @@ import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Footer from './Footer'
 import SiteHeader from './components/SiteHeader'
+import SkipLink from './components/SkipLink'
 
 type Status = 'idle' | 'submitting' | 'submitted' | 'error'
 
@@ -46,9 +47,10 @@ function ForgotPasswordPage() {
 
   return (
     <div className="page">
+      <SkipLink />
       <SiteHeader />
 
-      <main style={pageMainStyle}>
+      <main id="main" tabIndex={-1} style={pageMainStyle}>
         <div className="benefit-detail__header">
           <button
             className="benefit-detail__back"

@@ -4,6 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext.tsx'
 import Footer from './Footer'
 import SiteHeader from './components/SiteHeader'
+import SkipLink from './components/SkipLink'
 import RegisterModal from './components/RegisterModal.tsx'
 import FeedbackWidget from './components/FeedbackWidget.tsx'
 import { clearAnonResults, readAnonResults } from './anonResults'
@@ -79,8 +80,9 @@ function ResultsPage() {
   if (eligibleBenefits === null) {
     return (
       <div className="page">
+        <SkipLink />
         <SiteHeader />
-        <main className="results-main">
+        <main id="main" tabIndex={-1} className="results-main">
           <p style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Loading your results...</p>
         </main>
         <Footer />
@@ -103,8 +105,9 @@ function ResultsPage() {
 
   return (
     <div className="page">
+      <SkipLink />
       {siteHeader}
-      <main className="results-main">
+      <main id="main" tabIndex={-1} className="results-main">
         {showDischargeUpgradeMessage && (
           <p style={{
             background: 'var(--bg)',

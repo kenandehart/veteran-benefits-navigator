@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Footer from './Footer'
 import SiteHeader from './components/SiteHeader'
+import SkipLink from './components/SkipLink'
 
 function LandingPage() {
   const navigate = useNavigate()
@@ -36,9 +37,10 @@ function LandingPage() {
 
   return (
     <div className="page">
+      <SkipLink />
       <SiteHeader />
 
-      <main>
+      <main id="main" tabIndex={-1}>
         <section className="hero">
           <h1 className="hero-headline">
             Find out which VA benefits you may qualify for in minutes.
