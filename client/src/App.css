@@ -1800,6 +1800,7 @@ button[disabled] {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow-y: auto;
   z-index: 400;
   padding: 24px;
   animation: fadeIn 0.18s ease both;
@@ -1813,6 +1814,7 @@ button[disabled] {
   padding: 44px 48px;
   max-width: 400px;
   width: 100%;
+  margin: auto;
   animation: fadeUp 0.2s ease both;
 }
 
