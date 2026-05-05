@@ -174,7 +174,7 @@ function DashboardPage() {
                   ))}
               </ul>
               <button className="cta-button dashboard-retake" onClick={() => navigate('/questionnaire')}>
-                Retake Questionnaire
+                Retake Questionnaire <span className="button-arrow" aria-hidden="true">→</span>
               </button>
               <p className="dashboard-meta">
                 Questionnaire completed {new Date(results.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
