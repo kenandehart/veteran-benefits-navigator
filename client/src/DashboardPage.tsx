@@ -7,6 +7,7 @@ import Footer from './Footer'
 import SiteHeader from './components/SiteHeader'
 import SkipLink from './components/SkipLink'
 import LoginModal from './components/LoginModal.tsx'
+import { hasInProgressQuestionnaire } from './questionnaireProgress'
 
 interface Benefit {
   id: number
@@ -158,7 +159,8 @@ function DashboardPage() {
             <div className="dashboard-empty">
               <p>You haven't taken the questionnaire yet.</p>
               <button className="cta-button" onClick={() => navigate('/questionnaire')}>
-                Take Questionnaire
+                {hasInProgressQuestionnaire() ? 'Continue questionnaire' : 'Take questionnaire'}{' '}
+                <span className="button-arrow" aria-hidden="true">→</span>
               </button>
             </div>
           ) : results.matchedBenefits.length === 0 ? (

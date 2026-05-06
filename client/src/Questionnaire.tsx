@@ -660,7 +660,14 @@ function Questionnaire() {
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key !== 'Enter') return;
-      if ((e.target as HTMLElement).tagName === 'BUTTON') return;
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'BUTTON') return;
+      // Bail when the keypress originates inside a portaled dialog (login,
+      // register, etc.). Modal.tsx renders to document.body via createPortal,
+      // so an Enter keypress in the modal's input bubbles through document
+      // and would otherwise reach this listener. The modal's own form handles
+      // its submission; we should not also advance the questionnaire step.
+      if (target.closest('[role="dialog"]')) return;
 
       switch (currentStep) {
         case 'entry-date': {

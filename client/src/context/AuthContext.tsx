@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { clearAnonResults } from '../anonResults'
+import { clearInProgressQuestionnaire } from '../questionnaireProgress'
 
 const POST_LOGIN_REDIRECT_FROM: string[] = ['/reset-password', '/forgot-password']
 
@@ -102,6 +103,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error(body.error ?? 'Logout failed')
     }
     setUser(null)
+    clearInProgressQuestionnaire()
+    clearAnonResults()
   }, [])
 
   const clearUser = useCallback(() => setUser(null), [])
