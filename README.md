@@ -27,7 +27,7 @@ A guided web app that helps U.S. veterans figure out which VA benefits they qual
 
 ## Why I built this
 
-I'm a U.S. Air Force veteran. Following my seperation, I struggled to get connected with VA benefits. I wanted to create an easy-to-use tool that would help veterans in a similar situation. The landscape is complex and challenging to navigate. This website should serve as a low barrier entry point for veterans who don't know where to begin.
+I'm a U.S. Air Force veteran. After I separated, figuring out which VA benefits I qualified for took more effort than it should have. The system is sprawling and hard to navigate, especially when you don't know what you don't know. I built this site to give other veterans a starting point and a clearer view of what they might qualify for.
 
 ## What it does
 
