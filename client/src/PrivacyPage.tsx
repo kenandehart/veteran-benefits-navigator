@@ -15,7 +15,7 @@ function PrivacyPage() {
       <SiteHeader />
       <main id="main" tabIndex={-1} className="privacy-page">
         <h1 className="privacy-page__title">Privacy Policy</h1>
-        <p className="privacy-page__meta">Last updated: April 23, 2026</p>
+        <p className="privacy-page__meta">Last updated: May 6, 2026</p>
 
         <p>Veteran Benefits Navigator is not affiliated with the U.S. Department of Veterans Affairs.</p>
 
@@ -30,6 +30,8 @@ function PrivacyPage() {
 
         <h2 className="privacy-page__heading">Third parties</h2>
         <p>The Service uses Better Stack to check whether the site is reachable. No user data is sent to Better Stack.</p>
+        <p>The Service uses Resend to send password reset emails. When you request a reset, your email address is shared with Resend so the message can be delivered.</p>
+        <p>The Service runs on a server hosted by DigitalOcean. Account data, saved questionnaire answers, and feedback are stored in a database on that server.</p>
 
         <h2 className="privacy-page__heading">Security</h2>
         <p>HTTPS in transit. Passwords are hashed with bcrypt. Session cookies are HTTP-only and secure in production.</p>
