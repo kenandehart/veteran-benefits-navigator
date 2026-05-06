@@ -10,9 +10,29 @@ const router = Router();
 
 router.get('/', requireAuth, async (req, res, next) => {
   try {
-    const result = await pool.query<{
+    // Two-step lookup so we can distinguish "no questionnaire row" (404) from
+    // "row exists with zero matches" (200 with empty matchedBenefits). A
+    // single JOIN against benefits collapses the two cases together because
+    // an empty matched_benefit_ids array yields zero rows.
+    const questionnaireResult = await pool.query<{
       answers: unknown;
+      matched_benefit_ids: number[];
       updated_at: string;
+    }>(
+      `SELECT answers, matched_benefit_ids, updated_at
+       FROM user_questionnaire
+       WHERE user_id = $1`,
+      [req.session.userId]
+    );
+
+    if (questionnaireResult.rows.length === 0) {
+      res.status(404).json({ error: 'No saved results found' });
+      return;
+    }
+
+    const { answers, matched_benefit_ids, updated_at } = questionnaireResult.rows[0];
+
+    let matchedBenefits: Array<{
       id: number;
       slug: string;
       name: string;
@@ -24,37 +44,24 @@ router.get('/', requireAuth, async (req, res, next) => {
       application_guidance: string;
       application_url: string;
       eligibility_url: string;
-    }>(
-      `SELECT
-         uq.answers,
-         uq.updated_at,
-         b.id,
-         b.slug,
-         b.name,
-         b.category,
-         b.short_description,
-         b.description,
-         b.eligibility_summary,
-         b.url,
-         b.application_guidance,
-         b.application_url,
-         b.eligibility_url
-       FROM user_questionnaire uq
-       JOIN benefits b
-         ON b.id = ANY(ARRAY(SELECT jsonb_array_elements_text(uq.matched_benefit_ids)::integer))
-       WHERE uq.user_id = $1`,
-      [req.session.userId]
-    );
+    }> = [];
 
-    if (result.rows.length === 0) {
-      res.status(404).json({ error: 'No saved results found' });
-      return;
+    if (matched_benefit_ids.length > 0) {
+      const benefitsResult = await pool.query<typeof matchedBenefits[number]>(
+        `SELECT id, slug, name, category, short_description, description,
+                eligibility_summary, url, application_guidance, application_url,
+                eligibility_url
+         FROM benefits
+         WHERE id = ANY($1::int[])`,
+        [matched_benefit_ids]
+      );
+      matchedBenefits = benefitsResult.rows;
     }
 
     res.json({
-      answers: result.rows[0].answers,
-      updatedAt: result.rows[0].updated_at,
-      matchedBenefits: result.rows.map(({ answers: _a, updated_at: _u, ...benefit }) => benefit),
+      answers,
+      updatedAt: updated_at,
+      matchedBenefits,
     });
   } catch (error) {
     req.log.error({ err: error }, 'Failed to fetch user results');

@@ -154,7 +154,24 @@ function DashboardPage() {
           <h2 className="dashboard-benefits__title">Your Benefits</h2>
           {resultsLoading ? (
             <p className="dashboard-meta">Loading your results...</p>
-          ) : results ? (
+          ) : !results ? (
+            <div className="dashboard-empty">
+              <p>You haven't taken the questionnaire yet.</p>
+              <button className="cta-button" onClick={() => navigate('/questionnaire')}>
+                Take Questionnaire
+              </button>
+            </div>
+          ) : results.matchedBenefits.length === 0 ? (
+            <div className="dashboard-empty">
+              <p>You completed the questionnaire, but we didn't find any benefits that match your answers.</p>
+              <button className="cta-button dashboard-retake" onClick={() => navigate('/questionnaire')}>
+                Retake Questionnaire <span className="button-arrow" aria-hidden="true">→</span>
+              </button>
+              <p className="dashboard-meta">
+                Questionnaire completed {new Date(results.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            </div>
+          ) : (
             <>
               <ul className="benefits-grid">
                 {[...results.matchedBenefits]
@@ -180,13 +197,6 @@ function DashboardPage() {
                 Questionnaire completed {new Date(results.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
             </>
-          ) : (
-            <div className="dashboard-empty">
-              <p>You haven't taken the questionnaire yet.</p>
-              <button className="cta-button" onClick={() => navigate('/questionnaire')}>
-                Take Questionnaire
-              </button>
-            </div>
           )}
         </section>
 

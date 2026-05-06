@@ -1,12 +1,27 @@
 import './App.css'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from './context/AuthContext.tsx'
 import Footer from './Footer'
 import SiteHeader from './components/SiteHeader'
 import SkipLink from './components/SkipLink'
+import {
+  hasInProgressQuestionnaire,
+  clearInProgressQuestionnaire,
+} from './questionnaireProgress'
 
 function LandingPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
+  // Lazy init: read once at mount. The page gets remounted on every visit to
+  // `/`, so this is the right life cycle for catching changes between visits.
+  const [inProgress, setInProgress] = useState(() => hasInProgressQuestionnaire())
+
+  function handleStartOver() {
+    clearInProgressQuestionnaire()
+    setInProgress(false)
+    navigate('/questionnaire')
+  }
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -42,13 +57,24 @@ function LandingPage() {
 
       <main id="main" tabIndex={-1}>
         <section className="hero">
+          {user && (
+            <p className="hero-greeting">Welcome back, {user.username}.</p>
+          )}
           <h1 className="hero-headline">
             Find out which VA benefits you may qualify for in minutes.
           </h1>
           <p className="hero-body">
             Answer a few questions about your service. We'll suggest benefits you might be eligible for, with links to learn more and apply at VA.gov.
           </p>
-          <button className="cta-button" onClick={() => navigate('/questionnaire')}>Find my benefits <span className="button-arrow" aria-hidden="true">→</span></button>
+          <button className="cta-button" onClick={() => navigate('/questionnaire')}>
+            {inProgress ? 'Continue questionnaire' : 'Find my benefits'}{' '}
+            <span className="button-arrow" aria-hidden="true">→</span>
+          </button>
+          {inProgress && (
+            <button className="hero-restart" onClick={handleStartOver}>
+              Start over
+            </button>
+          )}
         </section>
 
         <section className="features">

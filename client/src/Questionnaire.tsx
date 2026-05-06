@@ -7,6 +7,7 @@ import SiteHeader from './components/SiteHeader.tsx';
 import SkipLink from './components/SkipLink.tsx';
 import { ScrollableConditions } from './ScrollableConditions.tsx';
 import { writeAnonResults } from './anonResults';
+import { clearInProgressQuestionnaire } from './questionnaireProgress';
 
 function prefersReducedMotion(): boolean {
   if (typeof window === 'undefined' || !window.matchMedia) return false;
@@ -133,12 +134,6 @@ function getStored<T>(key: string, fallback: T): T {
   } catch {
     return fallback;
   }
-}
-
-const STORAGE_KEYS = ['vbn_step_v2', 'vbn_answers_v2', 'vbn_history_v2', 'vbn_housing_condition_v2', 'vbn_progress_v2'];
-
-function clearQuestionnaireStorage() {
-  STORAGE_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch {} });
 }
 
 interface ServicePeriod {
@@ -583,7 +578,14 @@ function Questionnaire() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState<Step>(() => getStored('vbn_step_v2', 'entry-date'));
   const [navDirection, setNavDirection] = useState<'forward' | 'back'>('forward');
-  const [currentServicePeriod, setCurrentServicePeriod] = useState<Partial<ServicePeriod>>({});
+  // Persisted so a mid-period navigation away (e.g. clicking the hamburger
+  // menu while on `separation-date`) doesn't drop the data the user has
+  // already entered for the period being edited. Snapshots in `history`
+  // capture this field too, but only at advance() time — the *uncommitted*
+  // value lives only here, so it needs its own slot.
+  const [currentServicePeriod, setCurrentServicePeriod] = useState<Partial<ServicePeriod>>(
+    () => getStored('vbn_current_service_period_v2', {} as Partial<ServicePeriod>),
+  );
   const [answers, setAnswers] = useState<QuestionnaireAnswers>(() => getStored('vbn_answers_v2', INITIAL_ANSWERS));
   const [history, setHistory] = useState<Snapshot[]>(() => getStored('vbn_history_v2', []));
   // housing-ownership lives in the Personal Information section but is only
@@ -615,10 +617,7 @@ function Questionnaire() {
   // `former-pow`, so the bar visibly completes during the submit fetch
   // (before the navigation to /results).
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user, logout } = useAuth();
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [pendingNavigation, setPendingNavigation] = useState('/');
-  const [pendingLogout, setPendingLogout] = useState(false);
+  const { user } = useAuth();
   // Tracks which step has had a "missing required input" error surfaced. Set
   // when the user clicks Next (or presses Enter) with an empty field, so the
   // step's input can render an error message and aria-invalid. Cleared on any
@@ -639,6 +638,7 @@ function Questionnaire() {
   useEffect(() => { try { localStorage.setItem('vbn_history_v2', JSON.stringify(history)); } catch {} }, [history]);
   useEffect(() => { try { localStorage.setItem('vbn_housing_condition_v2', JSON.stringify(housingConditionAnswer)); } catch {} }, [housingConditionAnswer]);
   useEffect(() => { try { localStorage.setItem('vbn_progress_v2', JSON.stringify(progressHigh)); } catch {} }, [progressHigh]);
+  useEffect(() => { try { localStorage.setItem('vbn_current_service_period_v2', JSON.stringify(currentServicePeriod)); } catch {} }, [currentServicePeriod]);
 
   useEffect(() => {
     if (!showTooltip) return;
@@ -726,38 +726,6 @@ function Questionnaire() {
 
   const isFirstPeriod = answers.servicePeriods.length === 0;
 
-  function goHome() {
-    clearQuestionnaireStorage();
-    if (pendingLogout) {
-      setPendingLogout(false);
-      logout().then(() => navigate('/'));
-    } else {
-      navigate(pendingNavigation);
-    }
-  }
-
-  function handleNav(path: string) {
-    const hasProgress = history.length > 0;
-    if (hasProgress) {
-      setPendingNavigation(path);
-      setShowConfirmDialog(true);
-    } else {
-      clearQuestionnaireStorage();
-      navigate(path);
-    }
-  }
-
-  function handleSignOut() {
-    const hasProgress = history.length > 0;
-    if (hasProgress) {
-      setPendingLogout(true);
-      setShowConfirmDialog(true);
-    } else {
-      clearQuestionnaireStorage();
-      logout().then(() => navigate('/'));
-    }
-  }
-
   function takeSnapshot(): Snapshot {
     return {
       step: currentStep,
@@ -837,41 +805,14 @@ function Questionnaire() {
         writeAnonResults(finalAnswers);
       }
 
-      clearQuestionnaireStorage();
+      clearInProgressQuestionnaire();
       navigate('/results', { state: { eligibleBenefits: data.eligibleBenefits, answers: finalAnswers } });
     } catch (error) {
       console.error('Failed to submit questionnaire:', error);
     }
   }
 
-  const siteHeader = <SiteHeader onNavigate={handleNav} onSignOut={handleSignOut} />;
-
-  function dismissConfirmDialog() {
-    setShowConfirmDialog(false);
-    setPendingLogout(false);
-  }
-
-  const confirmDialog = showConfirmDialog && (
-    <div className="dialog-overlay" onClick={dismissConfirmDialog}>
-      <div className="dialog" onClick={e => e.stopPropagation()}>
-        <h2 className="dialog__title">Leave questionnaire?</h2>
-        <p className="dialog__body">
-          Your answers have not been saved and will be lost if you leave. Are you sure you want to return to the home page?
-        </p>
-        <div className="dialog__actions">
-          <button className="dialog__cancel" onClick={dismissConfirmDialog}>
-            Cancel
-          </button>
-          <button
-            className="cta-button"
-            onClick={() => { setShowConfirmDialog(false); goHome(); }}
-          >
-            Leave anyway
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  const siteHeader = <SiteHeader />;
 
   const showBack = history.length > 0;
   const section = STEP_SECTIONS[currentStep];
@@ -1898,7 +1839,6 @@ function Questionnaire() {
         </div>
       </main>
 
-      {confirmDialog}
       <Footer />
     </div>
   );

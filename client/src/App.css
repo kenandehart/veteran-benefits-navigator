@@ -126,6 +126,40 @@
   line-height: 1.85;
 }
 
+.hero-greeting {
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  color: var(--navy);
+  margin: 0 0 18px;
+}
+
+.hero-restart {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: 'Source Sans 3', system-ui, sans-serif;
+  font-size: 0.95rem;
+  margin-top: 18px;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.hero-restart:not(:disabled):hover,
+.hero-restart:not(:disabled):focus-visible {
+  color: var(--navy);
+}
+
+.hero-restart:not(:disabled):focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+  border-radius: 1px;
+}
+
 /* ============================================================
    Buttons
    ============================================================ */
